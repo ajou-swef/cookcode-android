@@ -11,6 +11,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        binding = ActivityMainBinding.inflate(layoutInflater)
         // R.layout.activity_main 대신 뷰바인딩으로 생성된 루트 뷰를 넘겨준다
         setContentView(binding.root)
 

@@ -8,4 +8,5 @@
     <color name="main_theme">#FFFF4C19</color>
     <color name="main_varient_theme">#FFF4E7DF</color>
     <color name="red">#FFFF0000</color>
+    <color name="green">#FF00BC00</color>
 </resources>

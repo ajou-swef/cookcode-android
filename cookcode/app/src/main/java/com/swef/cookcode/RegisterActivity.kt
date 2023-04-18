@@ -1,7 +1,12 @@
 package com.swef.cookcode
 
+import android.content.Context
+import android.graphics.Rect
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.MotionEvent
+import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import android.widget.Toast
 import com.swef.cookcode.databinding.ActivityRegisterBinding
 
@@ -19,6 +24,7 @@ class RegisterActivity : AppCompatActivity() {
     private var isDuplicateNicknameCheck = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        binding = ActivityRegisterBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         // EditText 뷰들 포커스 이벤트 초기화
@@ -40,16 +46,16 @@ class RegisterActivity : AppCompatActivity() {
                 Toast.makeText(this@RegisterActivity, R.string.err_type, Toast.LENGTH_SHORT).show()
 
                 // 조건을 만족하지 않은 블록의 테두리를 빨간색으로 조정
-                if (isValidPwCheck){
+                if (!isValidPwCheck){
                     binding.editPwValid.setBackgroundResource(R.drawable.round_component_fail)
                 }
-                if (isCorrectPwCheck){
+                if (!isCorrectPwCheck){
                     binding.editPw.setBackgroundResource(R.drawable.round_component_fail)
                 }
-                if (isValidEmailCheck){
+                if (!isValidEmailCheck){
                     binding.editId.setBackgroundResource(R.drawable.round_component_fail)
                 }
-                if (isDuplicateNicknameCheck){
+                if (!isDuplicateNicknameCheck){
                     binding.editNickname.setBackgroundResource(R.drawable.round_component_fail)
                 }
             }
@@ -79,7 +85,7 @@ class RegisterActivity : AppCompatActivity() {
                 // API를 통해 닉네임 중복여부 확인
                 // 중복이 아닐경우 만족
                 isDuplicateNicknameCheck = true
-                view.setBackgroundResource(R.drawable.round_component)
+                view.setBackgroundResource(R.drawable.round_component_ok)
             }
         }
 
@@ -95,6 +101,7 @@ class RegisterActivity : AppCompatActivity() {
                 // 유효할 경우 true
                 if(isPasswordFormat(pwTyped)){
                     isCorrectPwCheck = true
+                    view.setBackgroundResource(R.drawable.round_component_ok)
                 }
                 // 유효하지 않을 경우 테두리를 빨간색으로 수정
                 else {
@@ -116,6 +123,7 @@ class RegisterActivity : AppCompatActivity() {
                 // 일치할 경우 true
                 if (pwTyped.contentEquals(pwValidCheck)) {
                     isValidPwCheck = true
+                    view.setBackgroundResource(R.drawable.round_component_ok)
                 }
                 // 불일치할 경우 테두리를 빨간색으로 수정
                 else {
@@ -126,8 +134,32 @@ class RegisterActivity : AppCompatActivity() {
         }
     }
 
+    // 비밀번호 유효성 검사 함수
     // 영어 소문자, 숫자, 특수문자 3가지 모두 1자 이상 들어가야하며 최소 8자 이상
     private fun isPasswordFormat(password: String): Boolean {
         return password.matches("^(?=.*[a-z])(?=.*[0-9])(?=.*[\$@!%*#?&]).{8,16}.\$".toRegex())
     }
+
+    // Edittext가 아닌 화면을 터치했을 경우 포커스 해제 및 키보드 숨기기
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        // 화면이 터치 되었을 때
+        if (event.action == MotionEvent.ACTION_DOWN) {
+            // 현재 focus된 view가 Edittext일 경우
+            val v = currentFocus
+            if (v is EditText) {
+                val outRect = Rect()
+                // view의 절대 좌표를 구한다
+                v.getGlobalVisibleRect(outRect)
+
+                // 절대 좌표 이외의 좌표를 클릭했을 경우 포커스 해제 및 키보드 숨기기
+                if (!outRect.contains(event.rawX.toInt(), event.rawY.toInt())) {
+                    v.clearFocus()
+                    val imm: InputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    imm.hideSoftInputFromWindow(v.getWindowToken(), 0)
+                }
+            }
+        }
+        return super.dispatchTouchEvent(event)
+    }
+
 }
