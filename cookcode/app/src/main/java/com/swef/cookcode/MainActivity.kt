@@ -14,10 +14,25 @@ class MainActivity : AppCompatActivity() {
         // R.layout.activity_main 대신 뷰바인딩으로 생성된 루트 뷰를 넘겨준다
         setContentView(binding.root)
 
-        // 회원가입 글자 클릭시
+        // 회원가입 클릭시
         binding.btnRegister.setOnClickListener {
             // 회원가입 activity 시작
             val nextIntent = Intent(this, RegisterActivity::class.java)
+            startActivity(nextIntent)
+        }
+
+        // 아이디/비밀번호 찾기 클릭시
+        binding.btnFindIdpw.setOnClickListener {
+            // 아이디/비밀번호 찾기 activity 시작
+        }
+
+        // 로그인 클릭시
+        binding.btnLogin.setOnClickListener {
+            // API를 통해 서버에 회원정보를 보냄
+            val ID = binding.editId.text.toString()
+            val PW = binding.editPw.text.toString()
+            // 만족시 HomeActivity로 이동
+            val nextIntent = Intent(this, HomeActivity::class.java)
             startActivity(nextIntent)
         }
     }
