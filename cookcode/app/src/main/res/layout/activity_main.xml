@@ -34,7 +34,7 @@
     <EditText
         android:id="@+id/edit_id"
         android:layout_width="wrap_content"
-        android:layout_height="40dp"
+        android:layout_height="48dp"
         android:layout_marginTop="20dp"
         android:ems="17"
         android:hint="@string/email"
@@ -50,7 +50,7 @@
     <EditText
         android:id="@+id/edit_pw"
         android:layout_width="wrap_content"
-        android:layout_height="40dp"
+        android:layout_height="48dp"
         android:layout_marginTop="10dp"
         android:ems="17"
         android:hint="@string/pw"
@@ -66,17 +66,19 @@
     <Button
         android:id="@+id/btn_login"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="48dp"
         android:layout_marginTop="10dp"
+        android:ems="17"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
         android:text="@string/login"
         android:textAlignment="center"
         android:textSize="15sp"
         android:textStyle="bold"
-        android:ems="17"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.502"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/edit_pw"/>
+        app:layout_constraintTop_toBottomOf="@+id/edit_pw" />
 
     <TextView
         android:id="@+id/btn_find_idpw"
