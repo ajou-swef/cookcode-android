@@ -10,4 +10,10 @@
     <string name="done">완료</string>
     <string name="err_type">제대로 된 값이 입력되지 않았습니다.</string>
     <string name="success_register">회원가입이 정상 처리되었습니다.</string>
+    <string name="hint_email">cookcode@gmail.com</string>
+    <string name="hint_nickname">쿡코드짱123</string>
+    <string name="hint_pw">영어 소문자, 숫자, 특수문자 모두 포함 8자 이상</string>
+    <string name="dup_test">중복확인</string>
+    <string name="duplicated_nickname">이미 존재하는 닉네임입니다.</string>
+    <string name="duplicated_email">이미 존재하는 아이디입니다.</string>
 </resources>

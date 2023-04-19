@@ -5,6 +5,7 @@ import android.graphics.Rect
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.MotionEvent
+import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.Toast
@@ -30,33 +31,60 @@ class RegisterActivity : AppCompatActivity() {
         // EditText 뷰들 포커스 이벤트 초기화
         setFocusChangeListeners()
 
+        // 닉네임 중복확인
+        binding.dupNickTest.setOnClickListener{
+            // API를 통해 서버에 중복 확인
+            // 중복이 아닐 시 만족
+            if (true) {
+                isDuplicateNicknameCheck = true
+                binding.testNickname.visibility = View.VISIBLE
+                binding.dupNickText.visibility = View.INVISIBLE
+            }
+            // 중복이 존재할 경우
+            else {
+                isDuplicateNicknameCheck = false
+                binding.testNickname.visibility = View.INVISIBLE
+                binding.dupNickText.visibility = View.VISIBLE
+            }
+        }
+
         // 완료 버튼 클릭 이벤트
         binding.btnDone.setOnClickListener {
-            // 항목 검사 완료 조건
-            if (isValidPwCheck && isCorrectPwCheck && isValidEmailCheck && isDuplicateNicknameCheck){
-                // API를 통해 회원정보를 서버에 보냄
-
-                // 회원가입 완료 토스트 메시지
-                Toast.makeText(this@RegisterActivity, R.string.success_register, Toast.LENGTH_SHORT).show()
-                // Activity 종료
-                finish()
+            // API를 통해 email 중복 테스트 실시
+            // 불만족시 토스트 메시지를 띄움
+            if (false) {
+                isValidEmailCheck = false
+                Toast.makeText(this@RegisterActivity, R.string.duplicated_email, Toast.LENGTH_SHORT).show()
             }
-            // 조건을 충족하지 않았을 경우 토스트 메시지를 띄움
+            // 만족 시
             else {
-                Toast.makeText(this@RegisterActivity, R.string.err_type, Toast.LENGTH_SHORT).show()
+                isValidEmailCheck = true
+                // 항목 검사 완료 조건
+                if (isValidPwCheck && isCorrectPwCheck && isValidEmailCheck && isDuplicateNicknameCheck) {
+                    // API를 통해 회원정보를 서버에 보냄
 
-                // 조건을 만족하지 않은 블록의 테두리를 빨간색으로 조정
-                if (!isValidPwCheck){
-                    binding.editPwValid.setBackgroundResource(R.drawable.round_component_fail)
+                    // 회원가입 완료 토스트 메시지
+                    Toast.makeText(this@RegisterActivity, R.string.success_register, Toast.LENGTH_SHORT).show()
+                    // Activity 종료
+                    finish()
                 }
-                if (!isCorrectPwCheck){
-                    binding.editPw.setBackgroundResource(R.drawable.round_component_fail)
-                }
-                if (!isValidEmailCheck){
-                    binding.editId.setBackgroundResource(R.drawable.round_component_fail)
-                }
-                if (!isDuplicateNicknameCheck){
-                    binding.editNickname.setBackgroundResource(R.drawable.round_component_fail)
+                // 조건을 충족하지 않았을 경우 토스트 메시지를 띄움
+                else {
+                    Toast.makeText(this@RegisterActivity, R.string.err_type, Toast.LENGTH_SHORT).show()
+
+                    // 조건을 만족하지 않은 블록의 테두리를 빨간색으로 조정
+                    if (!isValidPwCheck) {
+                        binding.editPwValid.setBackgroundResource(R.drawable.round_component_fail)
+                    }
+                    if (!isCorrectPwCheck) {
+                        binding.editPw.setBackgroundResource(R.drawable.round_component_fail)
+                    }
+                    if (!isValidEmailCheck) {
+                        binding.editId.setBackgroundResource(R.drawable.round_component_fail)
+                    }
+                    if (!isDuplicateNicknameCheck) {
+                        binding.editNickname.setBackgroundResource(R.drawable.round_component_fail)
+                    }
                 }
             }
         }
@@ -82,10 +110,7 @@ class RegisterActivity : AppCompatActivity() {
                 view.setBackgroundResource(R.drawable.round_component_clicked)
             }
             else {
-                // API를 통해 닉네임 중복여부 확인
-                // 중복이 아닐경우 만족
-                isDuplicateNicknameCheck = true
-                view.setBackgroundResource(R.drawable.round_component_ok)
+                view.setBackgroundResource(R.drawable.round_component)
             }
         }
 
@@ -95,18 +120,19 @@ class RegisterActivity : AppCompatActivity() {
                 view.setBackgroundResource(R.drawable.round_component_clicked)
             }
             else {
+                view.setBackgroundResource(R.drawable.round_component)
                 // 비밀번호란의 문자열을 불러옴
                 val pwTyped = binding.editPw.text.toString()
 
                 // 유효할 경우 true
                 if(isPasswordFormat(pwTyped)){
                     isCorrectPwCheck = true
-                    view.setBackgroundResource(R.drawable.round_component_ok)
+                    binding.pwText.setBackgroundResource(R.drawable.green_check)
                 }
                 // 유효하지 않을 경우 테두리를 빨간색으로 수정
                 else {
                     isCorrectPwCheck = false
-                    view.setBackgroundResource(R.drawable.round_component_fail)
+                    binding.pwText.setBackgroundResource(R.drawable.red_cross)
                 }
             }
         }
@@ -116,6 +142,7 @@ class RegisterActivity : AppCompatActivity() {
             if (gainFocus) {
                 view.setBackgroundResource(R.drawable.round_component_clicked)
             } else {
+                view.setBackgroundResource(R.drawable.round_component)
                 // 비밀번호와 비밀번호 확인란의 문자열을 불러옴
                 val pwTyped = binding.editPw.text.toString()
                 val pwValidCheck = binding.editPwValid.text.toString()
@@ -123,12 +150,12 @@ class RegisterActivity : AppCompatActivity() {
                 // 일치할 경우 true
                 if (pwTyped.contentEquals(pwValidCheck)) {
                     isValidPwCheck = true
-                    view.setBackgroundResource(R.drawable.round_component_ok)
+                    binding.pwText.setBackgroundResource(R.drawable.green_check)
                 }
                 // 불일치할 경우 테두리를 빨간색으로 수정
                 else {
                     isValidPwCheck = false
-                    view.setBackgroundResource(R.drawable.round_component_fail)
+                    binding.pwText.setBackgroundResource(R.drawable.red_cross)
                 }
             }
         }
@@ -137,7 +164,7 @@ class RegisterActivity : AppCompatActivity() {
     // 비밀번호 유효성 검사 함수
     // 영어 소문자, 숫자, 특수문자 3가지 모두 1자 이상 들어가야하며 최소 8자 이상
     private fun isPasswordFormat(password: String): Boolean {
-        return password.matches("^(?=.*[a-z])(?=.*[0-9])(?=.*[\$@!%*#?&]).{8,16}.\$".toRegex())
+        return password.matches("^(?=.*[a-z])(?=.*[0-9])(?=.*[\$@!%*#?&]).{8,}.\$".toRegex())
     }
 
     // Edittext가 아닌 화면을 터치했을 경우 포커스 해제 및 키보드 숨기기
