@@ -4,6 +4,8 @@ import com.swef.cookcode.data.response.DuplicateResponse
 import com.swef.cookcode.data.response.StatusResponse
 import com.swef.cookcode.data.response.TokenResponse
 import retrofit2.Call
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
@@ -40,4 +42,16 @@ interface AccountAPI {
 
     @DELETE("account")
     fun deleteAccount(): Call<Any>
+
+    companion object {
+        private const val BASE_URL = "api/v1/"
+
+        fun create(): AccountAPI {
+            return Retrofit.Builder()
+                .baseUrl(BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build()
+                .create(AccountAPI::class.java)
+        }
+    }
 }

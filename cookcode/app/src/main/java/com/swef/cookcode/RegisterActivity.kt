@@ -9,7 +9,12 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.Toast
+import com.swef.cookcode.api.AccountAPI
+import com.swef.cookcode.data.response.DuplicateResponse
 import com.swef.cookcode.databinding.ActivityRegisterBinding
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class RegisterActivity : AppCompatActivity() {
 
@@ -23,6 +28,10 @@ class RegisterActivity : AppCompatActivity() {
     private var isValidEmailCheck = true
     // 닉네임 중복 검사
     private var isDuplicateNicknameCheck = false
+
+    // AccountAPI
+    val API = AccountAPI.create()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityRegisterBinding.inflate(layoutInflater)
@@ -34,18 +43,47 @@ class RegisterActivity : AppCompatActivity() {
         // 닉네임 중복확인
         binding.dupNickTest.setOnClickListener{
             // API를 통해 서버에 중복 확인
-            // 중복이 아닐 시 만족
-            if (true) {
-                isDuplicateNicknameCheck = true
-                binding.testNickname.visibility = View.VISIBLE
-                binding.dupNickText.visibility = View.INVISIBLE
-            }
-            // 중복이 존재할 경우
-            else {
-                isDuplicateNicknameCheck = false
-                binding.testNickname.visibility = View.INVISIBLE
-                binding.dupNickText.visibility = View.VISIBLE
-            }
+            API.getDupNickTest(binding.editNickname.text.toString())
+                .enqueue(object: Callback<DuplicateResponse> {
+                    override fun onResponse(
+                        call: Call<DuplicateResponse>,
+                        response: Response<DuplicateResponse>
+                    ) {
+                        // 호출 성공
+                        // response는 nullable하므로 추가
+                        val isUnique = response.body()?.dupData?.isUnique
+
+                        // response를 정상적으로 받아왔을 경우
+                        if (isUnique != null) {
+                            if (isUnique) {
+                                isDuplicateNicknameCheck = true
+                                binding.testNickname.visibility = View.VISIBLE
+                                binding.dupNickText.visibility = View.INVISIBLE
+                            } else {
+                                isDuplicateNicknameCheck = false
+                                binding.testNickname.visibility = View.INVISIBLE
+                                binding.dupNickText.visibility = View.VISIBLE
+                            }
+                        }
+                        // response가 null일 경우
+                        else {
+                            Toast.makeText(
+                                this@RegisterActivity,
+                                R.string.err_server,
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+
+                    override fun onFailure(call: Call<DuplicateResponse>, t: Throwable) {
+                        // 호출 실패
+                        Toast.makeText(
+                            this@RegisterActivity,
+                            R.string.err_server,
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                })
         }
 
         // 완료 버튼 클릭 이벤트
