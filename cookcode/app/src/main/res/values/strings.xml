@@ -16,5 +16,6 @@
     <string name="dup_test">중복확인</string>
     <string name="duplicated_nickname">이미 존재하는 닉네임입니다.</string>
     <string name="duplicated_email">이미 존재하는 아이디입니다.</string>
+    <string name="err_userdata">잘못된 아이디/비밀번호를 입력하셨습니다.</string>
     <string name="err_server">잠시 후 다시 시도해주세요.</string>
 </resources>

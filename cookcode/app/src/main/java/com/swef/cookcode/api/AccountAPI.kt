@@ -31,8 +31,7 @@ interface AccountAPI {
 
     @POST("account/signin")
     fun postSignin(
-        @Query("email")email: String,
-        @Query("password")pw: String
+        @Body body: HashMap<String, String>
     ): Call<TokenResponse>
 
     @GET("account/token/reissue")
