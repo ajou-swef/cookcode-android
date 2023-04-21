@@ -16,7 +16,7 @@ interface AccountAPI {
 
     @POST("account/signup")
     fun postUserData(
-        @Body body: HashMap<String, Any>
+        @Body body: HashMap<String, String>
     ): Call<StatusResponse>
 
     @GET("account/check")

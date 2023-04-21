@@ -4,6 +4,8 @@ import android.content.Context
 import android.graphics.Rect
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -11,6 +13,7 @@ import android.widget.EditText
 import android.widget.Toast
 import com.swef.cookcode.api.AccountAPI
 import com.swef.cookcode.data.response.DuplicateResponse
+import com.swef.cookcode.data.response.StatusResponse
 import com.swef.cookcode.databinding.ActivityRegisterBinding
 import retrofit2.Call
 import retrofit2.Callback
@@ -40,15 +43,12 @@ class RegisterActivity : AppCompatActivity() {
         // EditText 뷰들 포커스 이벤트 초기화
         setFocusChangeListeners()
 
+        /*
         // 닉네임 중복확인
         binding.dupNickTest.setOnClickListener{
             // API를 통해 서버에 중복 확인
-            API.getDupNickTest(binding.editNickname.text.toString())
-                .enqueue(object: Callback<DuplicateResponse> {
-                    override fun onResponse(
-                        call: Call<DuplicateResponse>,
-                        response: Response<DuplicateResponse>
-                    ) {
+            API.getDupNickTest(binding.editNickname.text.toString()).enqueue(object: Callback<DuplicateResponse> {
+                    override fun onResponse(call: Call<DuplicateResponse>, response: Response<DuplicateResponse>) {
                         // 호출 성공
                         // response는 nullable하므로 추가
                         val isUnique = response.body()?.dupData?.isUnique
@@ -77,33 +77,109 @@ class RegisterActivity : AppCompatActivity() {
 
                     override fun onFailure(call: Call<DuplicateResponse>, t: Throwable) {
                         // 호출 실패
-                        Toast.makeText(
-                            this@RegisterActivity,
-                            R.string.err_server,
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        Toast.makeText(this@RegisterActivity, R.string.err_server, Toast.LENGTH_SHORT).show()
                     }
                 })
         }
+         */
+
+        // 서버 구축 전 임시 code
+        binding.dupNickTest.setOnClickListener{
+            isDuplicateNicknameCheck = true
+            binding.testNickname.visibility = View.VISIBLE
+            binding.dupNickText.visibility = View.INVISIBLE
+        }
+
+        // 닉네임 중복확인 후 다른 닉네임으로 변경하고 싶을 때
+        // 문자를 입력할 경우 중복확인이 해제되도록 해야함
+        binding.editNickname.addTextChangedListener(object: TextWatcher{
+            // 변경되기 전
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+            // 변경되는 중
+            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+                isDuplicateNicknameCheck = false
+                binding.testNickname.visibility = View.INVISIBLE
+                binding.dupNickText.visibility = View.INVISIBLE
+            }
+            // 변경된 후
+            override fun afterTextChanged(p0: Editable?) {}
+        })
+
+
 
         // 완료 버튼 클릭 이벤트
         binding.btnDone.setOnClickListener {
+            /*
             // API를 통해 email 중복 테스트 실시
-            // 불만족시 토스트 메시지를 띄움
-            if (false) {
-                isValidEmailCheck = false
-                Toast.makeText(this@RegisterActivity, R.string.duplicated_email, Toast.LENGTH_SHORT).show()
-            }
-            // 만족 시
-            else {
-                isValidEmailCheck = true
-                // 항목 검사 완료 조건
-                if (isValidPwCheck && isCorrectPwCheck && isValidEmailCheck && isDuplicateNicknameCheck) {
-                    // API를 통해 회원정보를 서버에 보냄
+            API.getDupNickTest(binding.editNickname.text.toString()).enqueue(object: Callback<DuplicateResponse> {
+                override fun onResponse(call: Call<DuplicateResponse>, response: Response<DuplicateResponse>) {
+                    val isUnique = response.body()?.dupData?.isUnique
 
-                    // 회원가입 완료 토스트 메시지
+                    if (isUnique != null) {
+                        if (isUnique) {
+                            isValidEmailCheck = true
+                        } else {
+                            // isUnique가 false일 경우 이미 존재하는 아이디
+                            // 토스트 메세지를 통해 알려줌
+                            isValidEmailCheck = false
+                            Toast.makeText(this@RegisterActivity, R.string.duplicated_email, Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                    // response가 null일 경우
+                    else {
+                        Toast.makeText(this@RegisterActivity, R.string.err_server, Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                override fun onFailure(call: Call<DuplicateResponse>, t: Throwable) {
+                    // 호출 실패
+                    Toast.makeText(this@RegisterActivity, R.string.err_server, Toast.LENGTH_SHORT).show()
+                }
+            })
+             */
+
+            // 서버 구축 전 임시 code
+            isValidEmailCheck = binding.editId.text.toString().isNotEmpty()
+
+            // 만족 시
+            if (isValidEmailCheck) {
+                // 항목 검사 완료 조건
+                if (isValidPwCheck && isCorrectPwCheck && isDuplicateNicknameCheck) {
+                    /*
+                    // API를 통해 회원정보를 서버에 보냄
+                    val id = binding.editId.text.toString()
+                    val nickname = binding.editNickname.text.toString()
+                    val pw = binding.editPw.text.toString()
+
+                    // POST body에 실어보내기 위해 HashMap 사용
+                    // 각 body에 들어갈 key, value 매칭
+                    var userDataMap = HashMap<String, String>()
+                    userDataMap["email"] = id
+                    userDataMap["nickname"] = nickname
+                    userDataMap["password"] = pw
+
+                    API.postUserData(userDataMap).enqueue(object: Callback<StatusResponse> {
+                        override fun onResponse(call: Call<StatusResponse>, response: Response<StatusResponse>) {
+                            if (response.body()?.status == 201) {
+                                // 회원가입 완료 토스트 메시지
+                                Toast.makeText(this@RegisterActivity, R.string.success_register, Toast.LENGTH_SHORT).show()
+                                // Activity 종료
+                                finish()
+                            }
+                            // 실패 시
+                            else {
+                                Toast.makeText(this@RegisterActivity, R.string.err_server, Toast.LENGTH_SHORT).show()
+                            }
+                        }
+
+                        override fun onFailure(call: Call<StatusResponse>, t: Throwable) {
+                            Toast.makeText(this@RegisterActivity, R.string.err_server, Toast.LENGTH_SHORT).show()
+                        }
+                    })
+                     */
+
+                    // 서버 구축 전 임시 code
                     Toast.makeText(this@RegisterActivity, R.string.success_register, Toast.LENGTH_SHORT).show()
-                    // Activity 종료
                     finish()
                 }
                 // 조건을 충족하지 않았을 경우 토스트 메시지를 띄움
