@@ -3,28 +3,39 @@ package com.swef.cookcode
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import com.swef.cookcode.databinding.ActivityHomeBinding
 
 class HomeActivity : AppCompatActivity() {
-
-    private val intent = getIntent()
-
+    private lateinit var binding: ActivityHomeBinding
     // 로그인 시 발행된 token 정보 불러오기
-    // accesstoken은 짧은 주기로 갱신 되어야 하므로 var로 선언
-    private var accessToken = intent.getStringExtra("accesstoken")
-
+    private lateinit var accessToken : String
     // refreshtoken은 accesstoken을 refresh하기 위해 사용
     // refreshtoken이 유효하지 않을 경우 로그아웃
-    private val refreshToken = intent.getStringExtra("refreshtoken")
+    private lateinit var refreshToken : String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_home)
+        binding = ActivityHomeBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        if (accessToken != null) {
-            Log.d("data", accessToken!!)
+        if(!intent.getStringExtra("accesstoken").isNullOrBlank()) {
+            accessToken = intent.getStringExtra("accesstoken")!!
+            Log.d("data", accessToken)
         }
-        if (refreshToken != null) {
+        else {
+            Log.d("data", "fail at")
+        }
+
+        if(!intent.getStringExtra("refreshtoken").isNullOrBlank()){
+            refreshToken = intent.getStringExtra("refreshtoken")!!
             Log.d("data", refreshToken)
+        }
+        else {
+            Log.d("data", "fail rt")
+        }
+
+        binding.beforeArrow.setOnClickListener {
+            finish()
         }
     }
 }

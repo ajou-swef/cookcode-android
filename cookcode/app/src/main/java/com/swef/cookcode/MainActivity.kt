@@ -1,8 +1,13 @@
 package com.swef.cookcode
 
+import android.content.Context
 import android.content.Intent
+import android.graphics.Rect
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.MotionEvent
+import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import android.widget.Toast
 import com.swef.cookcode.api.AccountAPI
 import com.swef.cookcode.data.response.TokenResponse
@@ -14,15 +19,8 @@ import retrofit2.Response
 class MainActivity : AppCompatActivity() {
     // ViewBinding 사용 : xml에 있는 view를 직접 참조할 수 있게 도와주는 기능
     private lateinit var binding: ActivityMainBinding
-
     // AccountAPI
-    val API = AccountAPI.create()
-
-    // 회원가입 화면 intent
-    val registerActivityIntent = Intent(this, RegisterActivity::class.java)
-
-    // 메인페이지 화면 intent
-    val homeActivityIntent = Intent(this, HomeActivity::class.java)
+    // private val API = AccountAPI.create()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,7 +31,8 @@ class MainActivity : AppCompatActivity() {
         // 회원가입 클릭시
         binding.btnRegister.setOnClickListener {
             // 회원가입 activity 시작
-            startActivity(registerActivityIntent)
+            val nextIntent = Intent(this, RegisterActivity::class.java)
+            startActivity(nextIntent)
         }
 
         // 아이디/비밀번호 찾기 클릭시
@@ -67,7 +66,8 @@ class MainActivity : AppCompatActivity() {
                             homeActivityIntent.putExtra("accesstoken", accessToken)
                             homeActivityIntent.putExtra("refreshtoken", refreshToken)
 
-                            startActivity(homeActivityIntent)
+                            val nextIntent = Intent(this, HomeActivity::class.java)
+                            startActivity(nextIntent)
                         }
                         // 일치하는 데이터가 없을 시
                         else {
@@ -87,10 +87,33 @@ class MainActivity : AppCompatActivity() {
              */
 
             // 서버 구축 전 임시 code
-            homeActivityIntent.putExtra("accesstoken", "test access token")
-            homeActivityIntent.putExtra("refreshtoken", "test refresh token")
+            val nextIntent = Intent(this, HomeActivity::class.java)
+            nextIntent.putExtra("accesstoken", "test access token")
+            nextIntent.putExtra("refreshtoken", "test refresh token")
             Toast.makeText(this@MainActivity, "정상적으로 로그인 되었습니다.", Toast.LENGTH_SHORT).show()
-            startActivity(homeActivityIntent)
+            startActivity(nextIntent)
         }
+    }
+
+    // Edittext가 아닌 화면을 터치했을 경우 포커스 해제 및 키보드 숨기기
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        // 화면이 터치 되었을 때
+        if (event.action == MotionEvent.ACTION_DOWN) {
+            // 현재 focus된 view가 Edittext일 경우
+            val v = currentFocus
+            if (v is EditText) {
+                val outRect = Rect()
+                // view의 절대 좌표를 구한다
+                v.getGlobalVisibleRect(outRect)
+
+                // 절대 좌표 이외의 좌표를 클릭했을 경우 포커스 해제 및 키보드 숨기기
+                if (!outRect.contains(event.rawX.toInt(), event.rawY.toInt())) {
+                    v.clearFocus()
+                    val imm: InputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    imm.hideSoftInputFromWindow(v.getWindowToken(), 0)
+                }
+            }
+        }
+        return super.dispatchTouchEvent(event)
     }
 }

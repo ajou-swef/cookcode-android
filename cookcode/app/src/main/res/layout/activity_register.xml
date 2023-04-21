@@ -11,7 +11,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="50dp"
-        android:layout_marginStart="60dp"
         android:text="@string/register"
         android:textAlignment="center"
         android:textSize="30sp"
@@ -19,15 +18,24 @@
         android:textColor="@color/black"
         android:focusable="true"
         android:focusableInTouchMode="true"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/before_arrow"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/before_arrow"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginStart="20dp"
+        android:background="@drawable/before_arrow"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/register_text"/>
 
     <TextView
         android:id="@+id/email_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
-        android:layout_marginStart="60dp"
         android:text="@string/email"
         android:textAlignment="center"
         android:textSize="15sp"
@@ -35,7 +43,7 @@
         android:textColor="@color/black"
         android:focusable="true"
         android:focusableInTouchMode="true"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/edit_id"
         app:layout_constraintTop_toBottomOf="@+id/register_text" />
 
     <EditText
@@ -58,7 +66,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:layout_marginStart="60dp"
         android:text="@string/nickname"
         android:textAlignment="center"
         android:textSize="15sp"
@@ -66,7 +73,7 @@
         android:textColor="@color/black"
         android:focusable="true"
         android:focusableInTouchMode="true"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/edit_nickname"
         app:layout_constraintTop_toBottomOf="@+id/edit_id" />
 
     <TextView
@@ -104,18 +111,17 @@
 
     <TextView
         android:id="@+id/dup_nick_test"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="14dp"
-        android:layout_marginEnd="70dp"
+        android:layout_width="70dp"
+        android:layout_height="48dp"
         android:text="@string/dup_test"
         android:textAlignment="center"
+        android:gravity="center"
         android:textSize="14sp"
         android:textStyle="bold"
         android:textColor="@color/gray_80"
         android:focusable="true"
         android:focusableInTouchMode="true"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/edit_nickname"
         app:layout_constraintTop_toBottomOf="@+id/nickname_text" />
 
     <ImageView
@@ -125,8 +131,7 @@
         android:background="@drawable/green_check"
         android:visibility="invisible"
         android:layout_marginTop="18dp"
-        android:layout_marginEnd="125dp"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/dup_nick_test"
         app:layout_constraintTop_toBottomOf="@+id/nickname_text" />
 
     <TextView
@@ -134,7 +139,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:layout_marginStart="60dp"
         android:text="@string/pw"
         android:textAlignment="center"
         android:textSize="15sp"
@@ -142,7 +146,7 @@
         android:textColor="@color/black"
         android:focusable="true"
         android:focusableInTouchMode="true"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/edit_pw"
         app:layout_constraintTop_toBottomOf="@+id/edit_nickname" />
 
 
@@ -166,10 +170,11 @@
         android:id="@+id/test_pw"
         android:layout_height="15dp"
         android:layout_width="15dp"
-        android:background=""
+        android:background="@drawable/red_cross"
+        android:visibility="invisible"
         android:layout_marginTop="18dp"
-        android:layout_marginEnd="70dp"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginEnd="15dp"
+        app:layout_constraintEnd_toEndOf="@+id/edit_pw"
         app:layout_constraintTop_toBottomOf="@+id/pw_text" />
 
     <TextView
@@ -177,7 +182,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:layout_marginStart="60dp"
         android:text="@string/pw_valid"
         android:textAlignment="center"
         android:textSize="15sp"
@@ -185,7 +189,7 @@
         android:textColor="@color/black"
         android:focusable="true"
         android:focusableInTouchMode="true"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/edit_pw_valid"
         app:layout_constraintTop_toBottomOf="@+id/edit_pw" />
 
     <EditText
@@ -209,10 +213,11 @@
         android:id="@+id/test_pw_valid"
         android:layout_height="15dp"
         android:layout_width="15dp"
-        android:background=""
         android:layout_marginTop="18dp"
-        android:layout_marginEnd="70dp"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginEnd="15dp"
+        android:background="@drawable/red_cross"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="@+id/edit_pw_valid"
         app:layout_constraintTop_toBottomOf="@+id/pw_valid_text" />
 
     <Button

@@ -33,7 +33,7 @@ class RegisterActivity : AppCompatActivity() {
     private var isDuplicateNicknameCheck = false
 
     // AccountAPI
-    val API = AccountAPI.create()
+    // private val API = AccountAPI.create()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,6 +42,11 @@ class RegisterActivity : AppCompatActivity() {
 
         // EditText 뷰들 포커스 이벤트 초기화
         setFocusChangeListeners()
+
+        // 뒤로가기 버튼 클릭시 activity 종료
+        binding.beforeArrow.setOnClickListener{
+            finish()
+        }
 
         /*
         // 닉네임 중복확인
@@ -104,7 +109,6 @@ class RegisterActivity : AppCompatActivity() {
             // 변경된 후
             override fun afterTextChanged(p0: Editable?) {}
         })
-
 
 
         // 완료 버튼 클릭 이벤트
@@ -237,16 +241,20 @@ class RegisterActivity : AppCompatActivity() {
                 view.setBackgroundResource(R.drawable.round_component)
                 // 비밀번호란의 문자열을 불러옴
                 val pwTyped = binding.editPw.text.toString()
-
-                // 유효할 경우 true
-                if(isPasswordFormat(pwTyped)){
-                    isCorrectPwCheck = true
-                    binding.pwText.setBackgroundResource(R.drawable.green_check)
-                }
-                // 유효하지 않을 경우 테두리를 빨간색으로 수정
-                else {
-                    isCorrectPwCheck = false
-                    binding.pwText.setBackgroundResource(R.drawable.red_cross)
+                // 비밀번호가 입력되었다면 유효성 검사
+                if (pwTyped.isNotEmpty()) {
+                    // 유효할 경우 green check를 띄움
+                    if (isPasswordFormat(pwTyped)) {
+                        isCorrectPwCheck = true
+                        binding.testPw.setBackgroundResource(R.drawable.green_check)
+                        binding.testPw.visibility = View.VISIBLE
+                    }
+                    // 유효하지 않을 경우 red cross를 띄움
+                    else {
+                        isCorrectPwCheck = false
+                        binding.testPw.setBackgroundResource(R.drawable.red_cross)
+                        binding.testPw.visibility = View.VISIBLE
+                    }
                 }
             }
         }
@@ -261,15 +269,19 @@ class RegisterActivity : AppCompatActivity() {
                 val pwTyped = binding.editPw.text.toString()
                 val pwValidCheck = binding.editPwValid.text.toString()
 
-                // 일치할 경우 true
-                if (pwTyped.contentEquals(pwValidCheck)) {
-                    isValidPwCheck = true
-                    binding.pwText.setBackgroundResource(R.drawable.green_check)
-                }
-                // 불일치할 경우 테두리를 빨간색으로 수정
-                else {
-                    isValidPwCheck = false
-                    binding.pwText.setBackgroundResource(R.drawable.red_cross)
+                if (pwTyped.isNotEmpty()) {
+                    // 일치할 경우 green check를 띄움
+                    if (pwTyped.contentEquals(pwValidCheck)) {
+                        isValidPwCheck = true
+                        binding.testPwValid.setBackgroundResource(R.drawable.green_check)
+                        binding.testPwValid.visibility = View.VISIBLE
+                    }
+                    // 불일치할 경우 red cross를 띄움
+                    else {
+                        isValidPwCheck = false
+                        binding.testPwValid.setBackgroundResource(R.drawable.red_cross)
+                        binding.testPwValid.visibility = View.VISIBLE
+                    }
                 }
             }
         }
