@@ -5,15 +5,15 @@
         android:id="@+id/menu_cookie"
         app:showAsAction="ifRoom"
         android:enabled="true"
-        android:icon="@mipmap/ic_launcher"
-        android:title="첫번째" />
+        android:icon="@drawable/bottom_nav_cookie_selector"
+        android:title="@string/cookie" />
     <item android:id="@+id/menu_home"
         app:showAsAction="ifRoom"
-        android:icon="@mipmap/ic_launcher"
-        android:title="두번째" />
+        android:icon="@drawable/bottom_nav_home_selector"
+        android:title="@string/home" />
     <item android:id="@+id/menu_refrigerator"
         app:showAsAction="ifRoom"
         android:enabled="true"
-        android:icon="@mipmap/ic_launcher"
-        android:title="세번째" />
+        android:icon="@drawable/bottom_nav_refrigerator_selector"
+        android:title="@string/refrigerator" />
 </menu>

@@ -1,60 +1,66 @@
 package com.swef.cookcode.navifrags
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.widget.PopupMenu
+import androidx.fragment.app.Fragment
 import com.swef.cookcode.R
+import com.swef.cookcode.databinding.FragmentHomeBinding
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
 
-/**
- * A simple [Fragment] subclass.
- * Use the [HomeFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class HomeFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
+    // fragment view binding을 위한 변수
+    private var _binding : FragmentHomeBinding? = null
+    // nullable할 경우 ?를 계속 붙여줘야 하기 때문에 non-null 타입으로 포장
+    private val binding get() = _binding!!
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_home, container, false)
-    }
+    ): View {
+        _binding = FragmentHomeBinding.inflate(inflater, container, false)
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment HomeFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            HomeFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+        // 컨텐츠 추가 버튼 click listener
+        binding.btnAddContents.setOnClickListener{
+            // fragment가 연결된 context를 불러와 해당 버튼에 팝업 메뉴가 나타나도록 함
+            val popupMenu = PopupMenu(requireContext(), binding.btnAddContents)
+            // icon 보여주기
+            popupMenu.setForceShowIcon(true)
+            // 메뉴 항목을 inflate
+            popupMenu.menuInflater.inflate(R.menu.content_popup_menu, popupMenu.menu)
+
+            // 팝업 메뉴 아이템 클릭 리스너
+            popupMenu.setOnMenuItemClickListener { menuItem ->
+                when (menuItem.itemId) {
+                    R.id.cookie -> true
+                    R.id.recipe -> true
+                    else -> false
                 }
             }
+
+            popupMenu.show()
+        }
+        return binding.root
+    }
+
+    // Fragment는 생명 주기가 매우 길기 때문에 view가 destroy되어도 fragment는 살아있음
+    // 따라서 메모리 누수가 발생하기 때문에 view가 죽을 시 binding을 null로 설정해줌
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
+    // 컨텐츠 추가 버튼 클릭시 나타날 팝업 메뉴 항목 정의
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.content_popup_menu, menu)
+        super.onCreateOptionsMenu(menu, inflater)
     }
 }

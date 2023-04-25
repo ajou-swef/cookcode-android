@@ -34,39 +34,45 @@ class HomeActivity : AppCompatActivity() {
         else {
             Log.d("data", "fail rt")
         }
+
+        // bottom navigation bar 초기화
+        initBottomNavigation()
     }
 
     private fun initBottomNavigation() {
+        // 최초 실행되는 fragment는 homefragment(메인페이지)
         supportFragmentManager.beginTransaction()
             .replace(R.id.fl_container, HomeFragment())
             .commitAllowingStateLoss()
+        // 메뉴 역시 home 버튼이 클릭되어있어야함
+        binding.bnvMain.selectedItemId = R.id.menu_home
 
+        // 바텀 네비게이션의 click listener
         binding.bnvMain.setOnItemSelectedListener { item ->
+            // 각각의 버튼 클릭시 해당 버튼에 해당하는 fragment를 시작함
             when (item.itemId) {
                 R.id.menu_cookie -> {
                     supportFragmentManager.beginTransaction()
                         .replace(R.id.fl_container, CookieFragment())
                         .commitAllowingStateLoss()
-                    return@setOnItemSelectedListener true
+                    true
                 }
 
                 R.id.menu_home -> {
                     supportFragmentManager.beginTransaction()
                         .replace(R.id.fl_container, HomeFragment())
                         .commitAllowingStateLoss()
-                    return@setOnItemSelectedListener true
+                    true
                 }
 
                 R.id.menu_refrigerator -> {
                     supportFragmentManager.beginTransaction()
                         .replace(R.id.fl_container, RefrigeratorFragment())
                         .commitAllowingStateLoss()
-                    return@setOnItemSelectedListener true
+                    true
                 }
 
-                else -> {
-                    return@setOnItemSelectedListener true
-                }
+                else -> false
             }
         }
     }

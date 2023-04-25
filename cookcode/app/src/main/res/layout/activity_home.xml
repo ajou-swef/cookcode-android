@@ -22,6 +22,7 @@
         android:id="@+id/bnv_main"
         android:background="#FFFFFF"
         app:menu="@menu/navi_menu"
+        app:labelVisibilityMode="labeled"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"/>

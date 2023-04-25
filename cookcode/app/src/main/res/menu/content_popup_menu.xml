@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        app:showAsAction="ifRoom"
+        android:id="@+id/cookie"
+        android:title="@string/cookie"
+        android:icon="@drawable/unselected_cookie"/>
+    <item
+        app:showAsAction="ifRoom"
+        android:id="@+id/recipe"
+        android:title="@string/recipe"
+        android:icon="@drawable/unselected_cookie"/>
+</menu>
