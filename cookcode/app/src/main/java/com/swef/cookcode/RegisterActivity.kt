@@ -145,10 +145,8 @@ class RegisterActivity : AppCompatActivity() {
             // 서버 구축 전 임시 code
             isValidEmailCheck = binding.editId.text.toString().isNotEmpty()
 
-            // 만족 시
-            if (isValidEmailCheck) {
-                // 항목 검사 완료 조건
-                if (isValidPwCheck && isCorrectPwCheck && isDuplicateNicknameCheck) {
+            // 항목 조건 검사 만족 시
+            if (isValidEmailCheck && isValidPwCheck && isCorrectPwCheck && isDuplicateNicknameCheck) {
                     /*
                     // API를 통해 회원정보를 서버에 보냄
                     val id = binding.editId.text.toString()
@@ -185,24 +183,23 @@ class RegisterActivity : AppCompatActivity() {
                     // 서버 구축 전 임시 code
                     Toast.makeText(this@RegisterActivity, R.string.success_register, Toast.LENGTH_SHORT).show()
                     finish()
-                }
-                // 조건을 충족하지 않았을 경우 토스트 메시지를 띄움
-                else {
-                    Toast.makeText(this@RegisterActivity, R.string.err_type, Toast.LENGTH_SHORT).show()
+            }
+            // 조건을 충족하지 않았을 경우 토스트 메시지를 띄움
+            else {
+                Toast.makeText(this@RegisterActivity, R.string.err_type, Toast.LENGTH_SHORT).show()
 
-                    // 조건을 만족하지 않은 블록의 테두리를 빨간색으로 조정
-                    if (!isValidPwCheck) {
-                        binding.editPwValid.setBackgroundResource(R.drawable.round_component_fail)
-                    }
-                    if (!isCorrectPwCheck) {
-                        binding.editPw.setBackgroundResource(R.drawable.round_component_fail)
-                    }
-                    if (!isValidEmailCheck) {
-                        binding.editId.setBackgroundResource(R.drawable.round_component_fail)
-                    }
-                    if (!isDuplicateNicknameCheck) {
-                        binding.editNickname.setBackgroundResource(R.drawable.round_component_fail)
-                    }
+                // 조건을 만족하지 않은 블록의 테두리를 빨간색으로 조정
+                if (!isValidPwCheck) {
+                    binding.editPwValid.setBackgroundResource(R.drawable.round_component_fail)
+                }
+                if (!isCorrectPwCheck) {
+                    binding.editPw.setBackgroundResource(R.drawable.round_component_fail)
+                }
+                if (!isValidEmailCheck) {
+                    binding.editId.setBackgroundResource(R.drawable.round_component_fail)
+                }
+                if (!isDuplicateNicknameCheck) {
+                    binding.editNickname.setBackgroundResource(R.drawable.round_component_fail)
                 }
             }
         }
