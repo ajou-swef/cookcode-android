@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import com.swef.cookcode.databinding.ActivityHomeBinding
+import com.swef.cookcode.navifrags.*
 
 class HomeActivity : AppCompatActivity() {
     private lateinit var binding: ActivityHomeBinding
@@ -33,9 +34,40 @@ class HomeActivity : AppCompatActivity() {
         else {
             Log.d("data", "fail rt")
         }
+    }
 
-        binding.beforeArrow.setOnClickListener {
-            finish()
+    private fun initBottomNavigation() {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fl_container, HomeFragment())
+            .commitAllowingStateLoss()
+
+        binding.bnvMain.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.menu_cookie -> {
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.fl_container, CookieFragment())
+                        .commitAllowingStateLoss()
+                    return@setOnItemSelectedListener true
+                }
+
+                R.id.menu_home -> {
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.fl_container, HomeFragment())
+                        .commitAllowingStateLoss()
+                    return@setOnItemSelectedListener true
+                }
+
+                R.id.menu_refrigerator -> {
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.fl_container, RefrigeratorFragment())
+                        .commitAllowingStateLoss()
+                    return@setOnItemSelectedListener true
+                }
+
+                else -> {
+                    return@setOnItemSelectedListener true
+                }
+            }
         }
     }
 }
