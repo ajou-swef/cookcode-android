@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".RecipeFormActivity">
+
+    <ImageView
+        android:id="@+id/before_arrow"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="20dp"
+        android:background="@drawable/before_arrow"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <TextView
+        android:id="@+id/home_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:text="@string/home"
+        android:textAlignment="center"
+        android:textSize="26sp"
+        android:textStyle="bold"
+        android:textColor="@color/black"
+        app:layout_constraintStart_toEndOf="@+id/before_arrow"
+        app:layout_constraintTop_toTopOf="@+id/before_arrow" />
+
+    <Button
+        android:id="@+id/preview"
+        android:layout_width="300dp"
+        android:layout_height="48dp"
+        android:layout_marginBottom="10dp"
+        android:text="@string/goto_preview"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.502"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintTop_toBottomOf="@+id/before_arrow"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/preview">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/recipe_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="@string/recipe_name"
+                android:textColor="@color/black"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@id/edit_recipe_name"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <EditText
+                android:id="@+id/edit_recipe_name"
+                android:layout_width="wrap_content"
+                android:layout_height="60dp"
+                android:ems="9"
+                android:hint="@string/type_word"
+                android:inputType="text"
+                android:textSize="30sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.502"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/recipe_name" />
+
+            <TextView
+                android:id="@+id/main_image"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="@string/main_image"
+                android:textColor="@color/black"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@+id/edit_recipe_name"
+                app:layout_constraintTop_toBottomOf="@+id/edit_recipe_name" />
+
+            <TextView
+                android:id="@+id/upload_image_box"
+                android:layout_width="wrap_content"
+                android:layout_height="130dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/round_dashed_component"
+                android:ems="9"
+                android:textSize="30sp"
+                app:layout_constraintEnd_toEndOf="@+id/edit_recipe_name"
+                app:layout_constraintStart_toStartOf="@+id/edit_recipe_name"
+                app:layout_constraintTop_toBottomOf="@+id/main_image" />
+
+            <ImageView
+                android:id="@+id/upload_image_btn"
+                android:layout_width="70dp"
+                android:layout_height="67dp"
+                android:background="@drawable/upload_image"
+                app:layout_constraintBottom_toBottomOf="@+id/upload_image_box"
+                app:layout_constraintEnd_toEndOf="@+id/upload_image_box"
+                app:layout_constraintStart_toStartOf="@+id/upload_image_box"
+                app:layout_constraintTop_toTopOf="@+id/upload_image_box" />
+
+            <TextView
+                android:id="@+id/description"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="@string/description"
+                android:textColor="@color/black"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@+id/edit_recipe_name"
+                app:layout_constraintTop_toBottomOf="@+id/upload_image_box" />
+
+            <EditText
+                android:id="@+id/edit_description"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:ems="18"
+                android:hint="@string/type_word"
+                android:inputType="text"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.502"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/description" />
+
+            <TextView
+                android:id="@+id/essential_ingredient"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@string/essential_ingredient"
+                android:textColor="@color/black"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@+id/edit_recipe_name"
+                app:layout_constraintTop_toBottomOf="@+id/edit_description" />
+
+            <TextView
+                android:id="@+id/add_essential_ingredient"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/add_with_plus"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="@id/essential_ingredient"
+                app:layout_constraintEnd_toEndOf="@+id/edit_recipe_name" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/essential_ingredients"
+                android:layout_width="300dp"
+                android:layout_height="70dp"
+                android:layout_marginTop="5dp"
+                android:orientation="horizontal"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.502"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/essential_ingredient" />
+
+            <View
+                android:id="@+id/divider"
+                android:layout_width="300dp"
+                android:layout_height="1dp"
+                android:layout_marginTop="10dp"
+                android:background="@color/gray_80"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.502"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/essential_ingredients" />
+
+            <TextView
+                android:id="@+id/additional_ingredient"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@string/additional_ingredient"
+                android:textColor="@color/black"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@+id/edit_recipe_name"
+                app:layout_constraintTop_toBottomOf="@+id/divider" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/additional_ingredients"
+                android:layout_width="300dp"
+                android:layout_height="70dp"
+                android:layout_marginTop="5dp"
+                android:orientation="horizontal"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.502"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/additional_ingredient" />
+
+            <TextView
+                android:id="@+id/add_additional_ingredient"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/add_with_plus"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="@id/additional_ingredient"
+                app:layout_constraintEnd_toEndOf="@+id/edit_recipe_name" />
+
+            <View
+                android:id="@+id/divider_for_step"
+                android:layout_width="300dp"
+                android:layout_height="1dp"
+                android:layout_marginTop="10dp"
+                android:background="@color/gray_80"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.502"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/additional_ingredients" />
+
+            <TextView
+                android:id="@+id/step"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@string/step"
+                android:textColor="@color/black"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@+id/edit_recipe_name"
+                app:layout_constraintTop_toBottomOf="@+id/divider_for_step" />
+
+            <TextView
+                android:id="@+id/add_step"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/add_with_plus"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="@id/step"
+                app:layout_constraintEnd_toEndOf="@+id/edit_recipe_name" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/steps"
+                android:layout_width="300dp"
+                android:layout_height="70dp"
+                android:layout_marginTop="5dp"
+                android:orientation="vertical"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.502"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/step" />
+
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

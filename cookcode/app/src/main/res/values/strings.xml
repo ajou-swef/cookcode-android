@@ -23,4 +23,14 @@
     <string name="home">홈</string>
     <string name="refrigerator">냉장고</string>
     <string name="recipe">레시피</string>
+    <string name="recipe_name">레시피 제목</string>
+    <string name="main_image">대표 이미지</string>
+    <string name="description">설명</string>
+    <string name="essential_ingredient">필수 재료</string>
+    <string name="additional_ingredient">추가 재료</string>
+    <string name="add">추가</string>
+    <string name="add_with_plus">+ 추가</string>
+    <string name="type_word">입력해주세요</string>
+    <string name="goto_preview">미리보기하고 업로드</string>
+    <string name="step">스텝</string>
 </resources>

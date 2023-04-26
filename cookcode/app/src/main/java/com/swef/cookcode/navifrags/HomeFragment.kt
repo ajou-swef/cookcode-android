@@ -1,5 +1,6 @@
 package com.swef.cookcode.navifrags
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -9,6 +10,7 @@ import android.view.ViewGroup
 import androidx.appcompat.widget.PopupMenu
 import androidx.fragment.app.Fragment
 import com.swef.cookcode.R
+import com.swef.cookcode.RecipeFormActivity
 import com.swef.cookcode.databinding.FragmentHomeBinding
 
 
@@ -41,7 +43,11 @@ class HomeFragment : Fragment() {
             popupMenu.setOnMenuItemClickListener { menuItem ->
                 when (menuItem.itemId) {
                     R.id.cookie -> true
-                    R.id.recipe -> true
+                    R.id.recipe -> {
+                        val nextIntent = Intent(activity, RecipeFormActivity::class.java)
+                        startActivity(nextIntent)
+                        true
+                    }
                     else -> false
                 }
             }
