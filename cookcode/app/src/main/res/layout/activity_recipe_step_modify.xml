@@ -57,19 +57,18 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/image_recyclerview"
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:layout_marginStart="20dp"
-        android:layout_marginEnd="20dp"
         android:orientation="horizontal"
         app:layout_constraintTop_toBottomOf="@+id/video_btn"
         app:layout_constraintStart_toStartOf="parent"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/video_recyclerview"
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:layout_marginStart="20dp"
         android:orientation="horizontal"
@@ -132,17 +131,27 @@
         app:layout_constraintTop_toBottomOf="@+id/step_description"
         app:layout_constraintBottom_toBottomOf="parent"/>
 
+    <ImageView
+        android:id="@+id/delete_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/trashcan"
+        app:layout_constraintStart_toStartOf="@id/edit_description"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
     <Button
-        android:id="@+id/add_btn"
+        android:id="@+id/modify_btn"
         android:layout_width="0dp"
         android:layout_height="50dp"
         android:layout_marginBottom="10dp"
+        android:layout_marginStart="20dp"
         android:insetTop="0dp"
         android:insetBottom="0dp"
-        android:text="1단계 스텝 추가하기"
+        android:text="1단계 스텝 수정하기"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="@id/edit_description"
-        app:layout_constraintStart_toStartOf="@id/edit_description"
+        app:layout_constraintStart_toEndOf="@id/delete_btn"
         app:layout_constraintBottom_toBottomOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

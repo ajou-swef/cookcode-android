@@ -15,6 +15,9 @@
         android:theme="@style/Theme.Cookcode"
         tools:targetApi="31">
         <activity
+            android:name=".RecipeStepModifyActivity"
+            android:exported="false" />
+        <activity
             android:name=".RecipeStepActivity"
             android:exported="false" />
         <activity

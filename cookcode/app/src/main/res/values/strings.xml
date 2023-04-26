@@ -36,4 +36,6 @@
     <string name="new_recipe">새 레시피</string>
     <string name="image">이미지</string>
     <string name="video">동영상</string>
+    <string name="step_title">스텝 제목</string>
+    <string name="step_description">스텝 설명</string>
 </resources>
