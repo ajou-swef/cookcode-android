@@ -1,6 +1,7 @@
 package com.swef.cookcode
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Rect
 import android.net.Uri
 import android.os.Bundle
@@ -54,7 +55,8 @@ class RecipeFormActivity : AppCompatActivity() {
 
         // 스텝 추가 버튼 클릭시 스텝 제작 화면 띄우기
         binding.addStep.setOnClickListener {
-
+            val intent = Intent(this, RecipeStepActivity::class.java)
+            startActivity(intent)
         }
 
         // 미리보기 버튼 클릭시 미리보기 화면 띄우기

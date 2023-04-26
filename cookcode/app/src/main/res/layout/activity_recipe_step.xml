@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".RecipeStepActivity">
+
+
+    <ImageView
+        android:id="@+id/before_arrow"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:background="@drawable/before_arrow"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="1단계"
+        android:textColor="@color/black"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:layout_marginTop="12dp"
+        app:layout_constraintStart_toEndOf="@+id/before_arrow"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <TextView
+        android:id="@+id/image_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="25dp"
+        android:layout_marginEnd="2dp"
+        android:background="@drawable/half_round_component"
+        android:text="@string/image"
+        android:textSize="14sp"
+        android:textColor="@color/white"
+        android:gravity="center"
+        android:ems="4"
+        app:layout_constraintEnd_toStartOf="@+id/video_btn"
+        app:layout_constraintTop_toTopOf="@+id/video_btn"/>
+
+    <TextView
+        android:id="@+id/video_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="25dp"
+        android:background="@drawable/half_round_component_right"
+        android:layout_marginTop="40dp"
+        android:layout_marginEnd="20dp"
+        android:text="@string/video"
+        android:textSize="14sp"
+        android:textColor="@color/white"
+        android:gravity="center|start"
+        android:ems="4"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
