@@ -2,10 +2,13 @@ package com.swef.cookcode
 
 import android.content.Context
 import android.graphics.Rect
+import android.net.Uri
 import android.os.Bundle
 import android.view.MotionEvent
+import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.swef.cookcode.databinding.ActivityRecipeFormBinding
 
@@ -18,8 +21,16 @@ class RecipeFormActivity : AppCompatActivity() {
         binding = ActivityRecipeFormBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // 권한 요청
+        // 레시피 업로드시 이미지 등록을 위한 변수
+        lateinit var recipeImage: Uri
 
+        // 갤러리에서 image를 불러왔을 때 선택한 image로 수행하는 코드
+        val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            // 이미지 추가하는 버튼 안보이게 하기
+            recipeImage = uri!!
+            binding.uploadImageBtn.visibility = View.INVISIBLE
+            binding.uploadImageBox.setImageURI(recipeImage)
+        }
 
         // 뒤로가기 버튼 클릭시 activity 종료
         binding.beforeArrow.setOnClickListener {
@@ -28,6 +39,7 @@ class RecipeFormActivity : AppCompatActivity() {
 
         // 이미지 업로드 버튼 클릭시 이미지 업로드
         binding.uploadImageBox.setOnClickListener {
+            pickImage.launch("image/*")
         }
 
         // 필수 재료 추가 버튼 클릭시 재료 추가
@@ -37,6 +49,16 @@ class RecipeFormActivity : AppCompatActivity() {
 
         // 추가 재료 추가 버튼 클릭시 재료 추가
         binding.addAdditionalIngredient.setOnClickListener {
+
+        }
+
+        // 스텝 추가 버튼 클릭시 스텝 제작 화면 띄우기
+        binding.addStep.setOnClickListener {
+
+        }
+
+        // 미리보기 버튼 클릭시 미리보기 화면 띄우기
+        binding.preview.setOnClickListener {
 
         }
     }
@@ -58,4 +80,5 @@ class RecipeFormActivity : AppCompatActivity() {
         }
         return super.dispatchTouchEvent(event)
     }
+
 }
