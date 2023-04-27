@@ -29,7 +29,11 @@ class RecipeStepActivity : AppCompatActivity() {
         binding = ActivityRecipeStepBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // recyclerview init
         initRecycler()
+
+        // 스텝 설명 view init
+        initDescriptionTextBox()
 
         // 뒤로가기 버튼 클릭 시 activity 종료
         binding.beforeArrow.setOnClickListener {
@@ -82,6 +86,27 @@ class RecipeStepActivity : AppCompatActivity() {
             }
         }
         return super.dispatchTouchEvent(event)
+    }
+
+    // 스텝 설명 edittext 클릭 시 키보드에 잘림 현상 방지
+    private fun initDescriptionTextBox(){
+        binding.editDescription.setOnFocusChangeListener { v, hasFocus ->
+            if (hasFocus) {
+                // EditText가 가려지는 것을 방지하기 위해 ScrollView를 이동
+                binding.layout.postDelayed({
+                    binding.layout.scrollTo(0, binding.stepDescription.bottom)
+                }, 100)
+            } else {
+                // 포커스 아웃 시 키보드 숨기기
+                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.hideSoftInputFromWindow(v.windowToken, 0)
+
+                // ScrollView 원상태로 돌림
+                binding.layout.postDelayed({
+                    binding.layout.scrollTo(0, 0)
+                }, 100)
+            }
+        }
     }
 
     // RecyclerAdapter 초기화

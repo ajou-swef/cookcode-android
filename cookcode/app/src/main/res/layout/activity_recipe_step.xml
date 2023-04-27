@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:id="@+id/layout"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -26,123 +28,145 @@
         app:layout_constraintStart_toEndOf="@+id/before_arrow"
         app:layout_constraintTop_toTopOf="parent"/>
 
-    <TextView
-        android:id="@+id/image_btn"
-        android:layout_width="wrap_content"
-        android:layout_height="30dp"
-        android:layout_marginEnd="2dp"
-        android:background="@drawable/half_round_component"
-        android:text="@string/image"
-        android:textSize="14sp"
-        android:textColor="@color/white"
-        android:gravity="center"
-        android:ems="4"
-        app:layout_constraintEnd_toStartOf="@+id/video_btn"
-        app:layout_constraintTop_toTopOf="@+id/video_btn"/>
-
-    <TextView
-        android:id="@+id/video_btn"
-        android:layout_width="wrap_content"
-        android:layout_height="30dp"
-        android:background="@drawable/half_round_component_right"
-        android:layout_marginTop="40dp"
-        android:layout_marginEnd="20dp"
-        android:text="@string/video"
-        android:textSize="14sp"
-        android:textColor="@color/white"
-        android:gravity="center|start"
-        android:ems="4"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/image_recyclerview"
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginStart="20dp"
-        android:layout_marginEnd="20dp"
-        android:orientation="horizontal"
-        app:layout_constraintTop_toBottomOf="@+id/video_btn"
-        app:layout_constraintStart_toStartOf="parent"/>
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/video_recyclerview"
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginStart="20dp"
-        android:orientation="horizontal"
-        app:layout_constraintTop_toBottomOf="@+id/video_btn"
-        app:layout_constraintStart_toStartOf="parent"/>
-
-    <TextView
-        android:id="@+id/step_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
-        android:text="@string/step_title"
-        android:textStyle="bold"
-        android:textColor="@color/black"
-        app:layout_constraintTop_toBottomOf="@+id/video_recyclerview"
-        app:layout_constraintStart_toStartOf="@+id/edit_title"/>
-
-    <EditText
-        android:id="@+id/edit_title"
-        android:layout_width="wrap_content"
-        android:layout_height="48dp"
-        android:ems="18"
-        android:hint="@string/type_word"
-        android:inputType="text"
-        android:textSize="15sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.502"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/step_title" />
-
-    <TextView
-        android:id="@+id/step_description"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:text="@string/step_description"
-        android:textStyle="bold"
-        android:textColor="@color/black"
-        app:layout_constraintTop_toBottomOf="@+id/edit_title"
-        app:layout_constraintStart_toStartOf="@+id/edit_description"/>
-
-    <EditText
-        android:id="@+id/edit_description"
-        android:layout_width="wrap_content"
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="15dp"
-        android:layout_marginBottom="70dp"
-        android:ems="18"
-        android:hint="@string/type_word"
-        android:inputType="textMultiLine"
-        android:scrollHorizontally="false"
-        android:textSize="15sp"
-        android:textStyle="bold"
-        android:gravity="start"
-        android:background="@drawable/filled_round_component"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.502"
+        android:fillViewport="true"
+        android:isScrollContainer="false"
+        app:layout_constraintTop_toBottomOf="@+id/before_arrow"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/step_description"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/add_btn">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/image_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:layout_marginEnd="2dp"
+                android:background="@drawable/half_round_component"
+                android:text="@string/image"
+                android:textSize="14sp"
+                android:textColor="@color/white"
+                android:gravity="center"
+                android:ems="4"
+                app:layout_constraintEnd_toStartOf="@+id/video_btn"
+                app:layout_constraintTop_toTopOf="@+id/video_btn"/>
+
+            <TextView
+                android:id="@+id/video_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:background="@drawable/half_round_component_right"
+                android:layout_marginEnd="20dp"
+                android:text="@string/video"
+                android:textSize="14sp"
+                android:textColor="@color/white"
+                android:gravity="center|start"
+                android:ems="4"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/image_recyclerview"
+                android:layout_width="0dp"
+                android:layout_height="100dp"
+                android:layout_margin="20dp"
+                android:orientation="horizontal"
+                app:layout_constraintTop_toBottomOf="@+id/video_btn"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/video_recyclerview"
+                android:layout_width="0dp"
+                android:layout_height="100dp"
+                android:layout_margin="20dp"
+                android:orientation="horizontal"
+                app:layout_constraintTop_toBottomOf="@+id/video_btn"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+            <TextView
+                android:id="@+id/step_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@string/step_title"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                app:layout_constraintTop_toBottomOf="@+id/video_recyclerview"
+                app:layout_constraintStart_toStartOf="@+id/edit_title"/>
+
+            <EditText
+                android:id="@+id/edit_title"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:ems="18"
+                android:hint="@string/type_word"
+                android:inputType="text"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.502"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/step_title" />
+
+            <TextView
+                android:id="@+id/step_description"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@string/step_description"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                app:layout_constraintTop_toBottomOf="@+id/edit_title"
+                app:layout_constraintStart_toStartOf="@+id/edit_description"/>
+
+            <EditText
+                android:id="@+id/edit_description"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_marginTop="15dp"
+                android:layout_marginBottom="10dp"
+                android:ems="18"
+                android:hint="@string/type_word"
+                android:inputType="textMultiLine"
+                android:scrollHorizontally="false"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:gravity="start"
+                android:background="@drawable/filled_round_component"
+                android:imeOptions="flagNoFullscreen"
+                android:focusableInTouchMode="true"
+                android:focusable="true"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.502"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/step_description"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.core.widget.NestedScrollView>
 
     <Button
         android:id="@+id/add_btn"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="50dp"
         android:layout_marginBottom="10dp"
         android:insetTop="0dp"
         android:insetBottom="0dp"
         android:text="1단계 스텝 추가하기"
         android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="@id/edit_description"
-        app:layout_constraintStart_toStartOf="@id/edit_description"
+        android:textSize="15sp"
+        android:ems="18"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
