@@ -2,6 +2,7 @@ package com.swef.cookcode
 
 import android.content.Context
 import android.graphics.Rect
+import android.media.MediaMetadataRetriever
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -12,7 +13,9 @@ import android.widget.EditText
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.swef.cookcode.adapter.StepImageRecyclerviewAdapter
+import com.swef.cookcode.adapter.StepVideoRecyclerviewAdapter
 import com.swef.cookcode.data.StepImageData
+import com.swef.cookcode.data.StepVideoData
 import com.swef.cookcode.databinding.ActivityRecipeStepBinding
 
 class RecipeStepActivity : AppCompatActivity() {
@@ -20,10 +23,12 @@ class RecipeStepActivity : AppCompatActivity() {
     private lateinit var binding : ActivityRecipeStepBinding
 
     // Recyclerview에 넘겨줄 data
-    private val datas = mutableListOf<StepImageData>()
+    private val imageDatas = mutableListOf<StepImageData>()
+    private val videoDatas = mutableListOf<StepVideoData>()
 
     // RecyclerView Adapter 전역 변수
     private lateinit var stepImageRecyclerviewAdapter: StepImageRecyclerviewAdapter
+    private lateinit var stepVideoRecyclerviewAdapter: StepVideoRecyclerviewAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,7 +36,8 @@ class RecipeStepActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         // recyclerview init
-        initRecycler()
+        initImageRecycler()
+        initVideoRecycler()
 
         // 스텝 설명 view init
         initDescriptionTextBox()
@@ -110,8 +116,8 @@ class RecipeStepActivity : AppCompatActivity() {
         }
     }
 
-    // RecyclerAdapter 초기화
-    private fun initRecycler() {
+    // imageRecyclerAdapter 초기화
+    private fun initImageRecycler() {
         // Recyclerview에서 컴포넌트가 갤러리에서 이미지를 불러올 수 있도록 하는 launcher 구현
         // adapter에서는 registerForActivityResult를 사용할 수 없음
         val pickImageLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
@@ -125,13 +131,13 @@ class RecipeStepActivity : AppCompatActivity() {
         binding.imageRecyclerview.adapter = stepImageRecyclerviewAdapter
 
         // 초기 데이터는 없음
-        datas.apply {
+        imageDatas.apply {
             add(StepImageData(null))
             add(StepImageData(null))
             add(StepImageData(null))
         }
 
-        stepImageRecyclerviewAdapter.datas = datas
+        stepImageRecyclerviewAdapter.datas = imageDatas
         // data가 변경되었다는 것을 알림
         stepImageRecyclerviewAdapter.notifyDataSetChanged()
     }
@@ -139,13 +145,66 @@ class RecipeStepActivity : AppCompatActivity() {
     // Image 선택 시 recyclerview 업데이트
     private fun updateRecyclerImage(imageUri: Uri) {
         for(i: Int in 0..2) {
-            if(datas[i].imageUri == null) {
+            if(imageDatas[i].imageUri == null) {
                 // 현재 이미지가 추가되어있지 않은 position에 이미지 추가
-                datas.removeAt(i)
-                datas.add(i, StepImageData(imageUri))
+                imageDatas.removeAt(i)
+                imageDatas.add(i, StepImageData(imageUri))
 
                 // recyclerview adapter에 해당 위치 알림
                 stepImageRecyclerviewAdapter.notifyItemChanged(i)
+                return
+            }
+        }
+    }
+
+    private fun initVideoRecycler(){
+        // 동영상을 불러오는 launcher를 구현하여 adapter에 넘겨줌
+        val pickVideoLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) {
+            uri: Uri? -> getVideoInfoAndThumbnail(uri!!)
+        }
+
+        stepVideoRecyclerviewAdapter = StepVideoRecyclerviewAdapter(pickVideoLauncher)
+        binding.videoRecyclerview.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        binding.videoRecyclerview.adapter = stepVideoRecyclerviewAdapter
+
+        videoDatas.apply {
+            add(StepVideoData(null, null, null, null, null, null))
+            add(StepVideoData(null, null, null, null, null, null))
+        }
+
+        stepVideoRecyclerviewAdapter.datas = videoDatas
+        stepVideoRecyclerviewAdapter.notifyDataSetChanged()
+    }
+
+    // 동영상을 가져왔을 때 썸네일을 뽑아주는 함수
+    private fun getVideoInfoAndThumbnail(uri: Uri) {
+        // media meta data retriever를 쓰면 간단하게 영상의 정보를 뽑을 수 있다
+        val mediaMetadataRetriever = MediaMetadataRetriever()
+
+        // 영상 길이
+        val durationStr = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+        val duration = durationStr?.toLong() ?: 0
+
+        // 영상 가로, 세로 폭
+        val widthStr = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)
+        val width = widthStr?.toInt() ?: 0
+        val heightStr = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)
+        val height = heightStr?.toInt() ?: 0
+
+        // 0초 일때 사진을 썸네일로 가져옴
+        val bitmap = mediaMetadataRetriever.getFrameAtTime(0)
+
+        // videodata로 return해준다
+        val video = StepVideoData(bitmap, uri.toString(), uri, duration, width, height)
+
+        for(i: Int in 0..2) {
+            if(videoDatas[i].uri == null) {
+                // 현재 이미지가 추가되어있지 않은 position에 이미지 추가
+                videoDatas.removeAt(i)
+                videoDatas.add(i, video)
+
+                // recyclerview adapter에 해당 위치 알림
+                stepVideoRecyclerviewAdapter.notifyItemChanged(i)
                 return
             }
         }
