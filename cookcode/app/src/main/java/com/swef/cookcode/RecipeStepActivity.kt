@@ -10,6 +10,7 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.swef.cookcode.adapter.StepImageRecyclerviewAdapter
 import com.swef.cookcode.data.StepImageData
 import com.swef.cookcode.databinding.ActivityRecipeStepBinding
@@ -120,6 +121,7 @@ class RecipeStepActivity : AppCompatActivity() {
 
         // Recyclerview 초기화
         stepImageRecyclerviewAdapter = StepImageRecyclerviewAdapter(pickImageLauncher)
+        binding.imageRecyclerview.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         binding.imageRecyclerview.adapter = stepImageRecyclerviewAdapter
 
         // 초기 데이터는 없음
@@ -144,6 +146,7 @@ class RecipeStepActivity : AppCompatActivity() {
 
                 // recyclerview adapter에 해당 위치 알림
                 stepImageRecyclerviewAdapter.notifyItemChanged(i)
+                return
             }
         }
     }
