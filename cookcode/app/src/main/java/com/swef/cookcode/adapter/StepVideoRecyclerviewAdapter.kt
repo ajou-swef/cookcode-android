@@ -28,6 +28,15 @@ class StepVideoRecyclerviewAdapter(
 
     override fun getItemCount(): Int = datas.size
 
+    fun getData(): Array<String> {
+        val uriData = mutableListOf<String>()
+        for(i: Int in 0..1){
+            if(datas[i].uri != null)
+                uriData.add(datas[i].uri.toString())
+        }
+        return uriData.toTypedArray()
+    }
+
     override fun onBindViewHolder(holder: StepVideoRecyclerviewAdapter.ViewHolder, position: Int) {
         holder.bind(datas[position])
     }

@@ -9,13 +9,22 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import com.swef.cookcode.data.StepData
 import com.swef.cookcode.databinding.ActivityRecipeFormBinding
 
 
 class RecipeFormActivity : AppCompatActivity() {
     private lateinit var binding : ActivityRecipeFormBinding
+
+    private val stepDatas = mutableListOf<StepData>()
+
+    private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
+
+    // 스텝 단계를 위한 변수
+    private var numberOfStep = 1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,6 +44,8 @@ class RecipeFormActivity : AppCompatActivity() {
 
         // 뒤로가기 버튼 클릭시 activity 종료
         binding.beforeArrow.setOnClickListener {
+            // 서버에 업로드한 이미지, 영상 삭제
+
             finish()
         }
 
@@ -56,12 +67,36 @@ class RecipeFormActivity : AppCompatActivity() {
         // 스텝 추가 버튼 클릭시 스텝 제작 화면 띄우기
         binding.addStep.setOnClickListener {
             val intent = Intent(this, RecipeStepActivity::class.java)
-            startActivity(intent)
+            intent.putExtra("step_number", numberOfStep)
+
+            activityResultLauncher.launch(intent)
         }
 
         // 미리보기 버튼 클릭시 미리보기 화면 띄우기
         binding.preview.setOnClickListener {
 
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        activityResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                // 받은 데이터 처리
+                if (result.data != null) {
+                    val stepNumber = result.data?.getIntExtra("step_number", 1)!!
+                    val stepImages = result.data?.getStringArrayExtra("images")!!.toList()
+                    val stepVideos = result.data?.getStringArrayExtra("videos")!!.toList()
+                    val stepTitle = result.data?.getStringExtra("title")!!
+                    val stepDescription = result.data?.getStringExtra("description")!!
+
+                    val stepData = StepData(
+                        stepImages, stepVideos, stepTitle, stepDescription, stepNumber)
+
+                    stepDatas.add(stepData)
+                    numberOfStep = stepNumber + 1
+                }
+            }
         }
     }
 
@@ -82,5 +117,4 @@ class RecipeFormActivity : AppCompatActivity() {
         }
         return super.dispatchTouchEvent(event)
     }
-
 }

@@ -30,6 +30,16 @@ class StepImageRecyclerviewAdapter(
 
     override fun getItemCount(): Int = datas.size
 
+    // step 생성시 recyclerview에 담긴 이미지 정보들 반환
+    fun getData(): Array<String> {
+        val uriData = mutableListOf<String>()
+        for(i: Int in 0..2){
+            if(datas[i].imageUri != null)
+                uriData.add(datas[i].imageUri.toString())
+            }
+        return uriData.toTypedArray()
+    }
+
     // 이 명령어를 통해 recyclerview에 data를 넣어준다
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.bind(datas[position])

@@ -1,6 +1,7 @@
 package com.swef.cookcode
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Rect
 import android.graphics.drawable.Drawable
@@ -10,6 +11,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -35,10 +37,19 @@ class RecipeStepActivity : AppCompatActivity() {
     private lateinit var stepImageRecyclerviewAdapter: StepImageRecyclerviewAdapter
     private lateinit var stepVideoRecyclerviewAdapter: StepVideoRecyclerviewAdapter
 
+    private var titleTyped = false
+    private var descriptionTyped = false
+    private var imageUploaded = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityRecipeStepBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // 스텝 단계 넘버링
+        val stepNumber = intent.getIntExtra("step_number", 1)
+        binding.numberOfStep.text = stepNumber.toString() + "단계"
+        binding.addBtn.text = stepNumber.toString() + "단계 스텝 추가하기"
 
         // recyclerview init
         initImageRecycler()
@@ -79,6 +90,30 @@ class RecipeStepActivity : AppCompatActivity() {
         // 스텝 추가 버튼
         binding.addBtn.setOnClickListener {
 
+            if (testInfoTyped()) {
+                // 스텝의 정보들 불러오기
+                val imageData = stepImageRecyclerviewAdapter.getData()
+                val videoData = stepVideoRecyclerviewAdapter.getData()
+                val title = binding.editTitle.text.toString()
+                val description = binding.editDescription.text.toString()
+
+                // recipe form activity로 돌아갈때 intent로 정보 넘겨줌
+                val intent = Intent()
+                intent.putExtra("images", imageData)
+                intent.putExtra("videos", videoData)
+                intent.putExtra("title", title)
+                intent.putExtra("description", description)
+                intent.putExtra("step_number", stepNumber)
+
+                Toast.makeText(this, stepNumber.toString() + "단계 스텝 작성 완료", Toast.LENGTH_SHORT)
+                    .show()
+                setResult(RESULT_OK, intent)
+                finish()
+            }
+            else {
+                Toast.makeText(this, "이미지 한장, 제목, 설명은 필수입니다.", Toast.LENGTH_SHORT)
+                    .show()
+            }
         }
     }
 
@@ -210,5 +245,13 @@ class RecipeStepActivity : AppCompatActivity() {
                     }
                 }
             })
+    }
+
+    private fun testInfoTyped(): Boolean {
+        titleTyped = !binding.editTitle.text.isNullOrEmpty()
+        descriptionTyped = !binding.editDescription.text.isNullOrEmpty()
+        imageUploaded = stepImageRecyclerviewAdapter.getData().isNotEmpty()
+
+        return titleTyped && descriptionTyped && imageUploaded
     }
 }
