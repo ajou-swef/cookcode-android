@@ -1,22 +1,27 @@
 package com.swef.cookcode
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.Rect
-import android.media.MediaMetadataRetriever
+import android.graphics.drawable.Drawable
 import android.net.Uri
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
 import com.swef.cookcode.adapter.StepImageRecyclerviewAdapter
 import com.swef.cookcode.adapter.StepVideoRecyclerviewAdapter
 import com.swef.cookcode.data.StepImageData
 import com.swef.cookcode.data.StepVideoData
 import com.swef.cookcode.databinding.ActivityRecipeStepBinding
+
 
 class RecipeStepActivity : AppCompatActivity() {
 
@@ -168,8 +173,8 @@ class RecipeStepActivity : AppCompatActivity() {
         binding.videoRecyclerview.adapter = stepVideoRecyclerviewAdapter
 
         videoDatas.apply {
-            add(StepVideoData(null, null, null, null, null, null))
-            add(StepVideoData(null, null, null, null, null, null))
+            add(StepVideoData(null, null))
+            add(StepVideoData(null, null))
         }
 
         stepVideoRecyclerviewAdapter.datas = videoDatas
@@ -178,35 +183,32 @@ class RecipeStepActivity : AppCompatActivity() {
 
     // 동영상을 가져왔을 때 썸네일을 뽑아주는 함수
     private fun getVideoInfoAndThumbnail(uri: Uri) {
-        // media meta data retriever를 쓰면 간단하게 영상의 정보를 뽑을 수 있다
-        val mediaMetadataRetriever = MediaMetadataRetriever()
+        // Glide를 사용해서 thumbnail을 가져온다.
+        Glide.with(this)
+            .asBitmap()
+            .load(uri)
+            .into(object: CustomTarget<Bitmap>() {
+                override fun onLoadCleared(placeholder: Drawable?) {
+                    // 아래 resource가 들어간 뷰가 사라지는 등의 경우의 처리
+                }
 
-        // 영상 길이
-        val durationStr = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
-        val duration = durationStr?.toLong() ?: 0
+                override fun onResourceReady(thumbnail: Bitmap, transition: Transition<in Bitmap>?) {
+                    // 얻어낸 Bitmap 자원을 resource를 통하여 접근
+                    // videodata로 return해준다
+                    val video = StepVideoData(thumbnail, uri)
 
-        // 영상 가로, 세로 폭
-        val widthStr = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)
-        val width = widthStr?.toInt() ?: 0
-        val heightStr = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)
-        val height = heightStr?.toInt() ?: 0
+                    for(i: Int in 0..2) {
+                        if(videoDatas[i].uri == null) {
+                            // 현재 비디오가 추가되어있지 않은 position에 비디오 추가
+                            videoDatas.removeAt(i)
+                            videoDatas.add(i, video)
 
-        // 0초 일때 사진을 썸네일로 가져옴
-        val bitmap = mediaMetadataRetriever.getFrameAtTime(0)
-
-        // videodata로 return해준다
-        val video = StepVideoData(bitmap, uri.toString(), uri, duration, width, height)
-
-        for(i: Int in 0..2) {
-            if(videoDatas[i].uri == null) {
-                // 현재 이미지가 추가되어있지 않은 position에 이미지 추가
-                videoDatas.removeAt(i)
-                videoDatas.add(i, video)
-
-                // recyclerview adapter에 해당 위치 알림
-                stepVideoRecyclerviewAdapter.notifyItemChanged(i)
-                return
-            }
-        }
+                            // recyclerview adapter에 해당 위치 알림
+                            stepVideoRecyclerviewAdapter.notifyItemChanged(i)
+                            return
+                        }
+                    }
+                }
+            })
     }
 }

@@ -59,19 +59,20 @@ class StepVideoRecyclerviewAdapter(
 
         private fun showPopupMenu(view: View, item: StepVideoData) {
             val popupMenu = PopupMenu(view.context, view)
-            popupMenu.menuInflater.inflate(R.menu.image_popup_menu, popupMenu.menu)
+            popupMenu.menuInflater.inflate(R.menu.video_popup_menu, popupMenu.menu)
 
             popupMenu.setOnMenuItemClickListener { menuItem ->
                 when (menuItem.itemId) {
-                    // 이미지 추가 버튼 클릭 시 이미지 불러오기
-                    R.id.update_image -> {
-                        pickVideoLauncher.launch("*/image")
+                    // 동영상 추가 버튼 클릭 시 동영상 불러오기
+                    R.id.update_video -> {
+                        pickVideoLauncher.launch("*/video")
                         true
                     }
-                    // 이미지 삭제 버튼 클릭 시 imageUri 삭제 및 기본 이미지로 변경
-                    R.id.delete_image -> {
+                    // 동영상 삭제 버튼 클릭 시 영상 정보 삭제 및 기본 이미지로 변경
+                    R.id.delete_video -> {
+                        item.thumbnail = null
                         item.uri = null
-                        binding.video.setImageURI(null)
+                        binding.video.setImageBitmap(null)
                         binding.video.setBackgroundResource(R.drawable.upload_image)
                         true
                     }

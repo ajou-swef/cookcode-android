@@ -3,10 +3,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         app:showAsAction="ifRoom"
-        android:id="@+id/update_image"
-        android:title="@string/update_image" />
+        android:id="@+id/update_video"
+        android:title="@string/update_video" />
     <item
         app:showAsAction="ifRoom"
-        android:id="@+id/delete_image"
-        android:title="@string/delete_image" />
+        android:id="@+id/delete_video"
+        android:title="@string/delete_video" />
 </menu>
