@@ -46,15 +46,14 @@ class StepVideoRecyclerviewAdapter(
     ): RecyclerView.ViewHolder(binding.root) {
         fun bind(item: StepVideoData) {
             binding.video.setOnClickListener {
-                binding.video.setOnClickListener {
-                    if(item.uri != null) {
-                        showPopupMenu(binding.video, item)
-                    }
-                    else {
-                        pickVideoLauncher.launch("*/video")
-                    }
+                if(item.uri != null) {
+                    showPopupMenu(binding.video, item)
+                }
+                else {
+                    pickVideoLauncher.launch("*/video")
                 }
             }
+
 
             if(item.thumbnail != null){
                 binding.video.setBackgroundResource(0)

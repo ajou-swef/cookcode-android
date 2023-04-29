@@ -7,6 +7,7 @@ import android.graphics.Rect
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -104,6 +105,7 @@ class RecipeStepActivity : AppCompatActivity() {
                 intent.putExtra("title", title)
                 intent.putExtra("description", description)
                 intent.putExtra("step_number", stepNumber)
+                intent.putExtra("type", "add")
 
                 Toast.makeText(this, stepNumber.toString() + "단계 스텝 작성 완료", Toast.LENGTH_SHORT)
                     .show()
@@ -163,6 +165,7 @@ class RecipeStepActivity : AppCompatActivity() {
         val pickImageLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             // 받아온 uri를 datas에 추가하고, 업데이트
             updateRecyclerImage(uri!!)
+            Log.d("data_uri", uri.toString())
         }
 
         // Recyclerview 초기화
