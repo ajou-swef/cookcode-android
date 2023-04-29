@@ -38,6 +38,7 @@ class RecipeStepActivity : AppCompatActivity() {
     private lateinit var stepImageRecyclerviewAdapter: StepImageRecyclerviewAdapter
     private lateinit var stepVideoRecyclerviewAdapter: StepVideoRecyclerviewAdapter
 
+    // 정보 입력 완료 테스트를 위한 변수
     private var titleTyped = false
     private var descriptionTyped = false
     private var imageUploaded = false

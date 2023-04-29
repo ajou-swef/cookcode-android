@@ -11,6 +11,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
+import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -21,7 +22,6 @@ import com.swef.cookcode.adapter.StepRecyclerviewAdapter
 import com.swef.cookcode.data.StepData
 import com.swef.cookcode.databinding.ActivityRecipeFormBinding
 import com.swef.cookcode.`interface`.StepOnClickListener
-
 
 class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
     private lateinit var binding : ActivityRecipeFormBinding
@@ -34,6 +34,12 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
 
     // 스텝 단계를 위한 변수
     private var numberOfStep = 1
+
+    // 정보 입력 완료 테스트를 위한 변수
+    private var titleTyped = false
+    private var descriptionTyped = false
+    private var essentialIngredientSelected = true
+    private var stepExist = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,6 +80,7 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
 
         }
 
+
         // 추가 재료 추가 버튼 클릭시 재료 추가
         binding.addAdditionalIngredient.setOnClickListener {
 
@@ -94,7 +101,40 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
 
         // 미리보기 버튼 클릭시 미리보기 화면 띄우기
         binding.preview.setOnClickListener {
+            // 제목 입력 여부
+            titleTyped = !binding.editRecipeName.text.isNullOrEmpty()
+            // 설명 입력 여부
+            descriptionTyped = !binding.editDescription.text.isNullOrEmpty()
+            // 필수재료 등록 여부
 
+            if(testInfoTyped()){
+                val intent = Intent(this, RecipePreviewActivity::class.java)
+                val steps = numberOfStep - 1
+
+                // 레시피 정보 전달
+                intent.putExtra("recipe_title", binding.editRecipeName.text)
+                intent.putExtra("recipe_description", binding.editDescription.text)
+                intent.putExtra("main_image", recipeImage.toString())
+                // 필수재료, 추가재료 정보 전달
+
+                // 스텝 개수를 알려줌
+                intent.putExtra("index", steps)
+
+                // 스텝 별 정보 전달, tag에 각 번호를 달아서 해당 스텝인 것을 알려줌
+                for (i: Int in 0 until steps) {
+                    intent.putExtra("images$i", stepDatas[i].imageData.toTypedArray())
+                    intent.putExtra("videos$i", stepDatas[i].videoData?.toTypedArray())
+                    intent.putExtra("title$i", stepDatas[i].title)
+                    intent.putExtra("description$i", stepDatas[i].description)
+                    intent.putExtra("step_number$i", stepDatas[i].numberOfStep)
+                }
+
+                startActivity(intent)
+            }
+            else {
+                Toast.makeText(this, "추가 재료를 제외한 항목은 모두 입력되어야 합니다.", Toast.LENGTH_SHORT)
+                    .show()
+            }
         }
     }
 
@@ -127,6 +167,9 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
                         deleteStep(stepNumber)
                     }
 
+                    // 스텝이 하나라도 있으면 업로드 가능
+                    stepExist = stepDatas.isNotEmpty()
+
                     stepRecyclerviewAdapter.datas = stepDatas
                     stepRecyclerviewAdapter.notifyItemChanged(stepData.numberOfStep)
                 }
@@ -152,6 +195,7 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
         return super.dispatchTouchEvent(event)
     }
 
+    // 스텝 수정 단계 시 클릭한 단계의 정보를 넘겨주는 함수
     override fun stepOnClick(position: Int){
         val stepData = stepDatas[position - 1]
         val intent = Intent(this, RecipeStepModifyActivity::class.java)
@@ -164,6 +208,7 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
         activityResultLauncher.launch(intent)
     }
 
+    // 스텝 삭제하는 함수
     private fun deleteStep(position: Int){
         // 삭제 해야할 image, video 정보 저장
 
@@ -177,5 +222,10 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
                 stepRecyclerviewAdapter.notifyItemChanged(i)
             }
         }
+    }
+
+    // 필수 정보 입력 여부 판단
+    private fun testInfoTyped(): Boolean {
+        return titleTyped && descriptionTyped && essentialIngredientSelected && stepExist
     }
 }
