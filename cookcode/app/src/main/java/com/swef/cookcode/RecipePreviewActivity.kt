@@ -1,6 +1,5 @@
 package com.swef.cookcode
 
-import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -18,7 +17,6 @@ class RecipePreviewActivity : AppCompatActivity() {
         // step 정보 담아두는 변수
         val datas = mutableListOf<StepData>()
 
-        val intent = Intent()
         // 스텝의 개수
         val steps = intent.getIntExtra("index", 0)
 
@@ -35,7 +33,7 @@ class RecipePreviewActivity : AppCompatActivity() {
             }
         }
 
-        Log.d("data_size", datas.size.toString())
+        Log.d("data_size", "size $datas")
 
     }
 }

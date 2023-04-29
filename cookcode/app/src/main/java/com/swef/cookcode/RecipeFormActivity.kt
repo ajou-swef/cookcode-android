@@ -41,6 +41,18 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
     private var essentialIngredientSelected = true
     private var stepExist = false
 
+    // 미리보기 단계에서 해당 스텝 수정을 위한 스텝 단계 정보 불러오기
+    private val getResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == RESULT_OK) {
+            val data: Intent? = result.data
+            val stepNumber = data?.getIntExtra("step_number", -1)
+
+            if (stepNumber != -1) {
+                stepOnClick(stepNumber!!)
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityRecipeFormBinding.inflate(layoutInflater)
@@ -129,7 +141,7 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
                     intent.putExtra("step_number$i", stepDatas[i].numberOfStep)
                 }
 
-                startActivity(intent)
+                getResult.launch(intent)
             }
             else {
                 Toast.makeText(this, "추가 재료를 제외한 항목은 모두 입력되어야 합니다.", Toast.LENGTH_SHORT)
