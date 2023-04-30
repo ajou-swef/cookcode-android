@@ -44,7 +44,7 @@ class RecipeStepModifyActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         // 스텝 단계 넘버링
-        val stepNumber = intent.getIntExtra("step_number", 1)
+        val stepNumber = intent.getIntExtra("step_number", -1)
         binding.numberOfStep.text = stepNumber.toString() + "단계"
         binding.modifyBtn.text = stepNumber.toString() + "단계 스텝 수정하기"
 
@@ -83,6 +83,7 @@ class RecipeStepModifyActivity : AppCompatActivity() {
         binding.deleteBtn.setOnClickListener {
             intent = Intent()
             intent.putExtra("type", "delete")
+            intent.putExtra("step_number", stepNumber)
 
             Toast.makeText(this, stepNumber.toString() + "단계 스텝 삭제 완료", Toast.LENGTH_SHORT)
                 .show()

@@ -48,7 +48,7 @@ class RecipeStepActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         // 스텝 단계 넘버링
-        val stepNumber = intent.getIntExtra("step_number", 1)
+        val stepNumber = intent.getIntExtra("step_number", -1)
         binding.numberOfStep.text = stepNumber.toString() + "단계"
         binding.addBtn.text = stepNumber.toString() + "단계 스텝 추가하기"
 

@@ -34,7 +34,7 @@ class StepRecyclerviewAdapter(
         fun bind(item: StepData){
             binding.stepText.text = item.numberOfStep.toString() + "단계"
             binding.stepText.setOnClickListener {
-                listener.stepOnClick(item.numberOfStep)
+                listener.stepOnClick(item.numberOfStep - 1)
             }
         }
 

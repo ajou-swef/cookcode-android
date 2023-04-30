@@ -7,6 +7,8 @@ import android.content.pm.PackageManager
 import android.graphics.Rect
 import android.net.Uri
 import android.os.Bundle
+import android.util.AttributeSet
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -108,7 +110,9 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
 
         // 스텝 recyclerview 초기화
         stepRecyclerviewAdapter = StepRecyclerviewAdapter(this)
-        binding.steps.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+        // Inconsistency detected error 버그 해결을 위한 wrapper
+        val linearLayoutManagerWrapper = LinearLayoutManagerWrapper(this, LinearLayoutManager.VERTICAL, false)
+        binding.steps.layoutManager = linearLayoutManagerWrapper
         binding.steps.adapter = stepRecyclerviewAdapter
 
         // 미리보기 버튼 클릭시 미리보기 화면 띄우기
@@ -155,8 +159,8 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
         activityResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK) {
                 // 받은 데이터 처리
-                if (result.data != null) {
-                    val stepNumber = result.data?.getIntExtra("step_number", 1)!!
+                if (result.data != null && !result.data?.getStringExtra("type").equals("delete")) {
+                    val stepNumber = result.data?.getIntExtra("step_number", -1)!!
                     val stepImages = result.data?.getStringArrayExtra("images")!!.toList()
                     val stepVideos = result.data?.getStringArrayExtra("videos")!!.toList()
                     val stepTitle = result.data?.getStringExtra("title")!!
@@ -172,19 +176,23 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
                     }
                     // 스텝 수정 단계 시 해당 step 정보만 수정
                     else if (result.data?.getStringExtra("type").equals("modify")) {
-                        stepDatas[stepNumber] = stepData
+                        stepDatas[stepNumber - 1] = stepData
                     }
-                    // 스텝 삭제 시 해당 스텝 삭제
-                    else {
-                        deleteStep(stepNumber)
-                    }
-
-                    // 스텝이 하나라도 있으면 업로드 가능
-                    stepExist = stepDatas.isNotEmpty()
 
                     stepRecyclerviewAdapter.datas = stepDatas
                     stepRecyclerviewAdapter.notifyItemChanged(stepData.numberOfStep)
                 }
+                // 스텝 삭제 시 해당 스텝 삭제
+                else {
+                    val stepNumber = result.data?.getIntExtra("step_number", 1)!!
+                    deleteStep(stepNumber - 1)
+
+                    stepRecyclerviewAdapter.datas = stepDatas
+                    stepRecyclerviewAdapter.notifyItemChanged(stepNumber)
+                }
+
+                // 스텝이 하나라도 있으면 업로드 가능
+                stepExist = stepDatas.isNotEmpty()
             }
         }
     }
@@ -209,7 +217,7 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
 
     // 스텝 수정 단계 시 클릭한 단계의 정보를 넘겨주는 함수
     override fun stepOnClick(position: Int){
-        val stepData = stepDatas[position - 1]
+        val stepData = stepDatas[position]
         val intent = Intent(this, RecipeStepModifyActivity::class.java)
         intent.putExtra("step_images", stepData.imageData.toTypedArray())
         intent.putExtra("step_videos", stepData.videoData?.toTypedArray())
@@ -222,14 +230,15 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
 
     // 스텝 삭제하는 함수
     private fun deleteStep(position: Int){
+        Log.d("data_size", position.toString())
         // 삭제 해야할 image, video 정보 저장
 
         // 단계 삭제
-        stepDatas.removeAt(position - 1)
+        stepDatas.removeAt(position)
 
         // 삭제한 단계 이후 단계가 존재한다면 단계 넘버링 수정
-        if(position - 1 in stepDatas.indices){
-            for(i: Int in position - 1..stepDatas.size){
+        if(stepDatas.indices.last > 0 && position in stepDatas.indices){
+            for(i: Int in position..stepDatas.size){
                 stepDatas[i].numberOfStep -= 1
                 stepRecyclerviewAdapter.notifyItemChanged(i)
             }
@@ -239,5 +248,16 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
     // 필수 정보 입력 여부 판단
     private fun testInfoTyped(): Boolean {
         return titleTyped && descriptionTyped && essentialIngredientSelected && stepExist
+    }
+}
+
+
+// Inconsistency detected 버그 문제 해결을 위한 솔루션 참조
+class LinearLayoutManagerWrapper: LinearLayoutManager {
+    constructor(context: Context) : super(context) {}
+    constructor(context: Context, orientation: Int, reverseLayout: Boolean) : super(context, orientation, reverseLayout) {}
+    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int, defStyleRes: Int) : super(context, attrs, defStyleAttr, defStyleRes) {}
+    override fun supportsPredictiveItemAnimations(): Boolean {
+        return false
     }
 }
