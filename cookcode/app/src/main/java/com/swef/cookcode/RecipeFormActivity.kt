@@ -243,6 +243,7 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
                 stepRecyclerviewAdapter.notifyItemChanged(i)
             }
         }
+        numberOfStep -= 1
     }
 
     // 필수 정보 입력 여부 판단
