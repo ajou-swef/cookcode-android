@@ -107,6 +107,8 @@ class RecipeStepActivity : AppCompatActivity() {
                 intent.putExtra("step_number", stepNumber)
                 intent.putExtra("type", "add")
 
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+
                 Toast.makeText(this, stepNumber.toString() + "단계 스텝 작성 완료", Toast.LENGTH_SHORT)
                     .show()
                 setResult(RESULT_OK, intent)

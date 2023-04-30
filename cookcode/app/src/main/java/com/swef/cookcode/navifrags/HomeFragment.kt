@@ -1,6 +1,7 @@
 package com.swef.cookcode.navifrags
 
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -45,6 +46,7 @@ class HomeFragment : Fragment() {
                     R.id.cookie -> true
                     R.id.recipe -> {
                         val nextIntent = Intent(activity, RecipeFormActivity::class.java)
+                        nextIntent.addFlags(FLAG_ACTIVITY_CLEAR_TOP)
                         startActivity(nextIntent)
                         true
                     }

@@ -145,6 +145,8 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
                     intent.putExtra("step_number$i", stepDatas[i].numberOfStep)
                 }
 
+                // 미리보기 종료 시 home activity를 제외한 액티비티는 모두 종료
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 getResult.launch(intent)
             }
             else {

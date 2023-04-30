@@ -3,6 +3,7 @@ package com.swef.cookcode
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.Toast
 import androidx.viewpager2.widget.ViewPager2
 import com.swef.cookcode.adapter.StepPreviewRecyclerviewAdapter
 import com.swef.cookcode.data.StepData
@@ -62,7 +63,10 @@ class RecipePreviewActivity : AppCompatActivity() {
 
         // 레시피 업로드
         binding.btnUpload.setOnClickListener {
-
+            // 서버에 각 스텝 정보 업로드
+            Toast.makeText(this, "정상적으로 업로드 되었습니다.", Toast.LENGTH_SHORT).show()
+            val intent = Intent(this, HomeActivity::class.java)
+            startActivity(intent)
         }
 
         // 미리보기 단계에서 수정
