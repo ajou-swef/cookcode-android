@@ -47,24 +47,6 @@ class RecipePreviewActivity : AppCompatActivity() {
             orientation = ViewPager2.ORIENTATION_HORIZONTAL
         }
 
-        // page 이동시 양 옆에 이전 스텝이 보이도록 하기
-        val offsetBetweenPages = resources.getDimensionPixelOffset(R.dimen.offsetBetweenPages).toFloat()
-        binding.viewpager.setPageTransformer { page, position ->
-            val myOffset = position * -(2 * offsetBetweenPages)
-            if (position < -1) {
-                page.translationX = -myOffset
-            } else if (position <= 1) {
-                // Paging 시 Y축 Animation 배경색을 약간 연하게 처리
-                val scaleFactor = 0.8f.coerceAtLeast(1 - kotlin.math.abs(position))
-                page.translationX = myOffset
-                page.scaleY = scaleFactor
-                page.alpha = scaleFactor
-            } else {
-                page.alpha = 0f
-                page.translationX = myOffset
-            }
-        }
-
         binding.viewpager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             // Paging 완료되면 호출
             override fun onPageSelected(position: Int) {

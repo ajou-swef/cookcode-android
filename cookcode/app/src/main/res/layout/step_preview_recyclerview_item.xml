@@ -2,65 +2,64 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/gray_bc"
+    android:background="@drawable/preview_component"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <com.swef.cookcode.data.host.NestedScrollableHost
+        android:id="@+id/viewpager_host"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_margin="30dp"
-        android:elevation="15dp"
-        android:background="@drawable/preview_component">
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent">
 
         <androidx.viewpager2.widget.ViewPager2
             android:id="@+id/media_viewpager"
             android:layout_width="match_parent"
             android:layout_height="200dp"
-            app:layout_constraintTop_toTopOf="parent"/>
+            android:nestedScrollingEnabled="true"/>
 
-        <TextView
-            android:id="@+id/step_number"
-            android:layout_marginStart="5dp"
-            android:layout_marginTop="10dp"
-            android:text="1단계 : "
-            android:textStyle="bold"
-            android:textColor="@color/black"
-            android:textSize="20sp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@+id/media_viewpager"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/step_title"/>
+    </com.swef.cookcode.data.host.NestedScrollableHost>
 
-        <TextView
-            android:id="@+id/step_title"
-            android:text="요리를 배워보자"
-            android:textStyle="bold"
-            android:textColor="@color/black"
-            android:textSize="20sp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintTop_toTopOf="@+id/step_number"
-            app:layout_constraintStart_toEndOf="@id/step_number"/>
+    <TextView
+        android:id="@+id/step_number"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="10dp"
+        android:text="1단계 : "
+        android:textStyle="bold"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/viewpager_host"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/step_title"/>
 
-        <TextView
-            android:id="@+id/step_description"
-            android:layout_marginTop="20dp"
-            android:layout_marginStart="10dp"
-            android:layout_marginEnd="10dp"
-            android:layout_marginBottom="10dp"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:text="안녕하세요 오늘은 요리를 배워볼거에요 하하하하하하하하"
-            android:textSize="14sp"
-            android:textColor="@color/black"
-            android:scrollbars="vertical"
-            android:background="@drawable/filled_round_component"
-            app:layout_constraintTop_toBottomOf="@+id/step_number"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+    <TextView
+        android:id="@+id/step_title"
+        android:text="요리를 배워보자"
+        android:textStyle="bold"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="@+id/step_number"
+        app:layout_constraintStart_toEndOf="@id/step_number"/>
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    <TextView
+        android:id="@+id/step_description"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="10dp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:text="안녕하세요 오늘은 요리를 배워볼거에요 하하하하하하하하"
+        android:textSize="14sp"
+        android:textColor="@color/black"
+        android:scrollbars="vertical"
+        android:background="@drawable/filled_round_component"
+        app:layout_constraintTop_toBottomOf="@+id/step_number"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
