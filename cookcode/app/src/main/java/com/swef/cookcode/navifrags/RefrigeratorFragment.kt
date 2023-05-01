@@ -19,7 +19,7 @@ class RefrigeratorFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         _binding = FragmentRefrigeratorBinding.inflate(inflater, container, false)
         return binding.root
     }
