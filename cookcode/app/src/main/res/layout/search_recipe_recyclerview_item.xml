@@ -6,6 +6,7 @@
     android:padding="10dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@drawable/round_component_clicked">

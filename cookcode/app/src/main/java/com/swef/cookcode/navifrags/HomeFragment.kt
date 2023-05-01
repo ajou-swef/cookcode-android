@@ -12,6 +12,7 @@ import androidx.appcompat.widget.PopupMenu
 import androidx.fragment.app.Fragment
 import com.swef.cookcode.R
 import com.swef.cookcode.RecipeFormActivity
+import com.swef.cookcode.SearchActivity
 import com.swef.cookcode.databinding.FragmentHomeBinding
 
 
@@ -56,6 +57,12 @@ class HomeFragment : Fragment() {
 
             popupMenu.show()
         }
+
+        binding.btnSearch.setOnClickListener {
+            val nextIntent = Intent(activity, SearchActivity::class.java)
+            startActivity(nextIntent)
+        }
+
         return binding.root
     }
 
