@@ -1,15 +1,15 @@
-package com.swef.cookcode.navifrags
+package com.swef.cookcode.searchfrags
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.swef.cookcode.databinding.FragmentCookieBinding
+import com.swef.cookcode.databinding.FragmentSearchCookieBinding
 
-class CookieFragment : Fragment() {
+class SearchCookieFragment : Fragment() {
 
-    private var _binding: FragmentCookieBinding? = null
+    private var _binding: FragmentSearchCookieBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -20,7 +20,7 @@ class CookieFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        _binding = FragmentCookieBinding.inflate(inflater, container, false)
+        _binding = FragmentSearchCookieBinding.inflate(inflater, container, false)
         return binding.root
     }
 
