@@ -1,11 +1,14 @@
 package com.swef.cookcode.searchfrags
 
+import android.content.ContentResolver
+import android.content.res.Resources
+import android.net.Uri
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.net.toUri
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.swef.cookcode.R
 import com.swef.cookcode.adapter.SearchRecipeRecyclerviewAdapter
 import com.swef.cookcode.data.RecipeData
@@ -20,7 +23,6 @@ class SearchRecipeFragment : Fragment() {
     // 레시피 mock data
     private val recipeData = mutableListOf<RecipeData>()
     private val stepDatas = mutableListOf<StepData>()
-    private val exampleImageUri = "drawable://" + R.drawable.food_example
 
     private lateinit var recyclerViewAdapter: SearchRecipeRecyclerviewAdapter
 
@@ -33,25 +35,35 @@ class SearchRecipeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentSearchRecipeBinding.inflate(inflater, container, false)
+
+        // recipe에 들어가는 모든 사진은 drawable/foor_example로 대체
+        val res: Resources = resources
+        val uri = Uri.parse(
+            ContentResolver.SCHEME_ANDROID_RESOURCE +
+                    "://" + res.getResourcePackageName(R.drawable.food_example) +
+                    '/' + res.getResourceTypeName(R.drawable.food_example) +
+                    '/' + res.getResourceEntryName(R.drawable.food_example)
+        )
+
         stepDatas.apply {
             for(i: Int in 0..2) {
                 val imageDatas = mutableListOf<String>()
                 imageDatas.apply {
-                    add(exampleImageUri)
-                    add(exampleImageUri)
-                    add(exampleImageUri)
+                    add(uri.toString())
                 }
-                add(StepData(imageDatas, null, i.toString() + "단계", i.toString() + "단계 요리 만들기", i + 1))
+                add(StepData(imageDatas, null, (i + 1).toString() + "단계", (i+1).toString() + "단계 요리 만들기", i + 1))
             }
         }
         recipeData.apply {
-            add(RecipeData(stepDatas, "제육볶음", "맛있는 제육볶음", exampleImageUri.toUri(), 25, 25, "haeiny"))
-            add(RecipeData(stepDatas, "무말랭이", "맛있는 무말랭이", exampleImageUri.toUri(), 5, 10, "ymei"))
+            add(RecipeData(stepDatas, "제육볶음", "맛있는 제육볶음", uri, 25, 25, "haeiny"))
+            add(RecipeData(stepDatas, "무말랭이", "맛있는 무말랭이", uri, 5, 10, "ymei"))
         }
 
         recyclerViewAdapter = SearchRecipeRecyclerviewAdapter()
         recyclerViewAdapter.datas = recipeData
+        binding.recyclerView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         binding.recyclerView.adapter = recyclerViewAdapter
+
         recyclerViewAdapter.notifyDataSetChanged()
 
         return binding.root

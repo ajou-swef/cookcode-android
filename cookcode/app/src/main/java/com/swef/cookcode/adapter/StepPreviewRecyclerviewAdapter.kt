@@ -46,7 +46,7 @@ class StepPreviewRecyclerviewAdapter(
     ): RecyclerView.ViewHolder(binding.root) {
         fun bind(item: StepData, uri: List<StepMediaData>){
             // step에 대한 정보를 view에 넣어줌
-            binding.stepNumber.text = item.numberOfStep.toString() + " 단계 : "
+            binding.stepNumber.text = item.numberOfStep.toString() + "단계 : "
             binding.stepTitle.text = item.title
             binding.stepDescription.text = item.description
 

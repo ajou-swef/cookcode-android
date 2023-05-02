@@ -49,13 +49,14 @@ class SearchResultActivity : AppCompatActivity() {
         supportFragmentManager.beginTransaction()
             .replace(R.id.fl_container, searchRecipeFragment)
             .commitAllowingStateLoss()
+        binding.btnRecipe.setBackgroundResource(R.drawable.filled_round_component_clicked)
         binding.btnCookie.setBackgroundResource(R.drawable.filled_round_component)
         binding.btnUser.setBackgroundResource(R.drawable.filled_round_component)
 
         // 각 버튼 클릭 시 해당 클릭된 컴포넌트를 제외한 버튼 들은 회색 처리
         // 각 버튼 클릭 시 해당하는 Fragment 실행
         binding.btnRecipe.setOnClickListener {
-
+            binding.btnRecipe.setBackgroundResource(R.drawable.filled_round_component_clicked)
             binding.btnCookie.setBackgroundResource(R.drawable.filled_round_component)
             binding.btnUser.setBackgroundResource(R.drawable.filled_round_component)
 
@@ -67,6 +68,7 @@ class SearchResultActivity : AppCompatActivity() {
             val searchCookieFragment = SearchCookieFragment()
             searchCookieFragment.arguments = bundle
 
+            binding.btnCookie.setBackgroundResource(R.drawable.filled_round_component_clicked)
             binding.btnRecipe.setBackgroundResource(R.drawable.filled_round_component)
             binding.btnUser.setBackgroundResource(R.drawable.filled_round_component)
 
@@ -78,6 +80,7 @@ class SearchResultActivity : AppCompatActivity() {
             val searchUserFragment = SearchUserFragment()
             searchUserFragment.arguments = bundle
 
+            binding.btnUser.setBackgroundResource(R.drawable.filled_round_component_clicked)
             binding.btnCookie.setBackgroundResource(R.drawable.filled_round_component)
             binding.btnRecipe.setBackgroundResource(R.drawable.filled_round_component)
 
