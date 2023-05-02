@@ -1,78 +1,81 @@
 package com.swef.cookcode.adapter
 
-import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.MediaController
-import android.widget.VideoView
 import androidx.recyclerview.widget.RecyclerView
 import com.swef.cookcode.data.StepMediaData
-import com.swef.cookcode.databinding.StepMediaRecyclerviewItemBinding
+import com.swef.cookcode.databinding.PreviewImageItemBinding
+import com.swef.cookcode.databinding.PreviewVideoItemBinding
 
 class StepMediaRecyclerviewAdapter(
-    private val context: Context, mediaUris: List<StepMediaData>
-): RecyclerView.Adapter<StepMediaRecyclerviewAdapter.ViewHolder>() {
+    mediaUris: List<StepMediaData>
+): RecyclerView.Adapter<StepMediaRecyclerviewAdapter.MediaViewHolder>() {
 
-    private lateinit var binding: StepMediaRecyclerviewItemBinding
+    // Image인지 Video인지에 따라 불러오는 viewbinding layout이 다르기 때문에 타입 연산자 지정
+    companion object {
+        private const val TYPE_IMAGE = 1
+        private const val TYPE_VIDEO = 2
+    }
 
     private val datas = mediaUris
 
-    // 현재 재생중인 비디오 뷰 정보
-    private var currentVideoView: VideoView? = null
-
-    override fun onCreateViewHolder(
-        parent: ViewGroup,
-        viewType: Int
-    ): StepMediaRecyclerviewAdapter.ViewHolder {
-        binding = StepMediaRecyclerviewItemBinding.inflate(
-            LayoutInflater.from(parent.context), parent, false)
-        return ViewHolder(binding, context)
+    // Data class에 명시한 type 변수로 image, video 구별
+    override fun getItemViewType(position: Int): Int {
+        return if (datas[position].type == "image") TYPE_IMAGE else TYPE_VIDEO
     }
 
-    override fun onBindViewHolder(holder: StepMediaRecyclerviewAdapter.ViewHolder, position: Int) {
-        holder.bind(datas[position])
+    // type 구별에 따라 item layout view binding을 다르게 해준다
+    // imageview, videoview는 다른 뷰기 때문에 하나의 레이아웃에 넣을 경우 재사용이 어려움
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MediaViewHolder {
+        return if (viewType == TYPE_IMAGE) {
+            val binding = PreviewImageItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+            ImageViewHolder(binding)
+        }
+        else {
+            val binding = PreviewVideoItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+            VideoViewHolder(binding)
+        }
     }
 
-    override fun getItemCount(): Int = datas.size
+    override fun onBindViewHolder(holder: MediaViewHolder, position: Int) {
+        val data = datas[position]
+        if (holder is ImageViewHolder) {
+            holder.binding.imageView.setImageURI(data.mediaData)
+            // stopCurrentVideo()
+        }
+        else if (holder is VideoViewHolder) {
+            // 가져올 video의 uri를 가져옴
+            val uri = data.mediaData
 
-    inner class ViewHolder(
-        private val binding: StepMediaRecyclerviewItemBinding, private val context: Context
-    ): RecyclerView.ViewHolder(binding.root) {
-        fun bind(item: StepMediaData){
-            // media가 image인지, video인지에 따라서 뷰의 모양이 달라짐
-            if(item.type == "image"){
-                // image일 경우 단순하게 이미지만 보여줌
-                binding.videoView.visibility = View.INVISIBLE
-                binding.imageView.visibility = View.VISIBLE
-                binding.imageView.setImageURI(item.mediaData)
-                stopCurrentVideo()
-            }
-            else {
-                // video일 경우 play 버튼 클릭시 영상 재생
-                binding.videoView.visibility = View.VISIBLE
-                binding.imageView.visibility = View.INVISIBLE
-
+            // 현재 재생 중인 videoView의 tag(uri)가 다르다면 비디오 중지
+            if(uri != holder.binding.videoView.tag) {
                 // 재생, 일시정지 등 버튼 붙이기
-                val mediaController = MediaController(context, false)
-                mediaController.setAnchorView(binding.videoView)
-                binding.videoView.setMediaController(mediaController)
+                val mediaController = MediaController(holder.binding.videoView.context, false)
+                mediaController.setAnchorView(holder.binding.videoView)
+                holder.binding.videoView.setMediaController(mediaController)
 
-                binding.videoView.setVideoURI(item.mediaData)
+                // 뷰 생성시 이전에 재생 중이던 비디오 중지
+                holder.binding.videoView.stopPlayback()
+
+                holder.binding.videoView.setVideoURI(data.mediaData)
+                // tag에 현재 videoView의 uri를 저장해두어 무한 로딩을 방지함
+                holder.binding.videoView.tag = uri
+
                 // video가 준비되면 실행
-                binding.videoView.setOnPreparedListener { mp ->
-                    stopCurrentVideo()
+                holder.binding.videoView.setOnPreparedListener { mp ->
+                    Log.d("data_size", "success")
                     mp.start()
                 }
             }
         }
     }
 
-    fun stopCurrentVideo() {
-        // 다른 영상이나 이미지로 넘어갈때 현재 재생 중인 동영상이 있으면 정지시킴
-        currentVideoView?.stopPlayback()
-        // 현재 재생 중인 동영상을 저장
-        currentVideoView = binding.videoView
-    }
+    override fun getItemCount(): Int = datas.size
+    open class MediaViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
+    class ImageViewHolder(val binding: PreviewImageItemBinding) : MediaViewHolder(binding.root)
+    class VideoViewHolder(val binding: PreviewVideoItemBinding) : MediaViewHolder(binding.root)
 
 }

@@ -1,6 +1,5 @@
 package com.swef.cookcode.adapter
 
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.net.toUri
@@ -29,7 +28,7 @@ class StepPreviewRecyclerviewAdapter(
     ): StepPreviewRecyclerviewAdapter.ViewHolder {
         binding = StepPreviewRecyclerviewItemBinding.inflate(
             LayoutInflater.from(parent.context), parent, false)
-        return ViewHolder(binding, binding.mediaViewpager.context)
+        return ViewHolder(binding)
     }
 
     override fun onBindViewHolder(
@@ -43,7 +42,7 @@ class StepPreviewRecyclerviewAdapter(
     override fun getItemCount(): Int = datas.size
 
     inner class ViewHolder(
-        private val binding: StepPreviewRecyclerviewItemBinding, private val context: Context
+        private val binding: StepPreviewRecyclerviewItemBinding
     ): RecyclerView.ViewHolder(binding.root) {
         fun bind(item: StepData, uri: List<StepMediaData>){
             // step에 대한 정보를 view에 넣어줌
@@ -52,22 +51,13 @@ class StepPreviewRecyclerviewAdapter(
             binding.stepDescription.text = item.description
 
             // step 이미지나 영상을 위한 adapter
-            stepMediaRecyclerviewAdapter = StepMediaRecyclerviewAdapter(this.context, uri)
+            stepMediaRecyclerviewAdapter = StepMediaRecyclerviewAdapter(uri)
 
             // viewpager에 apply 함으로써 recyclerview + viewpager 사용
             binding.mediaViewpager.apply {
                 adapter = stepMediaRecyclerviewAdapter
                 orientation = ViewPager2.ORIENTATION_HORIZONTAL
             }
-
-            binding.mediaViewpager.registerOnPageChangeCallback((object : ViewPager2.OnPageChangeCallback() {
-                // Paging 완료되면 호출
-                override fun onPageSelected(position: Int) {
-                    super.onPageSelected(position)
-                    // 재생되는 영상을 넘기면 영상 종료
-                    stepMediaRecyclerviewAdapter.stopCurrentVideo()
-                }
-            }))
         }
     }
 
@@ -87,10 +77,5 @@ class StepPreviewRecyclerviewAdapter(
 
             mediaUris.add(tempList)
         }
-    }
-
-    // 다른 스텝으로 넘어갈 때 현재 스텝의 재생중인 영상 정지
-    fun stopCurrentVideo() {
-        stepMediaRecyclerviewAdapter.stopCurrentVideo()
     }
 }

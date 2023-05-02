@@ -53,7 +53,6 @@ class RecipePreviewActivity : AppCompatActivity() {
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)
                 currentPosition = position
-                stepPreviewRecyclerviewAdapter.stopCurrentVideo()
             }
         })
 
