@@ -23,17 +23,6 @@ class SearchResultActivity : AppCompatActivity() {
         val searchKeyword = intent.getStringExtra("keyword")!!
         binding.searchKeyword.text = searchKeyword
 
-        // 최초 실행 되는 화면은 레시피 검색 화면
-        // 검색어를 fragment에 넘겨준다
-        val searchRecipeFragment = SearchRecipeFragment()
-        val bundle = Bundle()
-        bundle.putString("keyword", searchKeyword)
-        searchRecipeFragment.arguments = bundle
-
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.fl_container, searchRecipeFragment)
-            .commitAllowingStateLoss()
-
         binding.beforeArrow.setOnClickListener {
             finish()
         }
@@ -53,11 +42,19 @@ class SearchResultActivity : AppCompatActivity() {
         val bundle = Bundle()
         bundle.putString("keyword", keyword)
 
+        // 최초 실행 되는 화면은 레시피 검색 화면
+        val searchRecipeFragment = SearchRecipeFragment()
+        searchRecipeFragment.arguments = bundle
+
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fl_container, searchRecipeFragment)
+            .commitAllowingStateLoss()
+        binding.btnCookie.setBackgroundResource(R.drawable.filled_round_component)
+        binding.btnUser.setBackgroundResource(R.drawable.filled_round_component)
+
         // 각 버튼 클릭 시 해당 클릭된 컴포넌트를 제외한 버튼 들은 회색 처리
         // 각 버튼 클릭 시 해당하는 Fragment 실행
         binding.btnRecipe.setOnClickListener {
-            val searchRecipeFragment = SearchRecipeFragment()
-            searchRecipeFragment.arguments = bundle
 
             binding.btnCookie.setBackgroundResource(R.drawable.filled_round_component)
             binding.btnUser.setBackgroundResource(R.drawable.filled_round_component)
