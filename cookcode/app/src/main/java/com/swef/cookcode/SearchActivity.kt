@@ -23,7 +23,7 @@ class SearchActivity : AppCompatActivity() {
         // 돋보기 버튼 클릭 시 검색
         binding.btnSearch.setOnClickListener {
             val intent = Intent(this, SearchResultActivity::class.java)
-            intent.putExtra("keyword", binding.editSearchKeyword.text)
+            intent.putExtra("keyword", binding.editSearchKeyword.text.toString())
             startActivity(intent)
         }
     }
