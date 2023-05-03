@@ -12,7 +12,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.swef.cookcode.R
 import com.swef.cookcode.adapter.SearchRecipeRecyclerviewAdapter
 import com.swef.cookcode.data.RecipeData
-import com.swef.cookcode.data.StepData
 import com.swef.cookcode.databinding.FragmentSearchRecipeBinding
 
 class SearchRecipeFragment : Fragment() {
@@ -22,7 +21,6 @@ class SearchRecipeFragment : Fragment() {
 
     // 레시피 mock data
     private val recipeData = mutableListOf<RecipeData>()
-    private val stepDatas = mutableListOf<StepData>()
 
     private lateinit var recyclerViewAdapter: SearchRecipeRecyclerviewAdapter
 
@@ -45,18 +43,9 @@ class SearchRecipeFragment : Fragment() {
                     '/' + res.getResourceEntryName(R.drawable.food_example)
         )
 
-        stepDatas.apply {
-            for(i: Int in 0..2) {
-                val imageDatas = mutableListOf<String>()
-                imageDatas.apply {
-                    add(uri.toString())
-                }
-                add(StepData(imageDatas, null, (i + 1).toString() + "단계", (i+1).toString() + "단계 요리 만들기", i + 1))
-            }
-        }
         recipeData.apply {
-            add(RecipeData(stepDatas, "제육볶음", "맛있는 제육볶음", uri, 25, 25, "haeiny"))
-            add(RecipeData(stepDatas, "무말랭이", "맛있는 무말랭이", uri, 5, 10, "ymei"))
+            add(RecipeData("제육볶음", "맛있는 제육볶음", uri, 25, 25, "haeiny"))
+            add(RecipeData("무말랭이", "맛있는 무말랭이", uri, 5, 10, "ymei"))
         }
 
         recyclerViewAdapter = SearchRecipeRecyclerviewAdapter()

@@ -1,9 +1,10 @@
 package com.swef.cookcode.adapter
 
-import android.util.Log
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.swef.cookcode.RecipeActivity
 import com.swef.cookcode.data.RecipeData
 import com.swef.cookcode.databinding.SearchRecipeRecyclerviewItemBinding
 
@@ -43,8 +44,9 @@ class SearchRecipeRecyclerviewAdapter(
             binding.mainImage.setImageURI(item.mainImage)
 
             binding.layout.setOnClickListener {
-                // recipe 보여주기
-                Log.d("data_click", position.toString()+"recyclerview clicked")
+                val intent = Intent(binding.layout.context, RecipeActivity::class.java)
+                intent.putExtra("position", position)
+                binding.layout.context.startActivity(intent)
             }
         }
     }
