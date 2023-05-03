@@ -27,13 +27,11 @@ class RegisterActivity : AppCompatActivity() {
     private var isValidPwCheck = false
     // 패스워드 유효성 확인 검사
     private var isCorrectPwCheck = false
-    // 이메일 인증 검사
-    private var isValidEmailCheck = true
     // 닉네임 중복 검사
     private var isDuplicateNicknameCheck = false
 
     // AccountAPI
-    // private val API = AccountAPI.create()
+    private val api = AccountAPI.create()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,11 +46,10 @@ class RegisterActivity : AppCompatActivity() {
             finish()
         }
 
-        /*
         // 닉네임 중복확인
         binding.dupNickTest.setOnClickListener{
             // API를 통해 서버에 중복 확인
-            API.getDupNickTest(binding.editNickname.text.toString()).enqueue(object: Callback<DuplicateResponse> {
+            api.getDupNickTest(binding.editNickname.text.toString()).enqueue(object: Callback<DuplicateResponse> {
                     override fun onResponse(call: Call<DuplicateResponse>, response: Response<DuplicateResponse>) {
                         // 호출 성공
                         // response는 nullable하므로 추가
@@ -63,10 +60,10 @@ class RegisterActivity : AppCompatActivity() {
                             if (isUnique) {
                                 isDuplicateNicknameCheck = true
                                 binding.testNickname.visibility = View.VISIBLE
-                                binding.dupNickText.visibility = View.INVISIBLE
+                                binding.dupNickText.visibility = View.GONE
                             } else {
                                 isDuplicateNicknameCheck = false
-                                binding.testNickname.visibility = View.INVISIBLE
+                                binding.testNickname.visibility = View.GONE
                                 binding.dupNickText.visibility = View.VISIBLE
                             }
                         }
@@ -85,14 +82,6 @@ class RegisterActivity : AppCompatActivity() {
                         Toast.makeText(this@RegisterActivity, R.string.err_server, Toast.LENGTH_SHORT).show()
                     }
                 })
-        }
-         */
-
-        // 서버 구축 전 임시 code
-        binding.dupNickTest.setOnClickListener{
-            isDuplicateNicknameCheck = true
-            binding.testNickname.visibility = View.VISIBLE
-            binding.dupNickText.visibility = View.INVISIBLE
         }
 
         // 닉네임 중복확인 후 다른 닉네임으로 변경하고 싶을 때
@@ -113,41 +102,8 @@ class RegisterActivity : AppCompatActivity() {
 
         // 완료 버튼 클릭 이벤트
         binding.btnDone.setOnClickListener {
-            /*
-            // API를 통해 email 중복 테스트 실시
-            API.getDupNickTest(binding.editNickname.text.toString()).enqueue(object: Callback<DuplicateResponse> {
-                override fun onResponse(call: Call<DuplicateResponse>, response: Response<DuplicateResponse>) {
-                    val isUnique = response.body()?.dupData?.isUnique
-
-                    if (isUnique != null) {
-                        if (isUnique) {
-                            isValidEmailCheck = true
-                        } else {
-                            // isUnique가 false일 경우 이미 존재하는 아이디
-                            // 토스트 메세지를 통해 알려줌
-                            isValidEmailCheck = false
-                            Toast.makeText(this@RegisterActivity, R.string.duplicated_email, Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                    // response가 null일 경우
-                    else {
-                        Toast.makeText(this@RegisterActivity, R.string.err_server, Toast.LENGTH_SHORT).show()
-                    }
-                }
-
-                override fun onFailure(call: Call<DuplicateResponse>, t: Throwable) {
-                    // 호출 실패
-                    Toast.makeText(this@RegisterActivity, R.string.err_server, Toast.LENGTH_SHORT).show()
-                }
-            })
-             */
-
-            // 서버 구축 전 임시 code
-            isValidEmailCheck = binding.editId.text.toString().isNotEmpty()
-
             // 항목 조건 검사 만족 시
-            if (isValidEmailCheck && isValidPwCheck && isCorrectPwCheck && isDuplicateNicknameCheck) {
-                    /*
+            if (isDuplicateNicknameCheck && isValidPwCheck && isCorrectPwCheck) {
                     // API를 통해 회원정보를 서버에 보냄
                     val id = binding.editId.text.toString()
                     val nickname = binding.editNickname.text.toString()
@@ -160,7 +116,7 @@ class RegisterActivity : AppCompatActivity() {
                     userDataMap["nickname"] = nickname
                     userDataMap["password"] = pw
 
-                    API.postUserData(userDataMap).enqueue(object: Callback<StatusResponse> {
+                    api.postUserData(userDataMap).enqueue(object: Callback<StatusResponse> {
                         override fun onResponse(call: Call<StatusResponse>, response: Response<StatusResponse>) {
                             if (response.body()?.status == 201) {
                                 // 회원가입 완료 토스트 메시지
@@ -170,19 +126,14 @@ class RegisterActivity : AppCompatActivity() {
                             }
                             // 실패 시
                             else {
-                                Toast.makeText(this@RegisterActivity, R.string.err_server, Toast.LENGTH_SHORT).show()
+                                binding.editId.setBackgroundResource(R.drawable.round_component_fail)
+                                Toast.makeText(this@RegisterActivity, R.string.duplicated_email, Toast.LENGTH_SHORT).show()
                             }
                         }
-
                         override fun onFailure(call: Call<StatusResponse>, t: Throwable) {
                             Toast.makeText(this@RegisterActivity, R.string.err_server, Toast.LENGTH_SHORT).show()
                         }
                     })
-                     */
-
-                    // 서버 구축 전 임시 code
-                    Toast.makeText(this@RegisterActivity, R.string.success_register, Toast.LENGTH_SHORT).show()
-                    finish()
             }
             // 조건을 충족하지 않았을 경우 토스트 메시지를 띄움
             else {
@@ -194,9 +145,6 @@ class RegisterActivity : AppCompatActivity() {
                 }
                 if (!isCorrectPwCheck) {
                     binding.editPw.setBackgroundResource(R.drawable.round_component_fail)
-                }
-                if (!isValidEmailCheck) {
-                    binding.editId.setBackgroundResource(R.drawable.round_component_fail)
                 }
                 if (!isDuplicateNicknameCheck) {
                     binding.editNickname.setBackgroundResource(R.drawable.round_component_fail)

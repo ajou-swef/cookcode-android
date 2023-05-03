@@ -24,11 +24,6 @@ interface AccountAPI {
         @Query("nickname")nickname: String
     ): Call<DuplicateResponse>
 
-    @GET("account/check")
-    fun getDupEmailTest(
-        @Query("email")email: String
-    ): Call<DuplicateResponse>
-
     @POST("account/signin")
     fun postSignin(
         @Body body: HashMap<String, String>
@@ -43,7 +38,7 @@ interface AccountAPI {
     fun deleteAccount(): Call<Any>
 
     companion object {
-        private const val BASE_URL = "api/v1/"
+        private const val BASE_URL = "http://54.180.117.179:8080/api/v1/"
 
         fun create(): AccountAPI {
             return Retrofit.Builder()

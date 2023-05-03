@@ -20,7 +20,7 @@ class MainActivity : AppCompatActivity() {
     // ViewBinding 사용 : xml에 있는 view를 직접 참조할 수 있게 도와주는 기능
     private lateinit var binding: ActivityMainBinding
     // AccountAPI
-    // private val API = AccountAPI.create()
+    private val API = AccountAPI.create()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,12 +45,12 @@ class MainActivity : AppCompatActivity() {
             // API를 통해 서버에 회원정보를 보냄
             val id = binding.editId.text.toString()
             val pw = binding.editPw.text.toString()
+            val homeActivityIntent = Intent(this, HomeActivity::class.java)
 
             val userDataMap = HashMap<String, String>()
             userDataMap["email"] = id
             userDataMap["password"] = pw
 
-            /*
             API.postSignin(userDataMap).enqueue(object: Callback<TokenResponse> {
                 override fun onResponse(call: Call<TokenResponse>, response: Response<TokenResponse>) {
 
@@ -65,9 +65,8 @@ class MainActivity : AppCompatActivity() {
                             // 데이터는 key, value 쌍으로 넘어간다
                             homeActivityIntent.putExtra("accesstoken", accessToken)
                             homeActivityIntent.putExtra("refreshtoken", refreshToken)
-
-                            val nextIntent = Intent(this, HomeActivity::class.java)
-                            startActivity(nextIntent)
+                            startActivity(homeActivityIntent)
+                            Toast.makeText(this@MainActivity, "정상적으로 로그인 되었습니다.", Toast.LENGTH_SHORT).show()
                         }
                         // 일치하는 데이터가 없을 시
                         else {
@@ -84,14 +83,6 @@ class MainActivity : AppCompatActivity() {
                     Toast.makeText(this@MainActivity, R.string.err_server, Toast.LENGTH_SHORT).show()
                 }
             })
-             */
-
-            // 서버 구축 전 임시 code
-            val nextIntent = Intent(this, HomeActivity::class.java)
-            nextIntent.putExtra("accesstoken", "test access token")
-            nextIntent.putExtra("refreshtoken", "test refresh token")
-            Toast.makeText(this@MainActivity, "정상적으로 로그인 되었습니다.", Toast.LENGTH_SHORT).show()
-            startActivity(nextIntent)
         }
     }
 
