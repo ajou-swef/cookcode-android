@@ -65,17 +65,14 @@ class MainActivity : AppCompatActivity() {
                             // 데이터는 key, value 쌍으로 넘어간다
                             homeActivityIntent.putExtra("accesstoken", accessToken)
                             homeActivityIntent.putExtra("refreshtoken", refreshToken)
+                            homeActivityIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
                             startActivity(homeActivityIntent)
                             Toast.makeText(this@MainActivity, "정상적으로 로그인 되었습니다.", Toast.LENGTH_SHORT).show()
                         }
-                        // 일치하는 데이터가 없을 시
-                        else {
-                            Toast.makeText(this@MainActivity, R.string.err_userdata, Toast.LENGTH_SHORT).show()
-                        }
                     }
-                    // response가 null 일 경우 서버 문제
+                    // null일 경우 일치하는 데이터가 없음
                     else {
-                        Toast.makeText(this@MainActivity, R.string.err_server, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@MainActivity, R.string.err_userdata, Toast.LENGTH_SHORT).show()
                     }
                 }
 

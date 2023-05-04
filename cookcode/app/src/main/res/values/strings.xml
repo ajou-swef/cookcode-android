@@ -17,7 +17,7 @@
     <string name="dup_test">중복확인</string>
     <string name="duplicated_nickname">이미 존재하는 닉네임입니다.</string>
     <string name="duplicated_email">이미 존재하는 아이디입니다.</string>
-    <string name="err_userdata">잘못된 아이디/비밀번호를 입력하셨습니다.</string>
+    <string name="err_userdata">아이디/비밀번호를 확인해주세요.</string>
     <string name="err_server">잠시 후 다시 시도해주세요.</string>
     <string name="cookie">쿠키</string>
     <string name="home">홈</string>
@@ -45,8 +45,6 @@
     <string name="recipe_upload">레시피 업로드</string>
     <string name="user">사용자</string>
     <string name="Recent_searched">최근 검색어</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="like">좋아요</string>
     <string name="view">조회수</string>
     <string name="made_user_is">게시자 : </string>
@@ -56,4 +54,8 @@
     <string name="vegetable">채소</string>
     <string name="fruit">과일</string>
     <string name="sauce">양념</string>
+    <string name="hello_user">님 안녕하세요!</string>
+    <string name="made_own_recipe">내가 만든 레시피</string>
+    <string name="logout">로그아웃</string>
+    <string name="delete_user">계정 삭제</string>
 </resources>

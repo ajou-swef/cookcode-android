@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.PopupMenu
 import androidx.fragment.app.Fragment
+import com.swef.cookcode.MypageActivity
 import com.swef.cookcode.R
 import com.swef.cookcode.RecipeFormActivity
 import com.swef.cookcode.SearchActivity
@@ -60,6 +61,13 @@ class HomeFragment : Fragment() {
 
         binding.btnSearch.setOnClickListener {
             val nextIntent = Intent(activity, SearchActivity::class.java)
+            startActivity(nextIntent)
+        }
+
+        binding.userMark.setOnClickListener {
+            val nextIntent = Intent(activity, MypageActivity::class.java)
+            nextIntent.putExtra("user_name", "쿡코드")
+            nextIntent.flags = FLAG_ACTIVITY_CLEAR_TOP
             startActivity(nextIntent)
         }
 
