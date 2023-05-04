@@ -50,4 +50,10 @@
     <string name="like">좋아요</string>
     <string name="view">조회수</string>
     <string name="made_user_is">게시자 : </string>
+    <string name="meat">육류</string>
+    <string name="seafood">해산물</string>
+    <string name="grain">곡물</string>
+    <string name="vegetable">채소</string>
+    <string name="fruit">과일</string>
+    <string name="sauce">양념</string>
 </resources>
