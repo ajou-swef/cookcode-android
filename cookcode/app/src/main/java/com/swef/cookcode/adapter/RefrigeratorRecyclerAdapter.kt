@@ -13,6 +13,7 @@ class RefrigeratorRecyclerAdapter()
     : RecyclerView.Adapter<RefrigeratorRecyclerAdapter.ViewHolder>() {
 
     var datas = mutableListOf<RefrigeratorData>()
+    lateinit var ingredientRecyclerviewAdapter: IngredientRecyclerviewAdapter
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = RefrigeratorRecyclerviewItemBinding.inflate(
