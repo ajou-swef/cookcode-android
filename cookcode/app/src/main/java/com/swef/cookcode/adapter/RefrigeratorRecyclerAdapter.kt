@@ -4,7 +4,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.swef.cookcode.data.MyIngredientData
 import com.swef.cookcode.data.RefrigeratorData
 import com.swef.cookcode.data.host.ToggleAnimationHost
 import com.swef.cookcode.databinding.RefrigeratorRecyclerviewItemBinding
@@ -13,6 +15,8 @@ class RefrigeratorRecyclerAdapter()
     : RecyclerView.Adapter<RefrigeratorRecyclerAdapter.ViewHolder>() {
 
     var datas = mutableListOf<RefrigeratorData>()
+    var ingredDatas = mutableListOf<MyIngredientData>()
+
     lateinit var ingredientRecyclerviewAdapter: IngredientRecyclerviewAdapter
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -33,6 +37,11 @@ class RefrigeratorRecyclerAdapter()
     ): RecyclerView.ViewHolder(binding.root) {
         fun bind(item: RefrigeratorData){
             binding.ingredientName.text = item.type
+
+            ingredientRecyclerviewAdapter.datas = ingredDatas
+            binding.recyclerView.adapter = ingredientRecyclerviewAdapter
+            binding.recyclerView.layoutManager = GridLayoutManager(
+                binding.recyclerView.context, 4)
 
             // 화살표를 누르면 레이아웃이 확장된다
             binding.btnMore.setOnClickListener {
