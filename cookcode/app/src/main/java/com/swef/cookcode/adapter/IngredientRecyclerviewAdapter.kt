@@ -1,11 +1,14 @@
 package com.swef.cookcode.adapter
 
+import android.app.AlertDialog
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.swef.cookcode.data.MyIngredientData
 import com.swef.cookcode.databinding.IngredientRecyclerviewItemBinding
+import com.swef.cookcode.databinding.RecipeIngredientDialogBinding
+import com.swef.cookcode.databinding.RefrigeratorIngredientDialogBinding
 
 class IngredientRecyclerviewAdapter(
     private val type: String
@@ -20,7 +23,7 @@ class IngredientRecyclerviewAdapter(
         val binding = IngredientRecyclerviewItemBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
         )
-        return ViewHolder(binding)
+        return ViewHolder(binding, parent)
     }
 
     override fun getItemCount(): Int = datas.size
@@ -30,7 +33,8 @@ class IngredientRecyclerviewAdapter(
     }
 
     inner class ViewHolder(
-        private val binding: IngredientRecyclerviewItemBinding
+        private val binding: IngredientRecyclerviewItemBinding,
+        private val parent: ViewGroup
     ): RecyclerView.ViewHolder(binding.root) {
         fun bind(item: MyIngredientData){
             binding.ingredientIcon.setImageURI(item.ingredientData.image)
@@ -57,18 +61,48 @@ class IngredientRecyclerviewAdapter(
             else if (type == "recipe") {
                 binding.value.visibility = View.VISIBLE
                 binding.value.text = item.value.toString()
+
                 // 식재료 양 조절
                 binding.layout.setOnClickListener {
+                    val recipeDialogView = RecipeIngredientDialogBinding.inflate(
+                        LayoutInflater.from(parent.context), parent, false
+                    )
+                    val recipeAlertDialog = AlertDialog.Builder(parent.context)
+                        .setView(recipeDialogView.root)
+                        .create()
 
+                    recipeDialogView.btnCancel.setOnClickListener {
+                        recipeAlertDialog.dismiss()
+                    }
+                    recipeDialogView.btnConfirm.setOnClickListener {
+                        binding.value.text = recipeDialogView.ingredientValue.text
+                        // 서버에 변경 요청
+                        recipeAlertDialog.dismiss()
+                    }
                 }
             }
             // 냉장고에 등록된 식재료 수정용 어댑터
-            else if (type == "fridge") {
+            else if (type == "refrigerator") {
                 binding.value.visibility = View.VISIBLE
                 binding.value.text = item.value.toString()
+
                 // 식재료 양, 유통기한 조정
                 binding.layout.setOnClickListener {
+                    val refrigeratorDialogView = RefrigeratorIngredientDialogBinding.inflate(
+                        LayoutInflater.from(parent.context), parent, false
+                    )
+                    val refrigeratorAlertDialog = AlertDialog.Builder(parent.context)
+                        .setView(refrigeratorDialogView.root)
+                        .create()
 
+                    refrigeratorDialogView.btnCancel.setOnClickListener {
+                        refrigeratorAlertDialog.dismiss()
+                    }
+                    refrigeratorDialogView.btnConfirm.setOnClickListener {
+                        binding.value.text = refrigeratorDialogView.ingredientValue.text
+                        // 서버에 변경 요청
+                        refrigeratorAlertDialog.dismiss()
+                    }
                 }
             }
         }

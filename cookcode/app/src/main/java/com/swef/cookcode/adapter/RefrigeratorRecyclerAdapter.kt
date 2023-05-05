@@ -38,7 +38,9 @@ class RefrigeratorRecyclerAdapter()
         fun bind(item: RefrigeratorData){
             binding.ingredientName.text = item.type
 
+            ingredientRecyclerviewAdapter = IngredientRecyclerviewAdapter("refrigerator")
             ingredientRecyclerviewAdapter.datas = ingredDatas
+
             binding.recyclerView.adapter = ingredientRecyclerviewAdapter
             binding.recyclerView.layoutManager = GridLayoutManager(
                 binding.recyclerView.context, 4)
