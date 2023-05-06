@@ -1,6 +1,7 @@
 package com.swef.cookcode
 
 import android.content.Intent
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
@@ -19,6 +20,13 @@ class RecipePreviewActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityRecipePreviewBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // 레시피 정보 불러오기
+        val title = intent.getStringExtra("recipe_title")
+        val description = intent.getStringExtra("recipe_description")
+        val mainImage = Uri.parse(intent.getStringExtra("main_image"))
+        val essentialIngreds = intent.getStringArrayExtra("essential_ingreds")!!.toList()
+        val additionalIngreds = intent.getStringArrayExtra("additional_ingreds")!!.toList()
 
         // 현재 보고있는 step
         var currentPosition = 0

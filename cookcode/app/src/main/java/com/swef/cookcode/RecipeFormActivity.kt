@@ -1,7 +1,6 @@
 package com.swef.cookcode
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -221,17 +220,37 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
             // 설명 입력 여부
             descriptionTyped = !binding.editDescription.text.isNullOrEmpty()
             // 필수재료 등록 여부
-            essentialIngredientSelected = essentialIngredientData.isEmpty()
+            essentialIngredientSelected = essentialIngredientData.isNotEmpty()
 
             if(testInfoTyped()){
                 val intent = Intent(this, RecipePreviewActivity::class.java)
                 val steps = numberOfStep - 1
 
                 // 레시피 정보 전달
-                intent.putExtra("recipe_title", binding.editRecipeName.text)
-                intent.putExtra("recipe_description", binding.editDescription.text)
+                intent.putExtra("recipe_title", binding.editRecipeName.text.toString())
+                intent.putExtra("recipe_description", binding.editDescription.text.toString())
                 intent.putExtra("main_image", recipeImage.toString())
+
                 // 필수재료, 추가재료 정보 전달
+                val essentialIngreds = mutableListOf<String>()
+                val additionalIngreds = mutableListOf<String>()
+
+                essentialIngreds.apply {
+                    for (item in searchIngredientRecyclerviewAdapter.essentialData) {
+                        val ingredId = item.ingredientData.ingredId
+                        add(ingredId.toString())
+                    }
+                }
+
+                additionalIngreds.apply {
+                    for (item in searchIngredientRecyclerviewAdapter.additionalData) {
+                        val ingredId = item.ingredientData.ingredId
+                        add(ingredId.toString())
+                    }
+                }
+
+                intent.putExtra("essential_ingreds", essentialIngreds.toTypedArray())
+                intent.putExtra("additional_ingreds", additionalIngreds.toTypedArray())
 
                 // 스텝 개수를 알려줌
                 intent.putExtra("index", steps)
