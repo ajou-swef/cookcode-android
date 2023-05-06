@@ -1,12 +1,15 @@
 package com.swef.cookcode
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Rect
 import android.net.Uri
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
@@ -16,13 +19,19 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.swef.cookcode.adapter.IngredientRecyclerviewAdapter
 import com.swef.cookcode.adapter.StepRecyclerviewAdapter
+import com.swef.cookcode.data.MyIngredientData
 import com.swef.cookcode.data.StepData
+import com.swef.cookcode.data.host.IngredientDataHost
 import com.swef.cookcode.databinding.ActivityRecipeFormBinding
+import com.swef.cookcode.databinding.RecipeIngredientSelectDialogBinding
 import com.swef.cookcode.`interface`.StepOnClickListener
 
 class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
@@ -34,13 +43,21 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
 
     private lateinit var stepRecyclerviewAdapter: StepRecyclerviewAdapter
 
+    // 식재료 등록 어댑터
+    private lateinit var essentialIngredientRecyclerviewAdapter: IngredientRecyclerviewAdapter
+    private lateinit var additionalIngredientRecyclerviewAdapter: IngredientRecyclerviewAdapter
+    private lateinit var searchIngredientRecyclerviewAdapter: IngredientRecyclerviewAdapter
+
+    private var essentialIngredientData = mutableListOf<MyIngredientData>()
+    private var addtionalIngredientData = mutableListOf<MyIngredientData>()
+
     // 스텝 단계를 위한 변수
     private var numberOfStep = 1
 
     // 정보 입력 완료 테스트를 위한 변수
     private var titleTyped = false
     private var descriptionTyped = false
-    private var essentialIngredientSelected = true
+    private var essentialIngredientSelected = false
     private var stepExist = false
 
     // 미리보기 단계에서 해당 스텝 수정을 위한 스텝 단계 정보 불러오기
@@ -80,7 +97,6 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
         // 뒤로가기 버튼 클릭시 activity 종료
         binding.beforeArrow.setOnClickListener {
             // 서버에 업로드한 이미지, 영상 삭제
-
             finish()
         }
 
@@ -89,15 +105,98 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
             pickImage.launch("image/*")
         }
 
-        // 필수 재료 추가 버튼 클릭시 재료 추가
-        binding.addEssentialIngredient.setOnClickListener {
+        val addTextChangedListener = object : TextWatcher {
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
 
+            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+                searchIngredientRecyclerviewAdapter.filteredDatas = IngredientDataHost().getIngredientFromNameOrType(
+                    searchIngredientRecyclerviewAdapter.beforeSearchData, p0.toString()) as MutableList<MyIngredientData>
+                searchIngredientRecyclerviewAdapter.notifyDataSetChanged()
+            }
+
+            override fun afterTextChanged(p0: Editable?) {}
+        }
+
+        // 식재료 선택 다이얼로그
+        val dialogView = RecipeIngredientSelectDialogBinding.inflate(layoutInflater)
+
+        dialogView.ingredientName.addTextChangedListener(addTextChangedListener)
+
+        val selectDialog = AlertDialog.Builder(this)
+            .setView(dialogView.root)
+            .create()
+
+        searchIngredientRecyclerviewAdapter = IngredientRecyclerviewAdapter("search")
+        dialogView.recyclerView.layoutManager = GridLayoutManager(this, 3)
+        dialogView.recyclerView.adapter = searchIngredientRecyclerviewAdapter
+        searchIngredientRecyclerviewAdapter.datas = IngredientDataHost().showAllIngredientData() as MutableList<MyIngredientData>
+        searchIngredientRecyclerviewAdapter.notifyDataSetChanged()
+
+        dialogView.btnCancel.setOnClickListener {
+            selectDialog.dismiss()
         }
 
 
+        dialogView.root.setOnTouchListener { v, _ ->
+            if (v !is EditText) { // v가 EditText 클래스의 인스턴스가 아닐 경우
+                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.hideSoftInputFromWindow(v.windowToken, 0) // 키보드를 숨깁니다.
+                dialogView.root.clearFocus() // EditText의 포커스를 해제합니다.
+            }
+            false
+        }
+
+        // 필수 재료 어댑터
+        essentialIngredientRecyclerviewAdapter = IngredientRecyclerviewAdapter("recipe")
+        binding.essentialIngredients.adapter = essentialIngredientRecyclerviewAdapter
+        binding.essentialIngredients.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+
+        // 필수 재료 추가 버튼 클릭시 재료 추가
+        binding.addEssentialIngredient.setOnClickListener {
+            dialogView.btnDone.setOnClickListener {
+                essentialIngredientData = IngredientDataHost().removeElement(
+                    searchIngredientRecyclerviewAdapter.selectedItems, searchIngredientRecyclerviewAdapter.additionalData)
+
+                essentialIngredientRecyclerviewAdapter.filteredDatas = essentialIngredientData
+                searchIngredientRecyclerviewAdapter.essentialData = essentialIngredientData
+
+                essentialIngredientRecyclerviewAdapter.notifyDataSetChanged()
+                selectDialog.dismiss()
+            }
+
+            // 필수재료와 추가재료는 중복되면 안됨
+            searchIngredientRecyclerviewAdapter.beforeSearchData.clear()
+            searchIngredientRecyclerviewAdapter.beforeSearchData = IngredientDataHost().removeElement(
+                searchIngredientRecyclerviewAdapter.datas, searchIngredientRecyclerviewAdapter.additionalData)
+            searchIngredientRecyclerviewAdapter.filteredDatas = searchIngredientRecyclerviewAdapter.beforeSearchData
+            searchIngredientRecyclerviewAdapter.notifyDataSetChanged()
+            selectDialog.show()
+        }
+
+        // 추가 재료 어댑터
+        additionalIngredientRecyclerviewAdapter = IngredientRecyclerviewAdapter("recipe")
+        binding.additionalIngredients.adapter = additionalIngredientRecyclerviewAdapter
+        binding.additionalIngredients.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+
         // 추가 재료 추가 버튼 클릭시 재료 추가
         binding.addAdditionalIngredient.setOnClickListener {
+            dialogView.btnDone.setOnClickListener {
+                addtionalIngredientData = IngredientDataHost().removeElement(
+                    searchIngredientRecyclerviewAdapter.selectedItems, searchIngredientRecyclerviewAdapter.essentialData)
 
+                additionalIngredientRecyclerviewAdapter.filteredDatas = addtionalIngredientData
+                searchIngredientRecyclerviewAdapter.additionalData = addtionalIngredientData
+
+                additionalIngredientRecyclerviewAdapter.notifyDataSetChanged()
+                selectDialog.dismiss()
+            }
+
+            searchIngredientRecyclerviewAdapter.beforeSearchData.clear()
+            searchIngredientRecyclerviewAdapter.beforeSearchData = IngredientDataHost().removeElement(
+                searchIngredientRecyclerviewAdapter.datas, searchIngredientRecyclerviewAdapter.essentialData)
+            searchIngredientRecyclerviewAdapter.filteredDatas = searchIngredientRecyclerviewAdapter.beforeSearchData
+            searchIngredientRecyclerviewAdapter.notifyDataSetChanged()
+            selectDialog.show()
         }
 
         // 스텝 추가 버튼 클릭시 스텝 제작 화면 띄우기
@@ -122,6 +221,7 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
             // 설명 입력 여부
             descriptionTyped = !binding.editDescription.text.isNullOrEmpty()
             // 필수재료 등록 여부
+            essentialIngredientSelected = essentialIngredientData.isEmpty()
 
             if(testInfoTyped()){
                 val intent = Intent(this, RecipePreviewActivity::class.java)

@@ -166,7 +166,7 @@
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/essential_ingredients"
                 android:layout_width="300dp"
-                android:layout_height="70dp"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
                 android:orientation="horizontal"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -200,7 +200,7 @@
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/additional_ingredients"
                 android:layout_width="300dp"
-                android:layout_height="70dp"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
                 android:orientation="horizontal"
                 app:layout_constraintEnd_toEndOf="parent"

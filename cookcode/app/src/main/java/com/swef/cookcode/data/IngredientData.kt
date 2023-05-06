@@ -11,8 +11,9 @@ data class IngredientData(
 )
 
 data class MyIngredientData(
-    val ingredientData: IngredientData,
+    var ingredientData: IngredientData,
     val fridgeIngredId: Int?,
     val value: Int?,
-    val expiredAt: Date?
+    val expiredAt: Date?,
+    var visibility: Int?
 )

@@ -5,12 +5,15 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.swef.cookcode.adapter.RefrigeratorRecyclerAdapter
 import com.swef.cookcode.databinding.FragmentRefrigeratorBinding
 
 class RefrigeratorFragment : Fragment() {
 
     private var _binding: FragmentRefrigeratorBinding? = null
     private val binding get() = _binding!!
+
+    private lateinit var refrigeratorRecyclerAdapter: RefrigeratorRecyclerAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -21,6 +24,9 @@ class RefrigeratorFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentRefrigeratorBinding.inflate(inflater, container, false)
+
+        refrigeratorRecyclerAdapter = RefrigeratorRecyclerAdapter()
+
         return binding.root
     }
 

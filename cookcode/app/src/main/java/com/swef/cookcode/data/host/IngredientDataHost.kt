@@ -3,19 +3,21 @@ package com.swef.cookcode.data.host
 import android.net.Uri
 import com.swef.cookcode.R
 import com.swef.cookcode.data.IngredientData
+import com.swef.cookcode.data.MyIngredientData
 
 // 식재료들은 백엔드에서 구현된 목록으로만 존재함
 // 따라서 식재료 아이템을 가져오는 함수를 미리 구현해두어 불러오기만 하면 되도록 했음
 class IngredientDataHost {
 
-    private val datas = showAllIngredientData()
+    val datas = showAllIngredientData()
 
     // 식재료 등록을 위한 모든 식재료 정보 불러오기
-    fun showAllIngredientData(): List<IngredientData>{
-        val datas = mutableListOf<IngredientData>()
+    fun showAllIngredientData(): List<MyIngredientData>{
+        val ingredDatas = mutableListOf<IngredientData>()
+        val allData = mutableListOf<MyIngredientData>()
 
         var uri = getUriForResource(R.drawable.icon_meat)
-        datas.apply {
+        ingredDatas.apply {
             add(IngredientData(uri, "삼겹살", "meat", 1))
             add(IngredientData(uri, "돼지 목살", "meat", 2))
             add(IngredientData(uri, "돼지 갈비", "meat", 3))
@@ -30,7 +32,7 @@ class IngredientDataHost {
         }
 
         uri = getUriForResource(R.drawable.icon_seafood)
-        datas.apply {
+        ingredDatas.apply {
             add(IngredientData(uri, "연어", "seafood", 12))
             add(IngredientData(uri, "고등어", "seafood", 13))
             add(IngredientData(uri, "갈치", "seafood", 14))
@@ -44,7 +46,7 @@ class IngredientDataHost {
         }
 
         uri = getUriForResource(R.drawable.icon_grain)
-        datas.apply {
+        ingredDatas.apply {
             add(IngredientData(uri, "쌀", "grain", 22))
             add(IngredientData(uri, "보리", "grain", 23))
             add(IngredientData(uri, "밀가루", "grain", 24))
@@ -54,7 +56,7 @@ class IngredientDataHost {
         }
 
         uri = getUriForResource(R.drawable.icon_vegetable)
-        datas.apply {
+        ingredDatas.apply {
             add(IngredientData(uri, "양파", "vegetable", 28))
             add(IngredientData(uri, "마늘", "vegetable", 29))
             add(IngredientData(uri, "당근", "vegetable", 30))
@@ -73,7 +75,7 @@ class IngredientDataHost {
         }
 
         uri = getUriForResource(R.drawable.icon_fruit)
-        datas.apply {
+        ingredDatas.apply {
             add(IngredientData(uri, "사과", "fruit", 43))
             add(IngredientData(uri, "배", "fruit", 44))
             add(IngredientData(uri, "바나나", "fruit", 45))
@@ -81,7 +83,7 @@ class IngredientDataHost {
         }
 
         uri = getUriForResource(R.drawable.icon_sauce)
-        datas.apply {
+        ingredDatas.apply {
             add(IngredientData(uri, "간장", "sauce", 47))
             add(IngredientData(uri, "고추장", "sauce", 48))
             add(IngredientData(uri, "된장", "sauce", 49))
@@ -100,18 +102,40 @@ class IngredientDataHost {
             add(IngredientData(uri, "후추", "sauce", 62))
         }
 
-        return datas
+        for(item in ingredDatas){
+            allData.apply {
+                add(MyIngredientData(item, null, null, null, null))
+            }
+        }
+
+        return allData
     }
 
-    fun getIngredientFromId(id: Int): IngredientData? {
-        return datas.find { it.ingredId == id }
+    fun getIngredientFromId(id: Int): MyIngredientData? {
+        return datas.find { it.ingredientData.ingredId == id }
     }
 
-    fun getIngredientFromNameOrType(keyword: String): List<IngredientData> {
-        return datas.filter { it.name.contains(keyword) }
+    fun getIngredientFromNameOrType(data:List<MyIngredientData>, keyword: String): List<MyIngredientData> {
+        return data.filter { it.ingredientData.name.contains(keyword) }
     }
 
     private fun getUriForResource(resId: Int): Uri{
         return Uri.parse("android.resource://com.swef.cookcode/" + resId)
+    }
+
+    fun removeElement(data: List<MyIngredientData>, removeDatas: List<MyIngredientData>): MutableList<MyIngredientData> {
+        val returnData = mutableListOf<MyIngredientData>()
+        returnData.addAll(data)
+
+        for (item in data) {
+            for (removeItem in removeDatas){
+                if (item.ingredientData.name == removeItem.ingredientData.name) {
+                    returnData.remove(item)
+                    break
+                }
+            }
+        }
+
+        return returnData
     }
 }
