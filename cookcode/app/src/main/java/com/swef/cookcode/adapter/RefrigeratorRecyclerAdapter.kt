@@ -17,8 +17,6 @@ class RefrigeratorRecyclerAdapter()
     var datas = mutableListOf<RefrigeratorData>()
     var ingredDatas = mutableListOf<MyIngredientData>()
 
-    lateinit var ingredientRecyclerviewAdapter: IngredientRecyclerviewAdapter
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = RefrigeratorRecyclerviewItemBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
@@ -38,12 +36,15 @@ class RefrigeratorRecyclerAdapter()
         fun bind(item: RefrigeratorData){
             binding.ingredientName.text = item.type
 
-            ingredientRecyclerviewAdapter = IngredientRecyclerviewAdapter("refrigerator")
-            ingredientRecyclerviewAdapter.datas = ingredDatas
+            val ingredientRecyclerviewAdapter = IngredientRecyclerviewAdapter("refrigerator")
 
             binding.recyclerView.adapter = ingredientRecyclerviewAdapter
             binding.recyclerView.layoutManager = GridLayoutManager(
                 binding.recyclerView.context, 4)
+
+            val typeIngredientDatas = ingredDatas.filter { it.ingredientData.type == item.type_en }
+            ingredientRecyclerviewAdapter.filteredDatas = typeIngredientDatas as MutableList<MyIngredientData>
+            ingredientRecyclerviewAdapter.notifyDataSetChanged()
 
             // 화살표를 누르면 레이아웃이 확장된다
             binding.btnMore.setOnClickListener {

@@ -125,7 +125,7 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
             .setView(dialogView.root)
             .create()
 
-        searchIngredientRecyclerviewAdapter = IngredientRecyclerviewAdapter("search")
+        searchIngredientRecyclerviewAdapter = IngredientRecyclerviewAdapter("recipe_search")
         dialogView.recyclerView.layoutManager = GridLayoutManager(this, 3)
         dialogView.recyclerView.adapter = searchIngredientRecyclerviewAdapter
         searchIngredientRecyclerviewAdapter.datas = IngredientDataHost().showAllIngredientData() as MutableList<MyIngredientData>
@@ -135,13 +135,12 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
             selectDialog.dismiss()
         }
 
-        dialogView.root.setOnTouchListener { v, _ ->
+        dialogView.root.setOnClickListener { v ->
             if (v !is EditText) { // v가 EditText 클래스의 인스턴스가 아닐 경우
                 val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                 imm.hideSoftInputFromWindow(v.windowToken, 0) // 키보드를 숨김
-                v.clearFocus() // EditText의 포커스 해제
             }
-            false
+            v.clearFocus()
         }
 
         // 필수 재료 어댑터
@@ -388,7 +387,7 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
     private fun testInfoTyped(): Boolean {
         // 모든 식재료에 양이 입력 되었는지 판단
         for (item in searchIngredientRecyclerviewAdapter.selectedItems) {
-            if (item.value == null){
+            if (item.value == null) {
                 allIngredientValueTyped = false
                 break
             }

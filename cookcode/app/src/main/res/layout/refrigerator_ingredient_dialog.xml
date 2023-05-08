@@ -94,7 +94,7 @@
         android:textColor="@color/main_theme"
         android:textSize="15sp"
         android:textStyle="bold"
-        android:inputType="date"
+        android:inputType="text"
         android:focusable="true"
         android:background="@drawable/filled_round_component"
         app:layout_constraintTop_toTopOf="@+id/ingredient_expired_at"

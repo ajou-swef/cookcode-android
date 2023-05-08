@@ -15,6 +15,7 @@ import com.swef.cookcode.data.MyIngredientData
 import com.swef.cookcode.databinding.IngredientRecyclerviewItemBinding
 import com.swef.cookcode.databinding.RecipeIngredientDialogBinding
 import com.swef.cookcode.databinding.RefrigeratorIngredientDialogBinding
+import com.swef.cookcode.navifrags.OnDialogRecyclerviewItemClickListener
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -22,6 +23,9 @@ class IngredientRecyclerviewAdapter(
     private val type: String
 )
     :RecyclerView.Adapter<IngredientRecyclerviewAdapter.ViewHolder>() {
+    constructor(type: String, listener: OnDialogRecyclerviewItemClickListener) : this(type) {
+        this.listener = listener
+    }
 
     // datas는 데이터베이스에 들어있는 식재료 원본
     // 필터 검색을 위해서 filteredDatas에 검색 결과를 저장해서 binding
@@ -38,8 +42,7 @@ class IngredientRecyclerviewAdapter(
     // 필터 검색 시 필수재료, 추가재료 별로 검색하는 데이터 원본이 다르므로 담아두고 검색 결과를 filteredDatas로 넘겨줌
     var beforeSearchData = mutableListOf<MyIngredientData>()
 
-    // 냉장고에 식재료 등록 시 선택된 아이템
-    lateinit var selectedItem: MyIngredientData
+    private lateinit var listener: OnDialogRecyclerviewItemClickListener
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = IngredientRecyclerviewItemBinding.inflate(
@@ -65,7 +68,7 @@ class IngredientRecyclerviewAdapter(
             // 해당 어댑터를 사용하는 경우는 총 3가지
             // 식재료 등록용 어댑터
             when (type) {
-                "search" -> {
+                "recipe_search" -> {
                     if (item.visibility == null) {
                         item.visibility = View.GONE
                     }
@@ -82,6 +85,7 @@ class IngredientRecyclerviewAdapter(
                             }
                         } else {
                             item.visibility = View.GONE
+                            item.value = null
                             selectedItems.remove(item)
                         }
                         binding.checked.visibility = item.visibility!!
@@ -138,6 +142,12 @@ class IngredientRecyclerviewAdapter(
                                 R.string.ingred_quantity,
                                 item.value, item.ingredientData.unit
                             )
+                            binding.value.setTextColor(
+                                ContextCompat.getColor(
+                                    parent.context,
+                                    R.color.black
+                                )
+                            )
                             // 서버에 변경 요청
                             recipeAlertDialog.dismiss()
                         }
@@ -157,11 +167,8 @@ class IngredientRecyclerviewAdapter(
                         recipeAlertDialog.show()
                     }
                 }
-                // 냉장고에 등록된 식재료 수정용 어댑터
-                "refrigerator" -> {
-                    binding.value.visibility = View.VISIBLE
-                    binding.value.text = parent.context.getString(
-                        R.string.ingred_quantity, item.value, item.ingredientData.unit)
+                "refrigerator_search" -> {
+                    binding.value.visibility = View.GONE
 
                     val refrigeratorDialogView = RefrigeratorIngredientDialogBinding.inflate(
                         LayoutInflater.from(parent.context), parent, false
@@ -180,18 +187,127 @@ class IngredientRecyclerviewAdapter(
                     refrigeratorDialogView.btnCancel.setOnClickListener {
                         refrigeratorAlertDialog.dismiss()
                     }
-                    refrigeratorDialogView.btnConfirm.setOnClickListener {
-                        val dateString = refrigeratorDialogView.editIngredientName.text.toString()
-                        val dateFormat = SimpleDateFormat("yyyy/MM/dd", Locale.getDefault())
-                        val date = dateFormat.parse(dateString)
-                        item.expiredAt = date
-                        item.value = Integer.parseInt(refrigeratorDialogView.editIngredientValue.text.toString())
 
-                        binding.value.text = parent.context.getString(
-                            R.string.ingred_quantity,
-                            item.value, item.ingredientData.unit)
-                        // 서버에 변경 요청
+                    refrigeratorDialogView.btnConfirm.setOnClickListener {
+                        val value = refrigeratorDialogView.editIngredientValue.text
+                        val date = refrigeratorDialogView.editIngredientExpiredAt.text.toString()
+
+                        if (value.isNullOrEmpty()) {
+                            Toast.makeText(parent.context, "양이 입력되지 않았습니다.", Toast.LENGTH_SHORT).show()
+                        }
+                        else if (!date.matches(Regex("\\d{4}/\\d{2}/\\d{2}$"))) {
+                            Toast.makeText(parent.context, "정확한 날짜를 입력해주세요.", Toast.LENGTH_SHORT).show()
+                        }
+                        else if (!date.matches(Regex("20\\d{2}/(0[1-9]|1[012])/(0[1-9]|[12][0-9]|3[01])"))){
+                            Toast.makeText(parent.context, "정확한 날짜를 입력해주세요.", Toast.LENGTH_SHORT).show()
+                        }
+                        else {
+                            val dateFormat = SimpleDateFormat("yyyy/MM/dd", Locale.getDefault())
+                            val expiredAt = dateFormat.parse(date)
+                            item.expiredAt = expiredAt
+                            item.value =
+                                Integer.parseInt(value.toString())
+
+                            binding.value.text = parent.context.getString(
+                                R.string.ingred_quantity,
+                                item.value, item.ingredientData.unit
+                            )
+                            // 서버에 변경 요청
+
+                            Toast.makeText(parent.context, "식재료가 등록되었습니다.", Toast.LENGTH_SHORT).show()
+                            refrigeratorAlertDialog.dismiss()
+                        }
+                    }
+
+                    refrigeratorDialogView.editIngredientValue.onFocusChangeListener = View.OnFocusChangeListener {
+                            v, hasFocus ->
+                        if (!hasFocus) {
+                            val imm =
+                                parent.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                            imm.hideSoftInputFromWindow(v.windowToken, 0)
+                        }
+                    }
+
+                    refrigeratorDialogView.editIngredientExpiredAt.onFocusChangeListener = View.OnFocusChangeListener {
+                            v, hasFocus ->
+                        if (!hasFocus) {
+                            val imm =
+                                parent.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                            imm.hideSoftInputFromWindow(v.windowToken, 0)
+                        }
+                    }
+
+                    binding.layout.setOnClickListener {
+                        listener.onItemClicked()
+                        refrigeratorAlertDialog.show()
+                    }
+                }
+                // 냉장고에 등록된 식재료 수정용 어댑터
+                "refrigerator" -> {
+                    binding.value.visibility = View.VISIBLE
+                    binding.value.setTextColor(
+                        ContextCompat.getColor(
+                            parent.context,
+                            R.color.black
+                        )
+                    )
+                    binding.value.text = parent.context.getString(
+                        R.string.ingred_quantity, item.value, item.ingredientData.unit)
+
+
+                    val refrigeratorDialogView = RefrigeratorIngredientDialogBinding.inflate(
+                        LayoutInflater.from(parent.context), parent, false
+                    )
+                    val refrigeratorAlertDialog = AlertDialog.Builder(parent.context)
+                        .setView(refrigeratorDialogView.root)
+                        .create()
+                    refrigeratorDialogView.ingredientValue.text =
+                        parent.context.getString(
+                            R.string.ingredient_value,
+                            item.ingredientData.unit
+                        )
+
+                    if (item.value != null)
+                        refrigeratorDialogView.editIngredientValue.setText(item.value.toString())
+
+                    if (item.expiredAt != null)
+                        refrigeratorDialogView.editIngredientExpiredAt.setText(item.expiredAt.toString())
+
+                    refrigeratorDialogView.editIngredientName.setText(item.ingredientData.name)
+
+                    refrigeratorDialogView.btnCancel.setOnClickListener {
                         refrigeratorAlertDialog.dismiss()
+                    }
+
+                    refrigeratorDialogView.btnConfirm.setOnClickListener {
+                        val value = refrigeratorDialogView.editIngredientValue.text
+                        val date = refrigeratorDialogView.editIngredientExpiredAt.text.toString()
+
+                        if (value.isNullOrEmpty()) {
+                            Toast.makeText(parent.context, "양이 입력되지 않았습니다.", Toast.LENGTH_SHORT).show()
+                        }
+                        else if (!date.matches(Regex("\\d{4}/\\d{2}/\\d{2}$"))) {
+                            Toast.makeText(parent.context, "정확한 날짜를 입력해주세요.", Toast.LENGTH_SHORT).show()
+                        }
+                        else if (!date.matches(Regex("20\\d{2}/(0[1-9]|1[012])/(0[1-9]|[12][0-9]|3[01])"))){
+                            Toast.makeText(parent.context, "정확한 날짜를 입력해주세요.", Toast.LENGTH_SHORT).show()
+                        }
+                        else {
+                            val dateFormat = SimpleDateFormat("yyyy/MM/dd", Locale.getDefault())
+                            val expiredAt = dateFormat.parse(date)
+                            item.expiredAt = expiredAt
+                            item.value =
+                                Integer.parseInt(value.toString())
+
+                            binding.value.text = parent.context.getString(
+                                R.string.ingred_quantity,
+                                item.value, item.ingredientData.unit
+                            )
+                            // 서버에 변경 요청
+
+                            Toast.makeText(parent.context, "식재료 정보가 수정되었습니다.", Toast.LENGTH_SHORT).show()
+                            refrigeratorAlertDialog.dismiss()
+                        }
                     }
 
                     refrigeratorDialogView.editIngredientValue.onFocusChangeListener = View.OnFocusChangeListener {
