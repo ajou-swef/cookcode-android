@@ -60,8 +60,10 @@
     <string name="delete_user">계정 삭제</string>
     <string name="update_ingredient">식재료 수정</string>
     <string name="ingredient_name">식재료명</string>
-    <string name="ingredient_value">재료 양</string>
+    <string name="ingredient_value">재료양(%s)</string>
     <string name="confirm">확인</string>
     <string name="expired_at">유통기한</string>
     <string name="search_ingred_for_name">식재료 이름으로 검색..</string>
+    <string name="ingred_quantity">%d%s</string>
+    <string name="hint_date">YYYY/MM/DD</string>
 </resources>

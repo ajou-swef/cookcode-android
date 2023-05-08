@@ -1,28 +1,45 @@
 package com.swef.cookcode.adapter
 
 import android.app.AlertDialog
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
+import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
+import com.swef.cookcode.R
 import com.swef.cookcode.data.MyIngredientData
 import com.swef.cookcode.databinding.IngredientRecyclerviewItemBinding
 import com.swef.cookcode.databinding.RecipeIngredientDialogBinding
 import com.swef.cookcode.databinding.RefrigeratorIngredientDialogBinding
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class IngredientRecyclerviewAdapter(
     private val type: String
 )
     :RecyclerView.Adapter<IngredientRecyclerviewAdapter.ViewHolder>() {
 
+    // datas는 데이터베이스에 들어있는 식재료 원본
+    // 필터 검색을 위해서 filteredDatas에 검색 결과를 저장해서 binding
     var datas = mutableListOf<MyIngredientData>()
     var filteredDatas = mutableListOf<MyIngredientData>()
+
+    // recipe에 식재료 등록 시 선택된 식재료들을 담아둠
     var selectedItems = mutableListOf<MyIngredientData>()
+
+    // 필수 재료, 추가 재료 정보를 담아둠
     var essentialData = mutableListOf<MyIngredientData>()
     var additionalData = mutableListOf<MyIngredientData>()
-    var beforeSearchData = mutableListOf<MyIngredientData>()
-    lateinit var selectedItem: MyIngredientData
 
+    // 필터 검색 시 필수재료, 추가재료 별로 검색하는 데이터 원본이 다르므로 담아두고 검색 결과를 filteredDatas로 넘겨줌
+    var beforeSearchData = mutableListOf<MyIngredientData>()
+
+    // 냉장고에 식재료 등록 시 선택된 아이템
+    lateinit var selectedItem: MyIngredientData
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = IngredientRecyclerviewItemBinding.inflate(
@@ -73,49 +90,131 @@ class IngredientRecyclerviewAdapter(
                 // 레시피에 등록된 식재료 수정용 어댑터
                 "recipe" -> {
                     binding.value.visibility = View.VISIBLE
-                    binding.value.text = item.value.toString()
-
-                    // 식재료 양 조절
-                    binding.layout.setOnClickListener {
-                        val recipeDialogView = RecipeIngredientDialogBinding.inflate(
-                            LayoutInflater.from(parent.context), parent, false
+                    if (item.value == null) {
+                        binding.value.setTextColor(
+                            ContextCompat.getColor(
+                                parent.context,
+                                R.color.red
+                            )
                         )
-                        val recipeAlertDialog = AlertDialog.Builder(parent.context)
-                            .setView(recipeDialogView.root)
-                            .create()
+                        binding.value.text = "입력 필요"
+                    } else {
+                        binding.value.setTextColor(
+                            ContextCompat.getColor(
+                                parent.context,
+                                R.color.black
+                            )
+                        )
+                        binding.value.text = parent.context.getString(
+                            R.string.ingred_quantity, item.value, item.ingredientData.unit)
+                    }
 
-                        recipeDialogView.btnCancel.setOnClickListener {
-                            recipeAlertDialog.dismiss()
+                    val recipeDialogView = RecipeIngredientDialogBinding.inflate(
+                        LayoutInflater.from(parent.context), parent, false
+                    )
+                    val recipeAlertDialog = AlertDialog.Builder(parent.context)
+                        .setView(recipeDialogView.root)
+                        .create()
+
+                    recipeDialogView.ingredientValue.text =
+                        parent.context.getString(
+                            R.string.ingredient_value,
+                            item.ingredientData.unit
+                        )
+
+                    recipeDialogView.editIngredientName.setText(item.ingredientData.name)
+
+                    recipeDialogView.btnCancel.setOnClickListener {
+                        recipeAlertDialog.dismiss()
+                    }
+                    recipeDialogView.btnConfirm.setOnClickListener {
+                        if (recipeDialogView.editIngredientValue.text.isNullOrEmpty()) {
+                            Toast.makeText(parent.context, "양이 입력되지 않았습니다.", Toast.LENGTH_SHORT).show()
                         }
-                        recipeDialogView.btnConfirm.setOnClickListener {
-                            binding.value.text = recipeDialogView.ingredientValue.text
+                        else {
+                            item.value =
+                                Integer.parseInt(recipeDialogView.editIngredientValue.text.toString())
+                            binding.value.text = parent.context.getString(
+                                R.string.ingred_quantity,
+                                item.value, item.ingredientData.unit
+                            )
                             // 서버에 변경 요청
                             recipeAlertDialog.dismiss()
                         }
+                    }
+
+                    recipeDialogView.root.setOnClickListener { v ->
+                        if (v !is EditText) {
+                            val imm =
+                                parent.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                            imm.hideSoftInputFromWindow(v.windowToken, 0)
+                        }
+                        v.clearFocus()
+                    }
+
+                    // 식재료 양 조절
+                    binding.layout.setOnClickListener {
+                        recipeAlertDialog.show()
                     }
                 }
                 // 냉장고에 등록된 식재료 수정용 어댑터
                 "refrigerator" -> {
                     binding.value.visibility = View.VISIBLE
-                    binding.value.text = item.value.toString()
+                    binding.value.text = parent.context.getString(
+                        R.string.ingred_quantity, item.value, item.ingredientData.unit)
+
+                    val refrigeratorDialogView = RefrigeratorIngredientDialogBinding.inflate(
+                        LayoutInflater.from(parent.context), parent, false
+                    )
+                    val refrigeratorAlertDialog = AlertDialog.Builder(parent.context)
+                        .setView(refrigeratorDialogView.root)
+                        .create()
+                    refrigeratorDialogView.ingredientValue.text =
+                        parent.context.getString(
+                            R.string.ingredient_value,
+                            item.ingredientData.unit
+                        )
+
+                    refrigeratorDialogView.editIngredientName.setText(item.ingredientData.name)
+
+                    refrigeratorDialogView.btnCancel.setOnClickListener {
+                        refrigeratorAlertDialog.dismiss()
+                    }
+                    refrigeratorDialogView.btnConfirm.setOnClickListener {
+                        val dateString = refrigeratorDialogView.editIngredientName.text.toString()
+                        val dateFormat = SimpleDateFormat("yyyy/MM/dd", Locale.getDefault())
+                        val date = dateFormat.parse(dateString)
+                        item.expiredAt = date
+                        item.value = Integer.parseInt(refrigeratorDialogView.editIngredientValue.text.toString())
+
+                        binding.value.text = parent.context.getString(
+                            R.string.ingred_quantity,
+                            item.value, item.ingredientData.unit)
+                        // 서버에 변경 요청
+                        refrigeratorAlertDialog.dismiss()
+                    }
+
+                    refrigeratorDialogView.editIngredientValue.onFocusChangeListener = View.OnFocusChangeListener {
+                            v, hasFocus ->
+                        if (!hasFocus) {
+                            val imm =
+                                parent.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                            imm.hideSoftInputFromWindow(v.windowToken, 0)
+                        }
+                    }
+
+                    refrigeratorDialogView.editIngredientExpiredAt.onFocusChangeListener = View.OnFocusChangeListener {
+                            v, hasFocus ->
+                        if (!hasFocus) {
+                            val imm =
+                                parent.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                            imm.hideSoftInputFromWindow(v.windowToken, 0)
+                        }
+                    }
 
                     // 식재료 양, 유통기한 조정
                     binding.layout.setOnClickListener {
-                        val refrigeratorDialogView = RefrigeratorIngredientDialogBinding.inflate(
-                            LayoutInflater.from(parent.context), parent, false
-                        )
-                        val refrigeratorAlertDialog = AlertDialog.Builder(parent.context)
-                            .setView(refrigeratorDialogView.root)
-                            .create()
-
-                        refrigeratorDialogView.btnCancel.setOnClickListener {
-                            refrigeratorAlertDialog.dismiss()
-                        }
-                        refrigeratorDialogView.btnConfirm.setOnClickListener {
-                            binding.value.text = refrigeratorDialogView.ingredientValue.text
-                            // 서버에 변경 요청
-                            refrigeratorAlertDialog.dismiss()
-                        }
+                        refrigeratorAlertDialog.show()
                     }
                 }
             }

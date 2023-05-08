@@ -29,11 +29,10 @@
 
     <EditText
         android:id="@+id/edit_ingredient_name"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        android:ems="8"
-        android:text="돼지 목살"
+        android:layout_marginStart="50dp"
+        android:layout_marginEnd="20dp"
         android:textColor="@color/main_theme"
         android:textSize="15sp"
         android:textStyle="bold"
@@ -41,7 +40,8 @@
         android:background="@drawable/filled_round_component"
         app:layout_constraintTop_toTopOf="@+id/ingredient_name"
         app:layout_constraintBottom_toBottomOf="@+id/ingredient_name"
-        app:layout_constraintStart_toEndOf="@+id/ingredient_name"/>
+        app:layout_constraintStart_toEndOf="@+id/ingredient_name"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
     <TextView
         android:id="@+id/ingredient_value"
@@ -57,11 +57,10 @@
 
     <EditText
         android:id="@+id/edit_ingredient_value"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        android:ems="8"
-        android:text="500"
+        android:layout_marginStart="50dp"
+        android:layout_marginEnd="20dp"
         android:textColor="@color/main_theme"
         android:textSize="15sp"
         android:textStyle="bold"
@@ -70,7 +69,8 @@
         android:background="@drawable/filled_round_component"
         app:layout_constraintTop_toTopOf="@+id/ingredient_value"
         app:layout_constraintBottom_toBottomOf="@+id/ingredient_value"
-        app:layout_constraintStart_toEndOf="@+id/ingredient_name"/>
+        app:layout_constraintStart_toEndOf="@+id/ingredient_name"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
     <TextView
         android:id="@+id/btn_confirm"
@@ -80,9 +80,11 @@
         android:textStyle="bold"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
         android:layout_marginEnd="10dp"
+        android:layout_marginBottom="10dp"
         app:layout_constraintEnd_toStartOf="@+id/btn_cancel"
-        app:layout_constraintBottom_toBottomOf="@+id/btn_cancel"/>
+        app:layout_constraintTop_toBottomOf="@+id/edit_ingredient_value"/>
 
     <TextView
         android:id="@+id/btn_cancel"
@@ -92,8 +94,9 @@
         android:textStyle="bold"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="10dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="10dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        app:layout_constraintTop_toBottomOf="@+id/edit_ingredient_value"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

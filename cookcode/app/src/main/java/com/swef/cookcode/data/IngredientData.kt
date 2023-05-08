@@ -7,13 +7,14 @@ data class IngredientData(
     val image: Uri,
     val name: String,
     val type: String,
-    val ingredId: Int
+    val unit: String,
+    val ingredId: Int,
 )
 
 data class MyIngredientData(
     var ingredientData: IngredientData,
     val fridgeIngredId: Int?,
-    val value: Int?,
-    val expiredAt: Date?,
+    var value: Int?,
+    var expiredAt: Date?,
     var visibility: Int?
 )

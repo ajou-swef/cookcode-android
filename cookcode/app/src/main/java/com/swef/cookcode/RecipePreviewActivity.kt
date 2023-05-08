@@ -26,7 +26,9 @@ class RecipePreviewActivity : AppCompatActivity() {
         val description = intent.getStringExtra("recipe_description")
         val mainImage = Uri.parse(intent.getStringExtra("main_image"))
         val essentialIngreds = intent.getStringArrayExtra("essential_ingreds")!!.toList()
+        val essentialValues = intent.getStringArrayExtra("essential_values")!!.toList()
         val additionalIngreds = intent.getStringArrayExtra("additional_ingreds")!!.toList()
+        val additionalValues = intent.getStringArrayExtra("additional_values")!!.toList()
 
         // 현재 보고있는 step
         var currentPosition = 0

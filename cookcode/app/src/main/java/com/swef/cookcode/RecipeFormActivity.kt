@@ -9,7 +9,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
@@ -57,6 +56,7 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
     private var titleTyped = false
     private var descriptionTyped = false
     private var essentialIngredientSelected = false
+    private var allIngredientValueTyped = false
     private var stepExist = false
 
     // 미리보기 단계에서 해당 스텝 수정을 위한 스텝 단계 정보 불러오기
@@ -135,12 +135,11 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
             selectDialog.dismiss()
         }
 
-
         dialogView.root.setOnTouchListener { v, _ ->
             if (v !is EditText) { // v가 EditText 클래스의 인스턴스가 아닐 경우
                 val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.hideSoftInputFromWindow(v.windowToken, 0) // 키보드를 숨깁니다.
-                dialogView.root.clearFocus() // EditText의 포커스를 해제합니다.
+                imm.hideSoftInputFromWindow(v.windowToken, 0) // 키보드를 숨김
+                v.clearFocus() // EditText의 포커스 해제
             }
             false
         }
@@ -233,12 +232,21 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
 
                 // 필수재료, 추가재료 정보 전달
                 val essentialIngreds = mutableListOf<String>()
+                val essentialValues = mutableListOf<String>()
                 val additionalIngreds = mutableListOf<String>()
+                val additionalValues = mutableListOf<String>()
 
                 essentialIngreds.apply {
                     for (item in searchIngredientRecyclerviewAdapter.essentialData) {
                         val ingredId = item.ingredientData.ingredId
                         add(ingredId.toString())
+                    }
+                }
+
+                essentialValues.apply {
+                    for (item in searchIngredientRecyclerviewAdapter.essentialData) {
+                        val ingredValue = item.value
+                        add(ingredValue.toString())
                     }
                 }
 
@@ -249,8 +257,17 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
                     }
                 }
 
+                additionalValues.apply {
+                    for (item in searchIngredientRecyclerviewAdapter.additionalData) {
+                        val ingredValue = item.value
+                        add(ingredValue.toString())
+                    }
+                }
+
                 intent.putExtra("essential_ingreds", essentialIngreds.toTypedArray())
+                intent.putExtra("essential_values", essentialValues.toTypedArray())
                 intent.putExtra("additional_ingreds", additionalIngreds.toTypedArray())
+                intent.putExtra("additional_values", additionalValues.toTypedArray())
 
                 // 스텝 개수를 알려줌
                 intent.putExtra("index", steps)
@@ -269,7 +286,7 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
                 getResult.launch(intent)
             }
             else {
-                Toast.makeText(this, "추가 재료를 제외한 항목은 모두 입력되어야 합니다.", Toast.LENGTH_SHORT)
+                Toast.makeText(this, "추가 재료를 제외한 항목을 입력해주세요.", Toast.LENGTH_SHORT)
                     .show()
             }
         }
@@ -369,16 +386,21 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
 
     // 필수 정보 입력 여부 판단
     private fun testInfoTyped(): Boolean {
-        return titleTyped && descriptionTyped && essentialIngredientSelected && stepExist
+        // 모든 식재료에 양이 입력 되었는지 판단
+        for (item in searchIngredientRecyclerviewAdapter.selectedItems) {
+            if (item.value == null){
+                allIngredientValueTyped = false
+                break
+            }
+        }
+        return titleTyped && descriptionTyped && essentialIngredientSelected && stepExist && allIngredientValueTyped
     }
 }
 
 
 // Inconsistency detected 버그 문제 해결을 위한 솔루션 참조
-class LinearLayoutManagerWrapper: LinearLayoutManager {
-    constructor(context: Context) : super(context) {}
-    constructor(context: Context, orientation: Int, reverseLayout: Boolean) : super(context, orientation, reverseLayout) {}
-    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int, defStyleRes: Int) : super(context, attrs, defStyleAttr, defStyleRes) {}
+class LinearLayoutManagerWrapper(context: Context, orientation: Int, reverseLayout: Boolean) :
+    LinearLayoutManager(context, orientation, reverseLayout) {
     override fun supportsPredictiveItemAnimations(): Boolean {
         return false
     }
