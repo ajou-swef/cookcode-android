@@ -10,8 +10,11 @@ import com.swef.cookcode.data.MyIngredientData
 import com.swef.cookcode.data.RefrigeratorData
 import com.swef.cookcode.data.host.ToggleAnimationHost
 import com.swef.cookcode.databinding.RefrigeratorRecyclerviewItemBinding
+import com.swef.cookcode.navifrags.OnDialogRecyclerviewItemClickListener
 
-class RefrigeratorRecyclerAdapter()
+class RefrigeratorRecyclerAdapter(
+    private val listener: OnDialogRecyclerviewItemClickListener
+)
     : RecyclerView.Adapter<RefrigeratorRecyclerAdapter.ViewHolder>() {
 
     var datas = mutableListOf<RefrigeratorData>()
@@ -36,14 +39,13 @@ class RefrigeratorRecyclerAdapter()
         fun bind(item: RefrigeratorData){
             binding.ingredientName.text = item.type
 
-            val ingredientRecyclerviewAdapter = IngredientRecyclerviewAdapter("refrigerator")
+            val ingredientRecyclerviewAdapter = IngredientRecyclerviewAdapter("refrigerator", listener)
 
             binding.recyclerView.adapter = ingredientRecyclerviewAdapter
             binding.recyclerView.layoutManager = GridLayoutManager(
-                binding.recyclerView.context, 4)
+                binding.recyclerView.context, 3)
 
-            val typeIngredientDatas = ingredDatas.filter { it.ingredientData.type == item.type_en }
-            ingredientRecyclerviewAdapter.filteredDatas = typeIngredientDatas as MutableList<MyIngredientData>
+            ingredientRecyclerviewAdapter.filteredDatas = ingredDatas
             ingredientRecyclerviewAdapter.notifyDataSetChanged()
 
             // 화살표를 누르면 레이아웃이 확장된다

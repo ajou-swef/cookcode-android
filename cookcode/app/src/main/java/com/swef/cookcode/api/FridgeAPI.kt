@@ -14,7 +14,7 @@ import retrofit2.http.POST
 import retrofit2.http.Path
 
 interface FridgeAPI {
-    @GET("fridge")
+    @GET("fridge/")
     fun getFridgeData(
         @Header("accessToken") accessToken: String
     ): Call<MyIngredList>

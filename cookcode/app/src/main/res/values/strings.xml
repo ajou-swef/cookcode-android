@@ -65,6 +65,6 @@
     <string name="expired_at">유통기한</string>
     <string name="search_ingred_for_name">식재료 이름으로 검색..</string>
     <string name="ingred_quantity">%d%s</string>
-    <string name="hint_date">YYYY/MM/DD</string>제
+    <string name="hint_date">yyyy-MM-dd</string>제
     <string name="delete">삭제</string>
 </resources>

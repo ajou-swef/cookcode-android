@@ -98,6 +98,34 @@ class RecipeStepActivity : AppCompatActivity() {
                 val title = binding.editTitle.text.toString()
                 val description = binding.editDescription.text.toString()
 
+                /*
+                val imageFiles = mutableListOf<MultipartBody.Part>()
+                val videoFiles = mutableListOf<MultipartBody.Part>()
+
+                for (item in imageData) {
+                    if(item.imageUri != null) {
+                        val file = File(item.imageUri.toString())
+                        val mediaType = "multipart/form-data".toMediaTypeOrNull()
+                        val requestFile = file.asRequestBody(mediaType)
+                        val part = MultipartBody.Part.createFormData("photo", file.name, requestFile)
+
+                        imageFiles.add(part)
+                    }
+                }
+
+                for (item in videoData) {
+                    if(item.uri != null) {
+                        val file = File(item.uri.toString())
+                        val mediaType = "multipart/form-data".toMediaTypeOrNull()
+                        val requestFile = file.asRequestBody(mediaType)
+                        val part = MultipartBody.Part.createFormData("photo", file.name, requestFile)
+
+                        imageFiles.add(part)
+                    }
+                }
+
+                 */
+
                 // recipe form activity로 돌아갈때 intent로 정보 넘겨줌
                 val intent = Intent()
                 intent.putExtra("images", imageData)

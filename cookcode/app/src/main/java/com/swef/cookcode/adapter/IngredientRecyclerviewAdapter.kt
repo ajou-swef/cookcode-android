@@ -2,6 +2,9 @@ package com.swef.cookcode.adapter
 
 import android.app.AlertDialog
 import android.content.Context
+import android.text.Editable
+import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,8 +19,6 @@ import com.swef.cookcode.databinding.IngredientRecyclerviewItemBinding
 import com.swef.cookcode.databinding.RecipeIngredientDialogBinding
 import com.swef.cookcode.databinding.RefrigeratorIngredientDialogBinding
 import com.swef.cookcode.navifrags.OnDialogRecyclerviewItemClickListener
-import java.text.SimpleDateFormat
-import java.util.Locale
 
 class IngredientRecyclerviewAdapter(
     private val type: String
@@ -195,16 +196,14 @@ class IngredientRecyclerviewAdapter(
                         if (value.isNullOrEmpty()) {
                             Toast.makeText(parent.context, "양이 입력되지 않았습니다.", Toast.LENGTH_SHORT).show()
                         }
-                        else if (!date.matches(Regex("\\d{4}/\\d{2}/\\d{2}$"))) {
+                        else if (!date.matches(Regex("\\d{4}-\\d{2}-\\d{2}$"))) {
                             Toast.makeText(parent.context, "정확한 날짜를 입력해주세요.", Toast.LENGTH_SHORT).show()
                         }
-                        else if (!date.matches(Regex("20\\d{2}/(0[1-9]|1[012])/(0[1-9]|[12][0-9]|3[01])"))){
+                        else if (!date.matches(Regex("20\\d{2}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])"))){
                             Toast.makeText(parent.context, "정확한 날짜를 입력해주세요.", Toast.LENGTH_SHORT).show()
                         }
                         else {
-                            val dateFormat = SimpleDateFormat("yyyy/MM/dd", Locale.getDefault())
-                            val expiredAt = dateFormat.parse(date)
-                            item.expiredAt = expiredAt
+                            item.expiredAt = date
                             item.value = Integer.parseInt(value.toString())
 
                             binding.value.text = parent.context.getString(
@@ -215,6 +214,8 @@ class IngredientRecyclerviewAdapter(
                             listener.postIngredient(item.ingredientData.ingredId,
                                 item.expiredAt!!,
                                 item.value!!)
+
+                            listener.getIngredient()
 
                             refrigeratorAlertDialog.dismiss()
                         }
@@ -237,6 +238,29 @@ class IngredientRecyclerviewAdapter(
                             imm.hideSoftInputFromWindow(v.windowToken, 0)
                         }
                     }
+
+                    refrigeratorDialogView.editIngredientExpiredAt.addTextChangedListener(object: TextWatcher {
+                        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                            // Do nothing
+                        }
+
+                        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                            // Do nothing
+                        }
+
+                        override fun afterTextChanged(s: Editable?) {
+                            val input = s?.toString() ?: ""
+                            val formattedInput = if (input.length == 4 || input.length == 7) {
+                                "$input-"
+                            } else {
+                                input
+                            }
+                            if (input != formattedInput) {
+                                refrigeratorDialogView.editIngredientExpiredAt.setText(formattedInput)
+                                refrigeratorDialogView.editIngredientExpiredAt.setSelection(formattedInput.length)
+                            }
+                        }
+                    })
 
                     binding.layout.setOnClickListener {
                         listener.onItemClicked()
@@ -288,16 +312,14 @@ class IngredientRecyclerviewAdapter(
                         if (value.isNullOrEmpty()) {
                             Toast.makeText(parent.context, "양이 입력되지 않았습니다.", Toast.LENGTH_SHORT).show()
                         }
-                        else if (!date.matches(Regex("\\d{4}/\\d{2}/\\d{2}$"))) {
+                        else if (!date.matches(Regex("\\d{4}-\\d{2}-\\d{2}$"))) {
                             Toast.makeText(parent.context, "정확한 날짜를 입력해주세요.", Toast.LENGTH_SHORT).show()
                         }
-                        else if (!date.matches(Regex("20\\d{2}/(0[1-9]|1[012])/(0[1-9]|[12][0-9]|3[01])"))){
+                        else if (!date.matches(Regex("20\\d{2}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])"))){
                             Toast.makeText(parent.context, "정확한 날짜를 입력해주세요.", Toast.LENGTH_SHORT).show()
                         }
                         else {
-                            val dateFormat = SimpleDateFormat("yyyy/MM/dd", Locale.getDefault())
-                            val expiredAt = dateFormat.parse(date)
-                            item.expiredAt = expiredAt
+                            item.expiredAt = date
                             item.value =
                                 Integer.parseInt(value.toString())
 
@@ -332,6 +354,30 @@ class IngredientRecyclerviewAdapter(
                             imm.hideSoftInputFromWindow(v.windowToken, 0)
                         }
                     }
+
+                    refrigeratorDialogView.editIngredientExpiredAt.addTextChangedListener(object: TextWatcher {
+                        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                            // Do nothing
+                        }
+
+                        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                            // Do nothing
+                        }
+
+                        override fun afterTextChanged(s: Editable?) {
+                            val input = s?.toString() ?: ""
+                            val formattedInput = if (input.length == 4 || input.length == 7) {
+                                "$input-"
+                            } else {
+                                input
+                            }
+                            if (input != formattedInput) {
+                                refrigeratorDialogView.editIngredientExpiredAt.setText(formattedInput)
+                                refrigeratorDialogView.editIngredientExpiredAt.setSelection(formattedInput.length)
+                            }
+                        }
+                    })
+
 
                     // 식재료 양, 유통기한 조정
                     binding.layout.setOnClickListener {
