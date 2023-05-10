@@ -23,6 +23,9 @@ class HomeFragment : Fragment() {
     private var _binding : FragmentHomeBinding? = null
     // nullable할 경우 ?를 계속 붙여줘야 하기 때문에 non-null 타입으로 포장
     private val binding get() = _binding!!
+
+    private lateinit var accessToken: String
+    private lateinit var refreshToken: String
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
@@ -32,6 +35,9 @@ class HomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
+
+        accessToken = arguments?.getString("access_token")!!
+        refreshToken = arguments?.getString("refresh_token")!!
 
         // 컨텐츠 추가 버튼 click listener
         binding.btnAddContents.setOnClickListener{
@@ -48,6 +54,8 @@ class HomeFragment : Fragment() {
                     R.id.cookie -> true
                     R.id.recipe -> {
                         val nextIntent = Intent(activity, RecipeFormActivity::class.java)
+                        nextIntent.putExtra("access_token", accessToken)
+                        nextIntent.putExtra("refresh_token", refreshToken)
                         nextIntent.addFlags(FLAG_ACTIVITY_CLEAR_TOP)
                         startActivity(nextIntent)
                         true

@@ -148,7 +148,6 @@ class IngredientRecyclerviewAdapter(
                                     R.color.black
                                 )
                             )
-                            // 서버에 변경 요청
                             recipeAlertDialog.dismiss()
                         }
                     }
@@ -184,7 +183,8 @@ class IngredientRecyclerviewAdapter(
 
                     refrigeratorDialogView.editIngredientName.setText(item.ingredientData.name)
 
-                    refrigeratorDialogView.btnCancel.setOnClickListener {
+                    refrigeratorDialogView.btnDelete.text = "취소"
+                    refrigeratorDialogView.btnDelete.setOnClickListener {
                         refrigeratorAlertDialog.dismiss()
                     }
 
@@ -205,16 +205,17 @@ class IngredientRecyclerviewAdapter(
                             val dateFormat = SimpleDateFormat("yyyy/MM/dd", Locale.getDefault())
                             val expiredAt = dateFormat.parse(date)
                             item.expiredAt = expiredAt
-                            item.value =
-                                Integer.parseInt(value.toString())
+                            item.value = Integer.parseInt(value.toString())
 
                             binding.value.text = parent.context.getString(
                                 R.string.ingred_quantity,
                                 item.value, item.ingredientData.unit
                             )
-                            // 서버에 변경 요청
 
-                            Toast.makeText(parent.context, "식재료가 등록되었습니다.", Toast.LENGTH_SHORT).show()
+                            listener.postIngredient(item.ingredientData.ingredId,
+                                item.expiredAt!!,
+                                item.value!!)
+
                             refrigeratorAlertDialog.dismiss()
                         }
                     }
@@ -275,7 +276,8 @@ class IngredientRecyclerviewAdapter(
 
                     refrigeratorDialogView.editIngredientName.setText(item.ingredientData.name)
 
-                    refrigeratorDialogView.btnCancel.setOnClickListener {
+                    refrigeratorDialogView.btnDelete.setOnClickListener {
+                        listener.deleteIngredient(item.fridgeIngredId!!)
                         refrigeratorAlertDialog.dismiss()
                     }
 
@@ -303,9 +305,12 @@ class IngredientRecyclerviewAdapter(
                                 R.string.ingred_quantity,
                                 item.value, item.ingredientData.unit
                             )
-                            // 서버에 변경 요청
 
-                            Toast.makeText(parent.context, "식재료 정보가 수정되었습니다.", Toast.LENGTH_SHORT).show()
+                            listener.patchIngredient(item.fridgeIngredId!!,
+                                item.ingredientData.ingredId,
+                                item.expiredAt!!,
+                                item.value!!)
+
                             refrigeratorAlertDialog.dismiss()
                         }
                     }

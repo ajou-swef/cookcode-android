@@ -2,7 +2,6 @@ package com.swef.cookcode
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import com.swef.cookcode.databinding.ActivityHomeBinding
 import com.swef.cookcode.navifrags.*
 
@@ -14,26 +13,23 @@ class HomeActivity : AppCompatActivity() {
     // refreshtoken이 유효하지 않을 경우 로그아웃
     private lateinit var refreshToken : String
 
+    private val bundle = Bundle()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        if(!intent.getStringExtra("accesstoken").isNullOrBlank()) {
-            accessToken = intent.getStringExtra("accesstoken")!!
-            Log.d("data", accessToken)
-        }
-        else {
-            Log.d("data", "fail at")
+        if(!intent.getStringExtra("access_token").isNullOrBlank()) {
+            accessToken = intent.getStringExtra("access_token")!!
         }
 
-        if(!intent.getStringExtra("refreshtoken").isNullOrBlank()){
-            refreshToken = intent.getStringExtra("refreshtoken")!!
-            Log.d("data", refreshToken)
+        if(!intent.getStringExtra("refresh_token").isNullOrBlank()){
+            refreshToken = intent.getStringExtra("refresh_token")!!
         }
-        else {
-            Log.d("data", "fail rt")
-        }
+
+        bundle.putString("access_token", accessToken)
+        bundle.putString("refresh_token", refreshToken)
 
         // bottom navigation bar 초기화
         initBottomNavigation()
@@ -41,8 +37,16 @@ class HomeActivity : AppCompatActivity() {
 
     private fun initBottomNavigation() {
         // 최초 실행되는 fragment는 homefragment(메인페이지)
+        val homeFragment = HomeFragment()
+        val refrigeratorFragment = RefrigeratorFragment()
+        val cookieFragment = CookieFragment()
+
+        homeFragment.arguments = bundle
+        refrigeratorFragment.arguments = bundle
+        cookieFragment.arguments = bundle
+
         supportFragmentManager.beginTransaction()
-            .replace(R.id.fl_container, HomeFragment())
+            .replace(R.id.fl_container, homeFragment)
             .commitAllowingStateLoss()
         // 메뉴 역시 home 버튼이 클릭되어있어야함
         binding.bnvMain.selectedItemId = R.id.menu_home
@@ -53,21 +57,21 @@ class HomeActivity : AppCompatActivity() {
             when (item.itemId) {
                 R.id.menu_cookie -> {
                     supportFragmentManager.beginTransaction()
-                        .replace(R.id.fl_container, CookieFragment())
+                        .replace(R.id.fl_container, cookieFragment)
                         .commitAllowingStateLoss()
                     true
                 }
 
                 R.id.menu_home -> {
                     supportFragmentManager.beginTransaction()
-                        .replace(R.id.fl_container, HomeFragment())
+                        .replace(R.id.fl_container, homeFragment)
                         .commitAllowingStateLoss()
                     true
                 }
 
                 R.id.menu_refrigerator -> {
                     supportFragmentManager.beginTransaction()
-                        .replace(R.id.fl_container, RefrigeratorFragment())
+                        .replace(R.id.fl_container, refrigeratorFragment)
                         .commitAllowingStateLoss()
                     true
                 }

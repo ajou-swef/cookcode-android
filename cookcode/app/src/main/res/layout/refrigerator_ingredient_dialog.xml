@@ -111,12 +111,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="10dp"
-        app:layout_constraintEnd_toStartOf="@+id/btn_cancel"
-        app:layout_constraintBottom_toBottomOf="@+id/btn_cancel"/>
+        app:layout_constraintEnd_toStartOf="@+id/btn_delete"
+        app:layout_constraintBottom_toBottomOf="@+id/btn_delete"/>
 
     <TextView
-        android:id="@+id/btn_cancel"
-        android:text="@string/cancel"
+        android:id="@+id/btn_delete"
+        android:text="@string/delete"
         android:textColor="@color/black"
         android:textSize="18sp"
         android:textStyle="bold"
