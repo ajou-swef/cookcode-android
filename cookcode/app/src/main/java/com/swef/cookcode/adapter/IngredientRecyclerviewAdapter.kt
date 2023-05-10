@@ -55,14 +55,14 @@ class IngredientRecyclerviewAdapter(
     override fun getItemCount(): Int = filteredDatas.size
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(filteredDatas[position])
+        holder.bind(filteredDatas[position], position)
     }
 
     inner class ViewHolder(
         private val binding: IngredientRecyclerviewItemBinding,
         private val parent: ViewGroup
     ) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(item: MyIngredientData) {
+        fun bind(item: MyIngredientData, position: Int) {
             binding.ingredientIcon.setImageURI(item.ingredientData.image)
             binding.ingredientName.text = item.ingredientData.name
 
@@ -216,7 +216,6 @@ class IngredientRecyclerviewAdapter(
                                 item.value!!)
 
                             listener.getIngredient()
-
                             refrigeratorAlertDialog.dismiss()
                         }
                     }
@@ -302,6 +301,9 @@ class IngredientRecyclerviewAdapter(
 
                     refrigeratorDialogView.btnDelete.setOnClickListener {
                         listener.deleteIngredient(item.fridgeIngredId!!)
+                        filteredDatas.removeAt(position)
+                        notifyItemRemoved(position)
+                        notifyItemRangeRemoved(position, filteredDatas.size - position)
                         refrigeratorAlertDialog.dismiss()
                     }
 
@@ -333,6 +335,7 @@ class IngredientRecyclerviewAdapter(
                                 item.expiredAt!!,
                                 item.value!!)
 
+                            notifyItemChanged(position)
                             refrigeratorAlertDialog.dismiss()
                         }
                     }

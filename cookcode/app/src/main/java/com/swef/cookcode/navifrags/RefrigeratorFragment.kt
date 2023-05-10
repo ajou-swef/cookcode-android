@@ -100,6 +100,7 @@ class RefrigeratorFragment : Fragment() {
                             }
                         }
                         else {
+                            Log.d("data_size", response.toString())
                             Toast.makeText(context, "다시 시도해주세요.", Toast.LENGTH_SHORT).show()
                         }
                     }
@@ -116,8 +117,11 @@ class RefrigeratorFragment : Fragment() {
                         call: Call<StatusResponse>,
                         response: Response<StatusResponse>
                     ) {
-                        if (response.body()!!.status == 200) {
-                            Toast.makeText(context, "식재료 삭제가 완료되었습니다.", Toast.LENGTH_SHORT).show()
+                        if(response.body() != null) {
+                            if (response.body()!!.status == 200) {
+                                Toast.makeText(context, "식재료 삭제가 완료되었습니다.", Toast.LENGTH_SHORT)
+                                    .show()
+                            }
                         }
                         else {
                             Toast.makeText(context, "다시 시도해주세요.", Toast.LENGTH_SHORT).show()
@@ -140,8 +144,11 @@ class RefrigeratorFragment : Fragment() {
                         call: Call<StatusResponse>,
                         response: Response<StatusResponse>
                     ) {
-                        if (response.body()!!.status == 200) {
-                            Toast.makeText(context, "식재료 수정이 완료되었습니다.", Toast.LENGTH_SHORT).show()
+                        if(response.body() != null) {
+                            if (response.body()!!.status == 200) {
+                                Toast.makeText(context, "식재료 수정이 완료되었습니다.", Toast.LENGTH_SHORT)
+                                    .show()
+                            }
                         }
                         else {
                             Toast.makeText(context, "다시 시도해주세요.", Toast.LENGTH_SHORT).show()
@@ -177,6 +184,7 @@ class RefrigeratorFragment : Fragment() {
                         Toast.makeText(context, R.string.err_server, Toast.LENGTH_SHORT).show()
                     }
                 })
+
                 refrigeratorRecyclerAdapter.ingredDatas = ingredientDatas
                 refrigeratorRecyclerAdapter.notifyDataSetChanged()
             }
