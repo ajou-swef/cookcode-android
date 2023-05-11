@@ -12,7 +12,7 @@ data class IngredientData(
 
 data class MyIngredientData(
     var ingredientData: IngredientData,
-    val fridgeIngredId: Int?,
+    var fridgeIngredId: Int?,
     var value: Int?,
     var expiredAt: String?,
     var visibility: Int?

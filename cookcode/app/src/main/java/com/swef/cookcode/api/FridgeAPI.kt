@@ -1,5 +1,6 @@
 package com.swef.cookcode.api
 
+import com.swef.cookcode.data.response.FridgeResponse
 import com.swef.cookcode.data.response.MyIngredList
 import com.swef.cookcode.data.response.StatusResponse
 import retrofit2.Call
@@ -23,7 +24,7 @@ interface FridgeAPI {
     fun postIngredientData(
         @Header("accessToken") accessToken: String,
         @Body body: HashMap<String, Any>
-    ): Call<StatusResponse>
+    ): Call<FridgeResponse>
 
     @DELETE("fridge/ingred/{fridgeIngredId}")
     fun deleteIngredientData(

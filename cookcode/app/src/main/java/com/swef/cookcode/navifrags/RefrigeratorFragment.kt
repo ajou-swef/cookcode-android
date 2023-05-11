@@ -4,25 +4,27 @@ import android.app.AlertDialog
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.swef.cookcode.R
 import com.swef.cookcode.adapter.IngredientRecyclerviewAdapter
-import com.swef.cookcode.data.host.IngredientDataHost
 import com.swef.cookcode.adapter.RefrigeratorRecyclerAdapter
 import com.swef.cookcode.api.FridgeAPI
 import com.swef.cookcode.data.MyIngredientData
 import com.swef.cookcode.data.RefrigeratorData
+import com.swef.cookcode.data.host.IngredientDataHost
+import com.swef.cookcode.data.response.FridgeResponse
 import com.swef.cookcode.data.response.MyIngredList
 import com.swef.cookcode.data.response.StatusResponse
 import com.swef.cookcode.databinding.FragmentRefrigeratorBinding
 import com.swef.cookcode.databinding.RefrigeratorIngredientSelectDialogBinding
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -50,19 +52,25 @@ class RefrigeratorFragment : Fragment() {
 
         val ingredDatas = mutableListOf<MyIngredientData>()
 
-        API.getFridgeData(accessToken).enqueue(object: Callback<MyIngredList> {
-            override fun onResponse(call: Call<MyIngredList>, response: Response<MyIngredList>){
-                if(response.body() != null) {
+        API.getFridgeData(accessToken).enqueue(object : Callback<MyIngredList> {
+            override fun onResponse(
+                call: Call<MyIngredList>,
+                response: Response<MyIngredList>
+            ) {
+                if (response.body() != null) {
                     val myIngredientData = response.body()!!.data.ingreds
                     for (item in myIngredientData) {
                         ingredDatas.apply {
-                            val ingredData = IngredientDataHost().getIngredientFromId(item.IngredId)!!.ingredientData
+                            val ingredData =
+                                IngredientDataHost().getIngredientFromId(item.IngredId)!!.ingredientData
                             val fridgeId = item.fridgeIngredId
                             val value = item.value
                             val expiredAt = item.expiredAt
                             add(MyIngredientData(ingredData, fridgeId, value, expiredAt, null))
                         }
                     }
+                    refrigeratorRecyclerAdapter.ingredDatas = ingredDatas
+                    refrigeratorRecyclerAdapter.notifyDataSetChanged()
                 }
             }
 
@@ -70,6 +78,7 @@ class RefrigeratorFragment : Fragment() {
                 Toast.makeText(context, R.string.err_server, Toast.LENGTH_SHORT).show()
             }
         })
+
 
         // 식재료 등록 Dialog
         val refrigeratorDialogView = RefrigeratorIngredientSelectDialogBinding.inflate(layoutInflater)
@@ -83,32 +92,51 @@ class RefrigeratorFragment : Fragment() {
                 refrigeratorAlertDialog.dismiss()
             }
 
-            override fun postIngredient(ingredId: Int, expiredAt: String, quantity: Int) {
+            override suspend fun postIngredient(ingredId: Int, expiredAt: String, quantity: Int): Int{
                 val postData = HashMap<String, Any>()
                 postData["ingredId"] = ingredId
                 postData["expiredAt"] = expiredAt
                 postData["quantity"] = quantity
-                API.postIngredientData(accessToken, postData).enqueue(object: Callback<StatusResponse> {
-                    override fun onResponse(
-                        call: Call<StatusResponse>,
-                        response: Response<StatusResponse>
-                    ) {
-                        if(response.body() != null) {
-                            if (response.body()!!.status == 200) {
-                                Toast.makeText(context, "식재료 등록이 완료되었습니다.", Toast.LENGTH_SHORT)
+
+                var fridgeId = 0
+
+                Thread {
+                    API.postIngredientData(accessToken, postData)
+                        .enqueue(object : Callback<FridgeResponse> {
+                            override fun onResponse(
+                                call: Call<FridgeResponse>,
+                                response: Response<FridgeResponse>
+                            ) {
+                                if (response.body() != null) {
+                                    if (response.body()!!.status == 200) {
+                                        fridgeId = response.body()!!.data.fridgeIngredId
+                                        Toast.makeText(
+                                            context,
+                                            "식재료 등록이 완료되었습니다.",
+                                            Toast.LENGTH_SHORT
+                                        )
+                                            .show()
+                                    }
+                                } else {
+                                    Toast.makeText(context, "다시 시도해주세요.", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+
+                            override fun onFailure(call: Call<FridgeResponse>, t: Throwable) {
+                                Toast.makeText(context, R.string.err_server, Toast.LENGTH_SHORT)
                                     .show()
                             }
-                        }
-                        else {
-                            Log.d("data_size", response.toString())
-                            Toast.makeText(context, "다시 시도해주세요.", Toast.LENGTH_SHORT).show()
-                        }
-                    }
+                        })
+                }.start()
 
-                    override fun onFailure(call: Call<StatusResponse>, t: Throwable) {
-                        Toast.makeText(context, R.string.err_server, Toast.LENGTH_SHORT).show()
+                try {
+                    withContext(Dispatchers.IO) {
+                        Thread.sleep(100)
                     }
-                })
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+                return fridgeId
             }
 
             override fun deleteIngredient(fridgeId: Int) {
@@ -177,6 +205,9 @@ class RefrigeratorFragment : Fragment() {
                                     add(MyIngredientData(ingredData, fridgeId, value, expiredAt, null))
                                 }
                             }
+
+                            refrigeratorRecyclerAdapter.ingredDatas = ingredientDatas
+                            refrigeratorRecyclerAdapter.notifyDataSetChanged()
                         }
                     }
 
@@ -184,9 +215,10 @@ class RefrigeratorFragment : Fragment() {
                         Toast.makeText(context, R.string.err_server, Toast.LENGTH_SHORT).show()
                     }
                 })
+            }
 
-                refrigeratorRecyclerAdapter.ingredDatas = ingredientDatas
-                refrigeratorRecyclerAdapter.notifyDataSetChanged()
+            override fun updateExpandRecyclerview(data: MyIngredientData) {
+                refrigeratorRecyclerAdapter.updateData(data)
             }
         }
 
@@ -194,7 +226,7 @@ class RefrigeratorFragment : Fragment() {
         binding.recyclerView.adapter = refrigeratorRecyclerAdapter
         binding.recyclerView.layoutManager = LinearLayoutManager(this.context, LinearLayoutManager.VERTICAL, false)
 
-        refrigeratorRecyclerAdapter.datas.apply {
+        val refridgeData = mutableListOf<RefrigeratorData>().apply {
             add(RefrigeratorData("육류", "meat"))
             add(RefrigeratorData("해산물", "seafood"))
             add(RefrigeratorData("유제품", "diary_product"))
@@ -203,9 +235,7 @@ class RefrigeratorFragment : Fragment() {
             add(RefrigeratorData("과일", "fruit"))
             add(RefrigeratorData("양념", "sauce"))
         }
-
-        refrigeratorRecyclerAdapter.ingredDatas = ingredDatas
-        refrigeratorRecyclerAdapter.notifyDataSetChanged()
+        refrigeratorRecyclerAdapter.datas = refridgeData
 
         val ingredientData = IngredientDataHost().showAllIngredientData()
         val searchIngredientRecyclerviewAdapter = IngredientRecyclerviewAdapter("refrigerator_search", onDialogRecyclerViewItemClickListener)
@@ -249,8 +279,9 @@ class RefrigeratorFragment : Fragment() {
 
 interface OnDialogRecyclerviewItemClickListener {
     fun onItemClicked()
-    fun postIngredient(ingredId: Int, expiredAt: String, quantity: Int)
+    suspend fun postIngredient(ingredId: Int, expiredAt: String, quantity: Int): Int
     fun patchIngredient(fridgeId: Int, ingredId: Int, expiredAt: String, quantity: Int)
     fun deleteIngredient(fridgeId: Int)
     fun getIngredient()
+    fun updateExpandRecyclerview(data: MyIngredientData)
 }

@@ -19,11 +19,15 @@ class RefrigeratorRecyclerAdapter(
 
     var datas = mutableListOf<RefrigeratorData>()
     var ingredDatas = mutableListOf<MyIngredientData>()
+    private val ingredientRecyclerviewAdapters = mutableListOf<IngredientRecyclerviewAdapter>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = RefrigeratorRecyclerviewItemBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
         )
+        for (i: Int in 0..6){
+            ingredientRecyclerviewAdapters.add(IngredientRecyclerviewAdapter("refrigerator", listener))
+        }
         return ViewHolder(binding)
     }
 
@@ -39,14 +43,16 @@ class RefrigeratorRecyclerAdapter(
         fun bind(item: RefrigeratorData){
             binding.ingredientName.text = item.type
 
-            val ingredientRecyclerviewAdapter = IngredientRecyclerviewAdapter("refrigerator", listener)
+            // val ingredientRecyclerviewAdapter = IngredientRecyclerviewAdapter("refrigerator", listener)
 
-            binding.recyclerView.adapter = ingredientRecyclerviewAdapter
+            binding.recyclerView.adapter = ingredientRecyclerviewAdapters[position]
             binding.recyclerView.layoutManager = GridLayoutManager(
                 binding.recyclerView.context, 3)
 
-            ingredientRecyclerviewAdapter.filteredDatas = ingredDatas
-            ingredientRecyclerviewAdapter.notifyDataSetChanged()
+            ingredientRecyclerviewAdapters[position].filteredDatas =
+                ingredDatas.filter { it.ingredientData.type == item.type_en } as MutableList<MyIngredientData>
+
+            ingredientRecyclerviewAdapters[position].notifyDataSetChanged()
 
             // 화살표를 누르면 레이아웃이 확장된다
             binding.btnMore.setOnClickListener {
@@ -66,5 +72,12 @@ class RefrigeratorRecyclerAdapter(
             }
             return isExpanded
         }
+    }
+
+    fun updateData(data: MyIngredientData) {
+        ingredDatas.add(data)
+        val position = datas.indexOf(datas.find { it.type_en == data.ingredientData.type })
+        ingredientRecyclerviewAdapters[position].filteredDatas.add(data)
+        ingredientRecyclerviewAdapters[position].notifyItemInserted(ingredientRecyclerviewAdapters[position].filteredDatas.size - 1)
     }
 }

@@ -4,7 +4,6 @@ import android.app.AlertDialog
 import android.content.Context
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,6 +18,8 @@ import com.swef.cookcode.databinding.IngredientRecyclerviewItemBinding
 import com.swef.cookcode.databinding.RecipeIngredientDialogBinding
 import com.swef.cookcode.databinding.RefrigeratorIngredientDialogBinding
 import com.swef.cookcode.navifrags.OnDialogRecyclerviewItemClickListener
+import kotlinx.coroutines.*
+
 
 class IngredientRecyclerviewAdapter(
     private val type: String
@@ -211,11 +212,17 @@ class IngredientRecyclerviewAdapter(
                                 item.value, item.ingredientData.unit
                             )
 
-                            listener.postIngredient(item.ingredientData.ingredId,
-                                item.expiredAt!!,
-                                item.value!!)
+                            CoroutineScope(Dispatchers.Default).async {
+                                item.fridgeIngredId = listener.postIngredient(
+                                    item.ingredientData.ingredId,
+                                    item.expiredAt!!,
+                                    item.value!!
+                                )
+                            }
 
-                            listener.getIngredient()
+
+                            listener.updateExpandRecyclerview(item)
+
                             refrigeratorAlertDialog.dismiss()
                         }
                     }
