@@ -76,6 +76,9 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
         binding = ActivityRecipeFormBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        val accessToken = intent.getStringExtra("access_token")
+        val refreshToken = intent.getStringExtra("refresh_token")
+
         // 사진을 불러오기 위한 권한 요청
         val permission = Manifest.permission.READ_EXTERNAL_STORAGE
         if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
@@ -135,12 +138,12 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
             selectDialog.dismiss()
         }
 
-        dialogView.root.setOnClickListener { v ->
-            if (v !is EditText) { // v가 EditText 클래스의 인스턴스가 아닐 경우
-                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.hideSoftInputFromWindow(v.windowToken, 0) // 키보드를 숨김
+        dialogView.root.setOnClickListener { clickedView ->
+            if (clickedView !is EditText) { // v가 EditText 클래스의 인스턴스가 아닐 경우
+                val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                inputMethodManager.hideSoftInputFromWindow(clickedView.windowToken, 0) // 키보드를 숨김
             }
-            v.clearFocus()
+            clickedView.clearFocus()
         }
 
         // 필수 재료 어댑터
@@ -228,6 +231,8 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
                 intent.putExtra("recipe_title", binding.editRecipeName.text.toString())
                 intent.putExtra("recipe_description", binding.editDescription.text.toString())
                 intent.putExtra("main_image", recipeImage.toString())
+                intent.putExtra("access_token", accessToken)
+                intent.putExtra("refresh_token", refreshToken)
 
                 // 필수재료, 추가재료 정보 전달
                 val essentialIngreds = mutableListOf<String>()

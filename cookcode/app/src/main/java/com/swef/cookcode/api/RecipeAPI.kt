@@ -2,7 +2,7 @@ package com.swef.cookcode.api
 
 import com.swef.cookcode.data.response.ImageResponse
 import com.swef.cookcode.data.response.RecipeResponse
-import com.swef.cookcode.data.response.StatusResponse
+import com.swef.cookcode.data.response.RecipeStatusResponse
 import com.swef.cookcode.data.response.VideoResponse
 import okhttp3.MultipartBody
 import retrofit2.Call
@@ -38,7 +38,7 @@ interface RecipeAPI {
     fun postRecipe(
         @Header("accessToken") accessToken: String,
         @Body body: HashMap<String, Any>
-    ): Call<StatusResponse>
+    ): Call<RecipeStatusResponse>
 
     @GET("/recipe")
     fun getRecipes(
@@ -52,12 +52,12 @@ interface RecipeAPI {
     companion object {
         private const val BASE_URL = "http://54.180.117.179:8080/api/v1/"
 
-        fun create(): FridgeAPI {
+        fun create(): RecipeAPI {
             return Retrofit.Builder()
                 .baseUrl(BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
-                .create(FridgeAPI::class.java)
+                .create(RecipeAPI::class.java)
         }
     }
 }
