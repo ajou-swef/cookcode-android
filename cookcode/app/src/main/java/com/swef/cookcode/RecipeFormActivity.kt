@@ -9,7 +9,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -59,13 +58,15 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
     private var allIngredientValueTyped = false
     private var stepExist = false
 
+    private val stepOutOfBound = -1
+
     // 미리보기 단계에서 해당 스텝 수정을 위한 스텝 단계 정보 불러오기
     private val getResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == RESULT_OK) {
             val data: Intent? = result.data
-            val stepNumber = data?.getIntExtra("step_number", -1)
+            val stepNumber = data?.getIntExtra("step_number", stepOutOfBound)
 
-            if (stepNumber != -1) {
+            if (stepNumber != stepOutOfBound) {
                 stepOnClick(stepNumber!!)
             }
         }
@@ -105,15 +106,15 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
         }
 
         val addTextChangedListener = object : TextWatcher {
-            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+            override fun beforeTextChanged(currentText: CharSequence?, start: Int, editCount: Int, after: Int) {}
 
-            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+            override fun onTextChanged(currentText: CharSequence?, start: Int, before: Int, editCount: Int) {
                 searchIngredientRecyclerviewAdapter.filteredDatas = IngredientDataHost().getIngredientFromNameOrType(
-                    searchIngredientRecyclerviewAdapter.beforeSearchData, p0.toString()) as MutableList<MyIngredientData>
+                    searchIngredientRecyclerviewAdapter.beforeSearchData, currentText.toString()) as MutableList<MyIngredientData>
                 searchIngredientRecyclerviewAdapter.notifyDataSetChanged()
             }
 
-            override fun afterTextChanged(p0: Editable?) {}
+            override fun afterTextChanged(currentText: Editable?) {}
         }
 
         // 식재료 선택 다이얼로그
@@ -125,8 +126,9 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
             .setView(dialogView.root)
             .create()
 
+        val spanCount = 3
         searchIngredientRecyclerviewAdapter = IngredientRecyclerviewAdapter("recipe_search")
-        dialogView.recyclerView.layoutManager = GridLayoutManager(this, 3)
+        dialogView.recyclerView.layoutManager = GridLayoutManager(this, spanCount)
         dialogView.recyclerView.adapter = searchIngredientRecyclerviewAdapter
         searchIngredientRecyclerviewAdapter.datas = IngredientDataHost().showAllIngredientData() as MutableList<MyIngredientData>
         searchIngredientRecyclerviewAdapter.notifyDataSetChanged()
@@ -135,12 +137,13 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
             selectDialog.dismiss()
         }
 
-        dialogView.root.setOnClickListener { v ->
-            if (v !is EditText) { // v가 EditText 클래스의 인스턴스가 아닐 경우
-                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.hideSoftInputFromWindow(v.windowToken, 0) // 키보드를 숨김
+        dialogView.root.setOnClickListener { view ->
+            val hideFlags = 0
+            if (view !is EditText) { // v가 EditText 클래스의 인스턴스가 아닐 경우
+                val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                inputMethodManager.hideSoftInputFromWindow(view.windowToken, hideFlags) // 키보드를 숨김
             }
-            v.clearFocus()
+            view.clearFocus()
         }
 
         // 필수 재료 어댑터
@@ -272,12 +275,12 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
                 intent.putExtra("index", steps)
 
                 // 스텝 별 정보 전달, tag에 각 번호를 달아서 해당 스텝인 것을 알려줌
-                for (i: Int in 0 until steps) {
-                    intent.putExtra("images$i", stepDatas[i].imageData.toTypedArray())
-                    intent.putExtra("videos$i", stepDatas[i].videoData?.toTypedArray())
-                    intent.putExtra("title$i", stepDatas[i].title)
-                    intent.putExtra("description$i", stepDatas[i].description)
-                    intent.putExtra("step_number$i", stepDatas[i].numberOfStep)
+                for (index: Int in 0 until steps) {
+                    intent.putExtra("images$index", stepDatas[index].imageData.toTypedArray())
+                    intent.putExtra("videos$index", stepDatas[index].videoData?.toTypedArray())
+                    intent.putExtra("title$index", stepDatas[index].title)
+                    intent.putExtra("description$index", stepDatas[index].description)
+                    intent.putExtra("step_number$index", stepDatas[index].numberOfStep)
                 }
 
                 // 미리보기 종료 시 home activity를 제외한 액티비티는 모두 종료
@@ -297,7 +300,7 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
             if (result.resultCode == RESULT_OK) {
                 // 받은 데이터 처리
                 if (result.data != null && !result.data?.getStringExtra("type").equals("delete")) {
-                    val stepNumber = result.data?.getIntExtra("step_number", -1)!!
+                    val stepNumber = result.data?.getIntExtra("step_number", stepOutOfBound)!!
                     val stepImages = result.data?.getStringArrayExtra("images")!!.toList()
                     val stepVideos = result.data?.getStringArrayExtra("videos")!!.toList()
                     val stepTitle = result.data?.getStringExtra("title")!!
@@ -336,16 +339,17 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
 
     // Edittext가 아닌 화면을 터치했을 경우 포커스 해제 및 키보드 숨기기
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        val hideFlags = 0
         if (event.action == MotionEvent.ACTION_DOWN) {
-            val v = currentFocus
-            if (v is EditText) {
+            val view = currentFocus
+            if (view is EditText) {
                 val outRect = Rect()
-                v.getGlobalVisibleRect(outRect)
+                view.getGlobalVisibleRect(outRect)
 
                 if (!outRect.contains(event.rawX.toInt(), event.rawY.toInt())) {
-                    v.clearFocus()
-                    val imm: InputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                    imm.hideSoftInputFromWindow(v.getWindowToken(), 0)
+                    view.clearFocus()
+                    val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), hideFlags)
                 }
             }
         }
@@ -367,7 +371,6 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
 
     // 스텝 삭제하는 함수
     private fun deleteStep(position: Int){
-        Log.d("data_size", position.toString())
         // 삭제 해야할 image, video 정보 저장
 
         // 단계 삭제
@@ -375,9 +378,9 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
 
         // 삭제한 단계 이후 단계가 존재한다면 단계 넘버링 수정
         if(stepDatas.indices.last > 0 && position in stepDatas.indices){
-            for(i: Int in position..stepDatas.size){
-                stepDatas[i].numberOfStep -= 1
-                stepRecyclerviewAdapter.notifyItemChanged(i)
+            for(index: Int in position..stepDatas.size){
+                stepDatas[index].numberOfStep -= 1
+                stepRecyclerviewAdapter.notifyItemChanged(index)
             }
         }
         numberOfStep -= 1

@@ -88,17 +88,17 @@ class MainActivity : AppCompatActivity() {
         // 화면이 터치 되었을 때
         if (event.action == MotionEvent.ACTION_DOWN) {
             // 현재 focus된 view가 Edittext일 경우
-            val v = currentFocus
-            if (v is EditText) {
+            val view = currentFocus
+            if (view is EditText) {
                 val outRect = Rect()
                 // view의 절대 좌표를 구한다
-                v.getGlobalVisibleRect(outRect)
+                view.getGlobalVisibleRect(outRect)
 
                 // 절대 좌표 이외의 좌표를 클릭했을 경우 포커스 해제 및 키보드 숨기기
                 if (!outRect.contains(event.rawX.toInt(), event.rawY.toInt())) {
-                    v.clearFocus()
-                    val imm: InputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                    imm.hideSoftInputFromWindow(v.getWindowToken(), 0)
+                    view.clearFocus()
+                    val inputMethodManager: InputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0)
                 }
             }
         }
