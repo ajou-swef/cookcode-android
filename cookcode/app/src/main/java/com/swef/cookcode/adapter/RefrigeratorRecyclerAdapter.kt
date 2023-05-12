@@ -43,8 +43,6 @@ class RefrigeratorRecyclerAdapter(
         fun bind(item: RefrigeratorData){
             binding.ingredientName.text = item.type
 
-            // val ingredientRecyclerviewAdapter = IngredientRecyclerviewAdapter("refrigerator", listener)
-
             binding.recyclerView.adapter = ingredientRecyclerviewAdapters[position]
             binding.recyclerView.layoutManager = GridLayoutManager(
                 binding.recyclerView.context, 3)

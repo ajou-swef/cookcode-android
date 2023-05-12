@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.viewpager2.widget.ViewPager2
 import com.swef.cookcode.adapter.StepPreviewRecyclerviewAdapter
+import com.swef.cookcode.api.RecipeAPI
 import com.swef.cookcode.data.StepData
 import com.swef.cookcode.databinding.ActivityRecipePreviewBinding
 
@@ -16,19 +17,23 @@ class RecipePreviewActivity : AppCompatActivity() {
 
     private lateinit var stepPreviewRecyclerviewAdapter: StepPreviewRecyclerviewAdapter
 
+    private val API = RecipeAPI.create()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityRecipePreviewBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         // 레시피 정보 불러오기
-        val title = intent.getStringExtra("recipe_title")
-        val description = intent.getStringExtra("recipe_description")
-        val mainImage = Uri.parse(intent.getStringExtra("main_image"))
+        val title = intent.getStringExtra("recipe_title")!!
+        val description = intent.getStringExtra("recipe_description")!!
+        val mainImage = Uri.parse(intent.getStringExtra("main_image"))!!
         val essentialIngreds = intent.getStringArrayExtra("essential_ingreds")!!.toList()
         val essentialValues = intent.getStringArrayExtra("essential_values")!!.toList()
         val additionalIngreds = intent.getStringArrayExtra("additional_ingreds")!!.toList()
         val additionalValues = intent.getStringArrayExtra("additional_values")!!.toList()
+        val accessToken = intent.getStringExtra("access_token")!!
+        val refreshToken = intent.getStringExtra("refresh_token")!!
 
         // 현재 보고있는 step
         var currentPosition = 0
@@ -73,6 +78,25 @@ class RecipePreviewActivity : AppCompatActivity() {
         // 레시피 업로드
         binding.btnUpload.setOnClickListener {
             // 서버에 각 스텝 정보 업로드
+            val postBody = HashMap<String, Any>()
+            postBody["title"] = title
+            postBody["description"] = description
+            postBody["ingredients"] = essentialIngreds
+            postBody["optionalIngredients"] = additionalIngreds
+            // postBody["thumbnail"] = mainImage 사진 업로드 된 url 사용
+
+            val stepData = HashMap<String, Any>()
+            var i = 1
+            for(item in datas){
+                stepData["seq"] = i
+                stepData["title"] = item.title
+                stepData["description"] = item.description
+                stepData["photos"] = item.imageData
+                if(item.videoData != null) stepData["videos"] = item.videoData
+                // stepData["deletedVideos"] =
+                // stepData["deletedPhotos"] =
+            }
+
             Toast.makeText(this, "정상적으로 업로드 되었습니다.", Toast.LENGTH_SHORT).show()
             val intent = Intent(this, HomeActivity::class.java)
             startActivity(intent)
