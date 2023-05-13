@@ -13,6 +13,7 @@ class SearchRecipeRecyclerviewAdapter(
     private lateinit var binding: SearchRecipeRecyclerviewItemBinding
 
     var datas = mutableListOf<RecipeAndStepData>()
+    lateinit var accessToken: String
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -28,7 +29,7 @@ class SearchRecipeRecyclerviewAdapter(
         holder: SearchRecipeRecyclerviewAdapter.ViewHolder,
         position: Int
     ) {
-        holder.bind(datas[position], position)
+        holder.bind(datas[position])
     }
 
     override fun getItemCount(): Int = datas.size
@@ -36,7 +37,7 @@ class SearchRecipeRecyclerviewAdapter(
     inner class ViewHolder(
         private val binding: SearchRecipeRecyclerviewItemBinding
     ): RecyclerView.ViewHolder(binding.root) {
-        fun bind(item: RecipeAndStepData, position: Int){
+        fun bind(item: RecipeAndStepData){
             binding.recipeName.text = item.recipeData.title
             // binding.viewNumber.text = item.views.toString()
             binding.likeNumber.text = item.recipeData.likes.toString()
@@ -45,6 +46,8 @@ class SearchRecipeRecyclerviewAdapter(
 
             binding.layout.setOnClickListener {
                 val intent = Intent(binding.layout.context, RecipeActivity::class.java)
+                intent.putExtra("recipe_id", item.recipeData.recipeId)
+                intent.putExtra("access_token", accessToken)
                 binding.layout.context.startActivity(intent)
             }
         }

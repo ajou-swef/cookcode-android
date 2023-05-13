@@ -14,6 +14,8 @@ class SearchActivity : AppCompatActivity() {
         binding = ActivitySearchBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        val accessToken = intent.getStringExtra("access_token")
+
         binding.beforeArrow.setOnClickListener {
             finish()
         }
@@ -30,6 +32,7 @@ class SearchActivity : AppCompatActivity() {
             else {
                 val intent = Intent(this, SearchResultActivity::class.java)
                 intent.putExtra("keyword", binding.editSearchKeyword.text.toString())
+                intent.putExtra("access_token", accessToken)
                 startActivity(intent)
             }
         }

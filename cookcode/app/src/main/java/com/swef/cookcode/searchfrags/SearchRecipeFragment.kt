@@ -1,6 +1,7 @@
 package com.swef.cookcode.searchfrags
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -46,17 +47,19 @@ class SearchRecipeFragment : Fragment() {
     ): View {
         _binding = FragmentSearchRecipeBinding.inflate(inflater, container, false)
 
+        val accessToken = arguments?.getString("access_token")!!
         val searchKeyword = arguments?.getString("keyword")!!
 
         var currentPage = 0
 
         Thread {
-            searchedRecipeAndStepDatas = getRecipeDatas(currentPage, pageSize, cookable, sort, createdMonth)
+            searchedRecipeAndStepDatas = getRecipeDatas(accessToken, currentPage, pageSize, cookable, sort, createdMonth)
         }.start()
         Thread.sleep(100)
 
         recyclerViewAdapter = SearchRecipeRecyclerviewAdapter()
         recyclerViewAdapter.datas = searchedRecipeAndStepDatas
+        recyclerViewAdapter.accessToken = accessToken
         binding.recyclerView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         binding.recyclerView.adapter = recyclerViewAdapter
 
@@ -74,14 +77,23 @@ class SearchRecipeFragment : Fragment() {
         Toast.makeText(this.context, message, Toast.LENGTH_SHORT).show()
     }
 
-    private fun getRecipeDatas(currentPage: Int, sizePerPage: Int, cookable: Int, sort: String, createdMonth: Int): MutableList<RecipeAndStepData> {
+    private fun getRecipeDatas(accessToken: String, currentPage: Int, sizePerPage: Int, cookable: Int, sort: String, createdMonth: Int): MutableList<RecipeAndStepData> {
         var recipeAndStepDatas = mutableListOf<RecipeAndStepData>()
 
-        API.getRecipes(currentPage, sizePerPage, sort, createdMonth, cookable).enqueue(object: Callback<RecipeResponse> {
+        Log.d("data_size", accessToken)
+
+        API.getRecipes(accessToken, currentPage, sizePerPage, sort, createdMonth, cookable).enqueue(object: Callback<RecipeResponse> {
             override fun onResponse(call: Call<RecipeResponse>, response: Response<RecipeResponse>) {
                 val datas = response.body()
                 if (datas != null && datas.status == 200) {
                     recipeAndStepDatas = getRecipeDatasFromResponseBody(datas.recipes)
+                }
+
+                if (response.errorBody() != null) {
+                    Log.d("data_size", response.errorBody()!!.string())
+                }
+                else {
+                    Log.d("data_size", response.toString())
                 }
             }
 
@@ -98,7 +110,7 @@ class SearchRecipeFragment : Fragment() {
         val recipeAndStepDatas = mutableListOf<RecipeAndStepData>()
 
         for (item in datas) {
-            val recipeData = RecipeData(item.title, item.description, item.mainImage.toUri(), item.likeCount, item.user)
+            val recipeData = RecipeData(item.recipeId, item.title, item.description, item.mainImage.toUri(), item.likeCount, item.user)
             val stepDatas = getStepDatasFromRecipeContent(item.steps)
 
             recipeAndStepDatas.add(RecipeAndStepData(recipeData, stepDatas))

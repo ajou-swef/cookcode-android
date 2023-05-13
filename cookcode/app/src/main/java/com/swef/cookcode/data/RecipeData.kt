@@ -4,6 +4,7 @@ import android.net.Uri
 import com.swef.cookcode.data.response.MadeUser
 
 data class RecipeData(
+    val recipeId : Int,
     val title: String,
     val description: String,
     val mainImage: Uri,

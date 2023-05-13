@@ -1,6 +1,7 @@
 package com.swef.cookcode.api
 
 import com.swef.cookcode.data.response.ImageResponse
+import com.swef.cookcode.data.response.RecipeContent
 import com.swef.cookcode.data.response.RecipeResponse
 import com.swef.cookcode.data.response.RecipeStatusResponse
 import com.swef.cookcode.data.response.VideoResponse
@@ -42,12 +43,19 @@ interface RecipeAPI {
 
     @GET("/recipe")
     fun getRecipes(
+        @Header("accessToken") accessToken: String,
         @Query("page") page: Int,
         @Query("size") size: Int,
         @Query("sort") sort: String = "createdAt", // 현재 최신순만 설정되어있음 수정 필요
         @Query("month") month: Int,
         @Query("cookable") cookable: Int
     ): Call<RecipeResponse>
+
+    @GET("/recipe/{recipeId}")
+    fun getRecipe(
+        @Header("accessToken") accessToken: String,
+        @Query("recipeId") recipeId: Int
+    ): Call<RecipeContent>
 
     companion object {
         private const val BASE_URL = "http://54.180.117.179:8080/api/v1/"

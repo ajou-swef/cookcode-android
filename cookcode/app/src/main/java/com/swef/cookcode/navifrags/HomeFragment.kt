@@ -69,12 +69,14 @@ class HomeFragment : Fragment() {
 
         binding.btnSearch.setOnClickListener {
             val nextIntent = Intent(activity, SearchActivity::class.java)
+            nextIntent.putExtra("access_token", accessToken)
             startActivity(nextIntent)
         }
 
         binding.userMark.setOnClickListener {
             val nextIntent = Intent(activity, MypageActivity::class.java)
             nextIntent.putExtra("user_name", "쿡코드")
+            nextIntent.putExtra("access_token", accessToken)
             nextIntent.flags = FLAG_ACTIVITY_CLEAR_TOP
             startActivity(nextIntent)
         }
