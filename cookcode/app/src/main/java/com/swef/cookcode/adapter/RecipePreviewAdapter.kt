@@ -30,9 +30,9 @@ class RecipePreviewAdapter(
         fun bind(item: RecipeData){
             binding.mainImage.setImageURI(item.mainImage)
             binding.recipeName.text = item.title
-            binding.madeUser.text = item.madeUser
+            binding.madeUser.text = item.madeUser.nickname
             binding.likeNumber.text = item.likes.toString()
-            binding.viewNumber.text = item.views.toString()
+            // binding.viewNumber.text = item.views.toString()
             binding.descriptionText.text = item.description
 
             // 필수재료, 추가재료 확인

@@ -46,7 +46,7 @@ interface RecipeAPI {
         @Query("size") size: Int,
         @Query("sort") sort: String = "createdAt", // 현재 최신순만 설정되어있음 수정 필요
         @Query("month") month: Int,
-        @Query("cookable") cookable: Boolean
+        @Query("cookable") cookable: Int
     ): Call<RecipeResponse>
 
     companion object {

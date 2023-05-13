@@ -5,14 +5,14 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.swef.cookcode.RecipeActivity
-import com.swef.cookcode.data.RecipeData
+import com.swef.cookcode.data.RecipeAndStepData
 import com.swef.cookcode.databinding.SearchRecipeRecyclerviewItemBinding
 
 class SearchRecipeRecyclerviewAdapter(
 ): RecyclerView.Adapter<SearchRecipeRecyclerviewAdapter.ViewHolder>() {
     private lateinit var binding: SearchRecipeRecyclerviewItemBinding
 
-    var datas = mutableListOf<RecipeData>()
+    var datas = mutableListOf<RecipeAndStepData>()
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -36,16 +36,15 @@ class SearchRecipeRecyclerviewAdapter(
     inner class ViewHolder(
         private val binding: SearchRecipeRecyclerviewItemBinding
     ): RecyclerView.ViewHolder(binding.root) {
-        fun bind(item: RecipeData, position: Int){
-            binding.recipeName.text = item.title
-            binding.viewNumber.text = item.views.toString()
-            binding.likeNumber.text = item.likes.toString()
-            binding.madeUser.text = item.madeUser
-            binding.mainImage.setImageURI(item.mainImage)
+        fun bind(item: RecipeAndStepData, position: Int){
+            binding.recipeName.text = item.recipeData.title
+            // binding.viewNumber.text = item.views.toString()
+            binding.likeNumber.text = item.recipeData.likes.toString()
+            binding.madeUser.text = item.recipeData.madeUser.nickname
+            binding.mainImage.setImageURI(item.recipeData.mainImage)
 
             binding.layout.setOnClickListener {
                 val intent = Intent(binding.layout.context, RecipeActivity::class.java)
-                intent.putExtra("position", position)
                 binding.layout.context.startActivity(intent)
             }
         }
