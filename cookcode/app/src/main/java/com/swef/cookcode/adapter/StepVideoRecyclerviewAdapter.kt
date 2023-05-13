@@ -30,9 +30,9 @@ class StepVideoRecyclerviewAdapter(
 
     fun getData(): Array<String> {
         val uriData = mutableListOf<String>()
-        for(i: Int in 0..1){
-            if(datas[i].uri != null)
-                uriData.add(datas[i].uri.toString())
+        for(index: Int in 0..1){
+            if(datas[index].uri != null)
+                uriData.add(datas[index].uri.toString())
         }
         return uriData.toTypedArray()
     }

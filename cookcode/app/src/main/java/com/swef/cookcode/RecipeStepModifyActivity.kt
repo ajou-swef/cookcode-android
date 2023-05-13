@@ -45,8 +45,8 @@ class RecipeStepModifyActivity : AppCompatActivity() {
 
         // 스텝 단계 넘버링
         val stepNumber = intent.getIntExtra("step_number", -1)
-        binding.numberOfStep.text = stepNumber.toString() + "단계"
-        binding.modifyBtn.text = stepNumber.toString() + "단계 스텝 수정하기"
+        binding.numberOfStep.text = getString(R.string.step_number, stepNumber)
+        binding.modifyBtn.text = getString(R.string.step_add, stepNumber)
 
         initImageRecycler()
         initVideoRecycler()
@@ -120,17 +120,21 @@ class RecipeStepModifyActivity : AppCompatActivity() {
     }
 
     private fun initDescriptionTextBox(){
-        binding.editDescription.setOnFocusChangeListener { v, hasFocus ->
+        binding.editDescription.setOnFocusChangeListener { view, hasFocus ->
+            val defaultX = 0
+            val defaultY = 0
+            val hideFlags = 0
+
             if (hasFocus) {
                 binding.layout.postDelayed({
-                    binding.layout.scrollTo(0, binding.stepDescription.bottom)
+                    binding.layout.scrollTo(defaultX, binding.stepDescription.bottom)
                 }, 100)
             } else {
-                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.hideSoftInputFromWindow(v.windowToken, 0)
+                val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                inputMethodManager.hideSoftInputFromWindow(view.windowToken, hideFlags)
 
                 binding.layout.postDelayed({
-                    binding.layout.scrollTo(0, 0)
+                    binding.layout.scrollTo(defaultX, defaultY)
                 }, 100)
             }
         }
@@ -190,15 +194,17 @@ class RecipeStepModifyActivity : AppCompatActivity() {
 
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
         if (event.action == MotionEvent.ACTION_DOWN) {
-            val v = currentFocus
-            if (v is EditText) {
+            val view = currentFocus
+            val hideFlags = 0
+
+            if (view is EditText) {
                 val outRect = Rect()
-                v.getGlobalVisibleRect(outRect)
+                view.getGlobalVisibleRect(outRect)
 
                 if (!outRect.contains(event.rawX.toInt(), event.rawY.toInt())) {
-                    v.clearFocus()
-                    val imm: InputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                    imm.hideSoftInputFromWindow(v.getWindowToken(), 0)
+                    view.clearFocus()
+                    val inputMethodManager: InputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), hideFlags)
                 }
             }
         }
@@ -216,13 +222,13 @@ class RecipeStepModifyActivity : AppCompatActivity() {
                 override fun onResourceReady(thumbnail: Bitmap, transition: Transition<in Bitmap>?) {
                     val video = StepVideoData(thumbnail, uri)
 
-                    for(i: Int in 0..2) {
-                        if(videoDatas[i].uri == null) {
-                            videoDatas.removeAt(i)
-                            videoDatas.add(i, video)
+                    for(index: Int in 0..2) {
+                        if(videoDatas[index].uri == null) {
+                            videoDatas.removeAt(index)
+                            videoDatas.add(index, video)
 
                             // recyclerview adapter에 해당 위치 알림
-                            stepVideoRecyclerviewAdapter.notifyItemChanged(i)
+                            stepVideoRecyclerviewAdapter.notifyItemChanged(index)
                             return
                         }
                     }

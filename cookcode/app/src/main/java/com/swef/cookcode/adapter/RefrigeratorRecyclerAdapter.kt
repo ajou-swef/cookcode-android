@@ -44,11 +44,13 @@ class RefrigeratorRecyclerAdapter(
             binding.ingredientName.text = item.type
 
             binding.recyclerView.adapter = ingredientRecyclerviewAdapters[position]
+
+            val spanCount = 3
             binding.recyclerView.layoutManager = GridLayoutManager(
-                binding.recyclerView.context, 3)
+                binding.recyclerView.context, spanCount)
 
             ingredientRecyclerviewAdapters[position].filteredDatas =
-                ingredDatas.filter { it.ingredientData.type == item.type_en } as MutableList<MyIngredientData>
+                ingredDatas.filter { it.ingredientData.type == item.typeEn } as MutableList<MyIngredientData>
 
             ingredientRecyclerviewAdapters[position].notifyDataSetChanged()
 
@@ -74,7 +76,7 @@ class RefrigeratorRecyclerAdapter(
 
     fun updateData(data: MyIngredientData) {
         ingredDatas.add(data)
-        val position = datas.indexOf(datas.find { it.type_en == data.ingredientData.type })
+        val position = datas.indexOf(datas.find { it.typeEn == data.ingredientData.type })
         ingredientRecyclerviewAdapters[position].filteredDatas.add(data)
         ingredientRecyclerviewAdapters[position].notifyItemInserted(ingredientRecyclerviewAdapters[position].filteredDatas.size - 1)
     }

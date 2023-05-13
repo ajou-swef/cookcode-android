@@ -32,9 +32,9 @@ class StepImageRecyclerviewAdapter(
     // step 생성시 recyclerview에 담긴 이미지 정보들 반환
     fun getData(): Array<String> {
         val uriData = mutableListOf<String>()
-        for(i: Int in 0..2){
-            if(datas[i].imageUri != null)
-                uriData.add(datas[i].imageUri.toString())
+        for(index: Int in 0..2){
+            if(datas[index].imageUri != null)
+                uriData.add(datas[index].imageUri.toString())
             }
         return uriData.toTypedArray()
     }
@@ -88,11 +88,11 @@ class StepImageRecyclerviewAdapter(
                     // 이미지 삭제 버튼 클릭 시 해당 이미지 삭제 및 순서 당기기
                     R.id.delete_image -> {
                         item.imageUri = null
-                        for(i :Int in position until datas.size - 1) {
+                        for(index: Int in position until datas.size - 1) {
                             // 해당 위치보다 뒤에 image가 있다면 앞으로 당겨오기
-                            if (datas[i + 1].imageUri != null) {
-                                datas[i].imageUri = datas[i + 1].imageUri
-                                datas[i + 1].imageUri = null
+                            if (datas[index + 1].imageUri != null) {
+                                datas[index].imageUri = datas[index + 1].imageUri
+                                datas[index + 1].imageUri = null
                             }
                         }
 

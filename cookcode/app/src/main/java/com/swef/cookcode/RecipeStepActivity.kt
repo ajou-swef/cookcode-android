@@ -49,8 +49,8 @@ class RecipeStepActivity : AppCompatActivity() {
 
         // 스텝 단계 넘버링
         val stepNumber = intent.getIntExtra("step_number", -1)
-        binding.numberOfStep.text = stepNumber.toString() + "단계"
-        binding.addBtn.text = stepNumber.toString() + "단계 스텝 추가하기"
+        binding.numberOfStep.text = getString(R.string.step_number, stepNumber)
+        binding.addBtn.text = getString(R.string.step_add, stepNumber)
 
         // recyclerview init
         initImageRecycler()
@@ -152,15 +152,16 @@ class RecipeStepActivity : AppCompatActivity() {
     // Edittext가 아닌 화면을 터치했을 경우 포커스 해제 및 키보드 숨기기
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
         if (event.action == MotionEvent.ACTION_DOWN) {
-            val v = currentFocus
-            if (v is EditText) {
+            val view = currentFocus
+            val hideFlags = 0
+            if (view is EditText) {
                 val outRect = Rect()
-                v.getGlobalVisibleRect(outRect)
+                view.getGlobalVisibleRect(outRect)
 
                 if (!outRect.contains(event.rawX.toInt(), event.rawY.toInt())) {
-                    v.clearFocus()
-                    val imm: InputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                    imm.hideSoftInputFromWindow(v.getWindowToken(), 0)
+                    view.clearFocus()
+                    val inputMethodManager: InputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), hideFlags)
                 }
             }
         }
@@ -169,20 +170,24 @@ class RecipeStepActivity : AppCompatActivity() {
 
     // 스텝 설명 edittext 클릭 시 키보드에 잘림 현상 방지
     private fun initDescriptionTextBox(){
-        binding.editDescription.setOnFocusChangeListener { v, hasFocus ->
+        binding.editDescription.setOnFocusChangeListener { view, hasFocus ->
+            val defaultX = 0
+            val defaultY = 0
+            val hideFlags = 0
+
             if (hasFocus) {
                 // EditText가 가려지는 것을 방지하기 위해 ScrollView를 이동
                 binding.layout.postDelayed({
-                    binding.layout.scrollTo(0, binding.stepDescription.bottom)
+                    binding.layout.scrollTo(defaultX, binding.stepDescription.bottom)
                 }, 100)
             } else {
                 // 포커스 아웃 시 키보드 숨기기
-                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.hideSoftInputFromWindow(v.windowToken, 0)
+                val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                inputMethodManager.hideSoftInputFromWindow(view.windowToken, hideFlags)
 
                 // ScrollView 원상태로 돌림
                 binding.layout.postDelayed({
-                    binding.layout.scrollTo(0, 0)
+                    binding.layout.scrollTo(defaultX, defaultY)
                 }, 100)
             }
         }

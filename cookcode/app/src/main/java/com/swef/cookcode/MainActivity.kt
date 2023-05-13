@@ -53,7 +53,6 @@ class MainActivity : AppCompatActivity() {
 
             API.postSignin(userDataMap).enqueue(object: Callback<TokenResponse> {
                 override fun onResponse(call: Call<TokenResponse>, response: Response<TokenResponse>) {
-
                     if(response.body() != null) {
                         // status 200 = 로그인 성공
                         if (response.body()!!.status == 200) {

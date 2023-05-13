@@ -108,31 +108,20 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
             pickImage.launch("image/*")
         }
 
-        val addTextChangedListener = object : TextWatcher {
-            override fun beforeTextChanged(currentText: CharSequence?, start: Int, editCount: Int, after: Int) {}
-
-            override fun onTextChanged(currentText: CharSequence?, start: Int, before: Int, editCount: Int) {
-                searchIngredientRecyclerviewAdapter.filteredDatas = IngredientDataHost().getIngredientFromNameOrType(
-                    searchIngredientRecyclerviewAdapter.beforeSearchData, currentText.toString()) as MutableList<MyIngredientData>
-                searchIngredientRecyclerviewAdapter.notifyDataSetChanged()
-            }
-
-            override fun afterTextChanged(currentText: Editable?) {}
-        }
-
         // 식재료 선택 다이얼로그
         val dialogView = RecipeIngredientSelectDialogBinding.inflate(layoutInflater)
-
-        dialogView.ingredientName.addTextChangedListener(addTextChangedListener)
+        dialogView.ingredientName.addTextChangedListener(filteringForKeyword())
 
         val selectDialog = AlertDialog.Builder(this)
             .setView(dialogView.root)
             .create()
 
-        val spanCount = 3
         searchIngredientRecyclerviewAdapter = IngredientRecyclerviewAdapter("recipe_search")
+
+        val spanCount = 3
         dialogView.recyclerView.layoutManager = GridLayoutManager(this, spanCount)
         dialogView.recyclerView.adapter = searchIngredientRecyclerviewAdapter
+
         searchIngredientRecyclerviewAdapter.datas = IngredientDataHost().showAllIngredientData() as MutableList<MyIngredientData>
         searchIngredientRecyclerviewAdapter.notifyDataSetChanged()
 
@@ -140,13 +129,8 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
             selectDialog.dismiss()
         }
 
-        dialogView.root.setOnClickListener { clickedView ->
-            val hideFlags = 0
-            if (clickedView !is EditText) { // v가 EditText 클래스의 인스턴스가 아닐 경우
-                val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                inputMethodManager.hideSoftInputFromWindow(clickedView.windowToken, hideFlags) // 키보드를 숨김
-            }
-            clickedView.clearFocus()
+        dialogView.ingredientName.setOnFocusChangeListener {
+            view, hasFocus -> hideKeyboardFromEditText(view, hasFocus, this)
         }
 
         // 필수 재료 어댑터
@@ -157,22 +141,12 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
         // 필수 재료 추가 버튼 클릭시 재료 추가
         binding.addEssentialIngredient.setOnClickListener {
             dialogView.btnDone.setOnClickListener {
-                essentialIngredientData = IngredientDataHost().removeElement(
-                    searchIngredientRecyclerviewAdapter.selectedItems, searchIngredientRecyclerviewAdapter.additionalData)
-
-                essentialIngredientRecyclerviewAdapter.filteredDatas = essentialIngredientData
-                searchIngredientRecyclerviewAdapter.essentialData = essentialIngredientData
-
-                essentialIngredientRecyclerviewAdapter.notifyDataSetChanged()
+                insertDataForEssentialIngredient()
                 selectDialog.dismiss()
             }
 
             // 필수재료와 추가재료는 중복되면 안됨
-            searchIngredientRecyclerviewAdapter.beforeSearchData.clear()
-            searchIngredientRecyclerviewAdapter.beforeSearchData = IngredientDataHost().removeElement(
-                searchIngredientRecyclerviewAdapter.datas, searchIngredientRecyclerviewAdapter.additionalData)
-            searchIngredientRecyclerviewAdapter.filteredDatas = searchIngredientRecyclerviewAdapter.beforeSearchData
-            searchIngredientRecyclerviewAdapter.notifyDataSetChanged()
+            removeDupDataInAdditionalIngredient()
             selectDialog.show()
         }
 
@@ -184,21 +158,11 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
         // 추가 재료 추가 버튼 클릭시 재료 추가
         binding.addAdditionalIngredient.setOnClickListener {
             dialogView.btnDone.setOnClickListener {
-                addtionalIngredientData = IngredientDataHost().removeElement(
-                    searchIngredientRecyclerviewAdapter.selectedItems, searchIngredientRecyclerviewAdapter.essentialData)
-
-                additionalIngredientRecyclerviewAdapter.filteredDatas = addtionalIngredientData
-                searchIngredientRecyclerviewAdapter.additionalData = addtionalIngredientData
-
-                additionalIngredientRecyclerviewAdapter.notifyDataSetChanged()
+                insertDataForAdditionalIngredient()
                 selectDialog.dismiss()
             }
 
-            searchIngredientRecyclerviewAdapter.beforeSearchData.clear()
-            searchIngredientRecyclerviewAdapter.beforeSearchData = IngredientDataHost().removeElement(
-                searchIngredientRecyclerviewAdapter.datas, searchIngredientRecyclerviewAdapter.essentialData)
-            searchIngredientRecyclerviewAdapter.filteredDatas = searchIngredientRecyclerviewAdapter.beforeSearchData
-            searchIngredientRecyclerviewAdapter.notifyDataSetChanged()
+            removeDupDataInEssentialIngredient()
             selectDialog.show()
         }
 
@@ -293,8 +257,7 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
                 getResult.launch(intent)
             }
             else {
-                Toast.makeText(this, "추가 재료를 제외한 항목을 입력해주세요.", Toast.LENGTH_SHORT)
-                    .show()
+                Toast.makeText(this, "추가 재료를 제외한 항목을 입력해주세요.", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -401,6 +364,62 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
             }
         }
         return titleTyped && descriptionTyped && essentialIngredientSelected && stepExist && allIngredientValueTyped
+    }
+
+    private fun filteringForKeyword(): TextWatcher {
+        return object: TextWatcher {
+            override fun beforeTextChanged(currentText: CharSequence?, start: Int, editCount: Int, after: Int) {}
+
+            override fun onTextChanged(currentText: CharSequence?, start: Int, before: Int, editCount: Int) {
+                searchIngredientRecyclerviewAdapter.filteredDatas = IngredientDataHost().getIngredientFromNameOrType(
+                    searchIngredientRecyclerviewAdapter.beforeSearchData, currentText.toString()) as MutableList<MyIngredientData>
+                searchIngredientRecyclerviewAdapter.notifyDataSetChanged()
+            }
+
+            override fun afterTextChanged(currentText: Editable?) {}
+        }
+    }
+
+    private fun removeDupDataInEssentialIngredient() {
+        searchIngredientRecyclerviewAdapter.beforeSearchData.clear()
+        searchIngredientRecyclerviewAdapter.beforeSearchData = IngredientDataHost().removeElement(
+            searchIngredientRecyclerviewAdapter.datas, searchIngredientRecyclerviewAdapter.essentialData)
+        searchIngredientRecyclerviewAdapter.filteredDatas = searchIngredientRecyclerviewAdapter.beforeSearchData
+        searchIngredientRecyclerviewAdapter.notifyDataSetChanged()
+    }
+
+    private fun removeDupDataInAdditionalIngredient() {
+        searchIngredientRecyclerviewAdapter.beforeSearchData.clear()
+        searchIngredientRecyclerviewAdapter.beforeSearchData = IngredientDataHost().removeElement(
+            searchIngredientRecyclerviewAdapter.datas, searchIngredientRecyclerviewAdapter.additionalData)
+        searchIngredientRecyclerviewAdapter.filteredDatas = searchIngredientRecyclerviewAdapter.beforeSearchData
+        searchIngredientRecyclerviewAdapter.notifyDataSetChanged()
+    }
+
+    private fun insertDataForEssentialIngredient() {
+        essentialIngredientData = IngredientDataHost().removeElement(
+            searchIngredientRecyclerviewAdapter.selectedItems, searchIngredientRecyclerviewAdapter.additionalData)
+
+        essentialIngredientRecyclerviewAdapter.filteredDatas = essentialIngredientData
+        searchIngredientRecyclerviewAdapter.essentialData = essentialIngredientData
+        essentialIngredientRecyclerviewAdapter.notifyDataSetChanged()
+    }
+
+    private fun insertDataForAdditionalIngredient() {
+        addtionalIngredientData = IngredientDataHost().removeElement(
+            searchIngredientRecyclerviewAdapter.selectedItems, searchIngredientRecyclerviewAdapter.essentialData)
+
+        additionalIngredientRecyclerviewAdapter.filteredDatas = addtionalIngredientData
+        searchIngredientRecyclerviewAdapter.additionalData = addtionalIngredientData
+        additionalIngredientRecyclerviewAdapter.notifyDataSetChanged()
+    }
+
+    private fun hideKeyboardFromEditText(view: View, hasFocus: Boolean, context: Context) {
+        val hideFlags = 0
+        if (!hasFocus) {
+            val inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            inputMethodManager.hideSoftInputFromWindow(view.windowToken, hideFlags)
+        }
     }
 }
 
