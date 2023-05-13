@@ -1,7 +1,6 @@
 package com.swef.cookcode.searchfrags
 
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -34,10 +33,10 @@ class SearchRecipeFragment : Fragment() {
 
     private lateinit var recyclerViewAdapter: SearchRecipeRecyclerviewAdapter
 
-    private var cookable = 0
-    private var sort = "createAt"
+    private var cookable = 1
+    private var sort = "createdAt"
     private var createdMonth = 5
-    private val pageSize = 20
+    private val pageSize = 10
 
     private val API = RecipeAPI.create()
 
@@ -80,21 +79,13 @@ class SearchRecipeFragment : Fragment() {
     private fun getRecipeDatas(accessToken: String, currentPage: Int, sizePerPage: Int, cookable: Int, sort: String, createdMonth: Int): MutableList<RecipeAndStepData> {
         var recipeAndStepDatas = mutableListOf<RecipeAndStepData>()
 
-        Log.d("data_size", accessToken)
-
-        API.getRecipes(accessToken, currentPage, sizePerPage, sort, createdMonth, cookable).enqueue(object: Callback<RecipeResponse> {
+        API.getRecipes(accessToken, currentPage, sizePerPage).enqueue(object: Callback<RecipeResponse> {
             override fun onResponse(call: Call<RecipeResponse>, response: Response<RecipeResponse>) {
                 val datas = response.body()
                 if (datas != null && datas.status == 200) {
-                    recipeAndStepDatas = getRecipeDatasFromResponseBody(datas.recipes)
+                    recipeAndStepDatas = getRecipeDatasFromResponseBody(datas.recipes.content)
                 }
 
-                if (response.errorBody() != null) {
-                    Log.d("data_size", response.errorBody()!!.string())
-                }
-                else {
-                    Log.d("data_size", response.toString())
-                }
             }
 
             override fun onFailure(call: Call<RecipeResponse>, t: Throwable) {
@@ -112,7 +103,6 @@ class SearchRecipeFragment : Fragment() {
         for (item in datas) {
             val recipeData = RecipeData(item.recipeId, item.title, item.description, item.mainImage.toUri(), item.likeCount, item.user)
             val stepDatas = getStepDatasFromRecipeContent(item.steps)
-
             recipeAndStepDatas.add(RecipeAndStepData(recipeData, stepDatas))
         }
 

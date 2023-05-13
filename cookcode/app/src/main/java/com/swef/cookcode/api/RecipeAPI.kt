@@ -20,7 +20,7 @@ import retrofit2.http.Query
 interface RecipeAPI {
 
     @Multipart
-    @POST("/recipe/photos")
+    @POST("recipe/photos")
     fun postImage(
         @Header("accessToken") accessToken: String,
         @Header("Content-Type") value: String = "multipart/form-data",
@@ -28,30 +28,30 @@ interface RecipeAPI {
     ): Call<ImageResponse>
 
     @Multipart
-    @POST("/recipe/videos")
+    @POST("recipe/videos")
     fun postVideo(
         @Header("accessToken") accessToken: String,
         @Header("Content-Type") value: String = "multipart/form-data",
         @Part("stepVideos") file: MultipartBody.Part
     ): Call<VideoResponse>
 
-    @POST("/recipe")
+    @POST("recipe")
     fun postRecipe(
         @Header("accessToken") accessToken: String,
         @Body body: HashMap<String, Any>
     ): Call<RecipeStatusResponse>
 
-    @GET("/recipe")
+    @GET("recipe")
     fun getRecipes(
         @Header("accessToken") accessToken: String,
         @Query("page") page: Int,
         @Query("size") size: Int,
-        @Query("sort") sort: String = "createdAt", // 현재 최신순만 설정되어있음 수정 필요
-        @Query("month") month: Int,
-        @Query("cookable") cookable: Int
+        // @Query("sort") sort: String = "createdAt",
+        // @Query("month") month: Int,
+        // @Query("cookable") cookable: Int
     ): Call<RecipeResponse>
 
-    @GET("/recipe/{recipeId}")
+    @GET("recipe/{recipeId}")
     fun getRecipe(
         @Header("accessToken") accessToken: String,
         @Query("recipeId") recipeId: Int

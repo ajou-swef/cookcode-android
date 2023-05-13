@@ -1,11 +1,10 @@
 package com.swef.cookcode.data.response
 import com.google.gson.annotations.SerializedName
-import java.util.Date
 
 data class RecipeResponse(
     @SerializedName("message") val message: String,
     @SerializedName("status") val status: Int,
-    @SerializedName("data") val recipes: List<RecipeContent>,
+    @SerializedName("data") val recipes: Content,
     @SerializedName("numberOfElements") val numberOfElements: Int, // 무한스크롤 시 현재 페이지에 있는 레시피 개수
     @SerializedName("offset") val offset: Int,
     @SerializedName("pageNumber") val pageNumber: Int,
@@ -14,14 +13,18 @@ data class RecipeResponse(
     @SerializedName("totalPages") val totalPages: Int
 )
 
+data class Content(
+    @SerializedName("content") val content: List<RecipeContent>
+)
+
 data class RecipeContent(
     @SerializedName("recipeId") val recipeId: Int,
     @SerializedName("user") val user: MadeUser,
     @SerializedName("steps") val steps: List<Step>,
     @SerializedName("title") val title: String,
     @SerializedName("description") val description: String,
-    @SerializedName("createdAt") val createdAt: Date,
-    @SerializedName("updatedAt") val updatedAt: Date,
+    @SerializedName("createdAt") val createdAt: String,
+    @SerializedName("updatedAt") val updatedAt: String,
     @SerializedName("isLiked") val isLiked: Boolean,
     @SerializedName("likeCount") val likeCount: Int,
     @SerializedName("commentCount") val commentCount: Int,
