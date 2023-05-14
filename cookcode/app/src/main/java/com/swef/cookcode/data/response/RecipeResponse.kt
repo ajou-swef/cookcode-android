@@ -17,6 +17,11 @@ data class Content(
     @SerializedName("content") val content: List<RecipeContent>
 )
 
+data class RecipeContentResponse(
+    @SerializedName("message") val message: String,
+    @SerializedName("status") val status: Int,
+    @SerializedName("data") val recipeData: RecipeContent
+)
 data class RecipeContent(
     @SerializedName("recipeId") val recipeId: Int,
     @SerializedName("user") val user: MadeUser,

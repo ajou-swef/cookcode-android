@@ -67,4 +67,5 @@
     <string name="ingred_quantity">%d%s</string>
     <string name="hint_date">yyyy-MM-dd</string>제
     <string name="delete">삭제</string>
+    <string name="data_loading">데이터를 로딩중 입니다..</string>
 </resources>

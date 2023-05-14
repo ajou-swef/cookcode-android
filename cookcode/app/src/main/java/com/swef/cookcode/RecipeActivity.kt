@@ -2,6 +2,7 @@ package com.swef.cookcode
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.core.net.toUri
 import com.swef.cookcode.adapter.RecipeViewpagerAdapter
@@ -11,6 +12,7 @@ import com.swef.cookcode.data.RecipeData
 import com.swef.cookcode.data.StepData
 import com.swef.cookcode.data.response.Photos
 import com.swef.cookcode.data.response.RecipeContent
+import com.swef.cookcode.data.response.RecipeContentResponse
 import com.swef.cookcode.data.response.Step
 import com.swef.cookcode.data.response.Videos
 import com.swef.cookcode.databinding.ActivityRecipeBinding
@@ -25,6 +27,8 @@ class RecipeActivity : AppCompatActivity() {
 
     private val API = RecipeAPI.create()
 
+    private lateinit var recipeViewpagerAdapter: RecipeViewpagerAdapter
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityRecipeBinding.inflate(layoutInflater)
@@ -32,35 +36,40 @@ class RecipeActivity : AppCompatActivity() {
 
         val accessToken = intent.getStringExtra("access_token")!!
         val recipeId = intent.getIntExtra("recipe_id", ERR_RECIPE_ID)
+        Log.d("data_size", accessToken)
+        Log.d("data_size", recipeId.toString())
 
-        val data = getRecipeDataFromRecipeID(recipeId, accessToken)
+        recipeViewpagerAdapter = RecipeViewpagerAdapter()
+        binding.viewpager.adapter = recipeViewpagerAdapter
+
+        getRecipeDataFromRecipeID(recipeId, accessToken)
 
         binding.beforeArrow.setOnClickListener {
             finish()
         }
-
-        val recipeViewpagerAdapter = RecipeViewpagerAdapter()
-        recipeViewpagerAdapter.recipeData = data.recipeData
-        recipeViewpagerAdapter.stepDatas = data.stepData
-        binding.viewpager.adapter = recipeViewpagerAdapter
     }
 
-    private fun getRecipeDataFromRecipeID(recipeId: Int, accessToken: String): RecipeAndStepData {
-        lateinit var recipeAndStepData: RecipeAndStepData
 
-        API.getRecipe(accessToken, recipeId).enqueue(object: Callback<RecipeContent> {
-            override fun onResponse(call: Call<RecipeContent>, response: Response<RecipeContent>) {
-                if (response.isSuccessful) {
-                    recipeAndStepData = getRecipeDataFromResponseBody(response.body()!!)
+    private fun getRecipeDataFromRecipeID(recipeId: Int, accessToken: String) {
+        API.getRecipe(accessToken, recipeId).enqueue(object : Callback<RecipeContentResponse> {
+            override fun onResponse(
+                call: Call<RecipeContentResponse>,
+                response: Response<RecipeContentResponse>
+            ) {
+                if (response.body() != null) {
+                    val recipeAndStepData = getRecipeDataFromResponseBody(response.body()!!.recipeData)
+                    recipeViewpagerAdapter.setData(recipeAndStepData)
+                }
+                else {
+                    putToastMessage("데이터를 불러오는데 실패했습니다.")
+                    Log.d("data_size", response.errorBody()!!.string())
                 }
             }
 
-            override fun onFailure(call: Call<RecipeContent>, t: Throwable) {
+            override fun onFailure(call: Call<RecipeContentResponse>, t: Throwable) {
                 putToastMessage("잠시 후 다시 시도해주세요.")
             }
         })
-
-        return recipeAndStepData
     }
 
     private fun getRecipeDataFromResponseBody(data: RecipeContent): RecipeAndStepData {
@@ -77,6 +86,18 @@ class RecipeActivity : AppCompatActivity() {
     private fun getStepDatasFromRecipeContent(datas: List<Step>): MutableList<StepData> {
         val stepDatas = mutableListOf<StepData>()
 
+        // mock data
+        stepDatas.apply {
+            val imageUri = mutableListOf<String>()
+            imageUri.add("https://picsum.photos/200/300")
+            val videoUri = null
+            val title = "요리 만들기"
+            val description = "쿡코드를 연다"
+            val seq = 1
+
+            add(StepData(imageUri, videoUri, title, description, seq))
+        }
+        /*
         for (item in datas) {
             stepDatas.apply {
                 val imageUris = getImageDatasFromStep(item.imageUris)
@@ -88,6 +109,8 @@ class RecipeActivity : AppCompatActivity() {
                 add(StepData(imageUris, videoUris, title, description, numberOfStep))
             }
         }
+
+         */
 
         return stepDatas
     }

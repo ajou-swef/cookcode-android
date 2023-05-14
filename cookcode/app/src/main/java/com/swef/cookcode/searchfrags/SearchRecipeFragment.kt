@@ -1,6 +1,7 @@
 package com.swef.cookcode.searchfrags
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -51,18 +52,29 @@ class SearchRecipeFragment : Fragment() {
 
         var currentPage = 0
 
-        Thread {
-            searchedRecipeAndStepDatas = getRecipeDatas(accessToken, currentPage, pageSize, cookable, sort, createdMonth)
-        }.start()
-        Thread.sleep(100)
-
         recyclerViewAdapter = SearchRecipeRecyclerviewAdapter()
-        recyclerViewAdapter.datas = searchedRecipeAndStepDatas
+
         recyclerViewAdapter.accessToken = accessToken
         binding.recyclerView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         binding.recyclerView.adapter = recyclerViewAdapter
 
-        recyclerViewAdapter.notifyDataSetChanged()
+
+        // searchedRecipeAndStepDatas = getRecipeDatas(accessToken, currentPage, pageSize, cookable, sort, createdMonth)
+
+        API.getRecipes(accessToken, currentPage, pageSize).enqueue(object : Callback<RecipeResponse> {
+            override fun onResponse(call: Call<RecipeResponse>, response: Response<RecipeResponse>) {
+                val datas = response.body()
+                if (datas != null && datas.status == 200) {
+                    Log.d("data_size", response.body().toString())
+                    searchedRecipeAndStepDatas = getRecipeDatasFromResponseBody(datas.recipes.content)
+                    putDataForRecyclerview()
+                }
+            }
+
+            override fun onFailure(call: Call<RecipeResponse>, t: Throwable) {
+                putToastMessage("잠시 후 다시 시도해주세요.")
+            }
+        })
 
         return binding.root
     }
@@ -74,27 +86,6 @@ class SearchRecipeFragment : Fragment() {
 
     private fun putToastMessage(message: String){
         Toast.makeText(this.context, message, Toast.LENGTH_SHORT).show()
-    }
-
-    private fun getRecipeDatas(accessToken: String, currentPage: Int, sizePerPage: Int, cookable: Int, sort: String, createdMonth: Int): MutableList<RecipeAndStepData> {
-        var recipeAndStepDatas = mutableListOf<RecipeAndStepData>()
-
-        API.getRecipes(accessToken, currentPage, sizePerPage).enqueue(object: Callback<RecipeResponse> {
-            override fun onResponse(call: Call<RecipeResponse>, response: Response<RecipeResponse>) {
-                val datas = response.body()
-                if (datas != null && datas.status == 200) {
-                    recipeAndStepDatas = getRecipeDatasFromResponseBody(datas.recipes.content)
-                }
-
-            }
-
-            override fun onFailure(call: Call<RecipeResponse>, t: Throwable) {
-                putToastMessage("잠시 후 다시 시도해주세요.")
-            }
-
-        })
-
-        return recipeAndStepDatas
     }
 
     private fun getRecipeDatasFromResponseBody(datas: List<RecipeContent>): MutableList<RecipeAndStepData> {
@@ -112,6 +103,19 @@ class SearchRecipeFragment : Fragment() {
     private fun getStepDatasFromRecipeContent(datas: List<Step>): MutableList<StepData> {
         val stepDatas = mutableListOf<StepData>()
 
+        // mock data
+        stepDatas.apply {
+            val imageUri = mutableListOf<String>()
+            imageUri.add("https://picsum.photos/200")
+            val videoUri = null
+            val title = "요리 만들기"
+            val description = "쿡코드를 연다"
+            val seq = 1
+
+            add(StepData(imageUri, videoUri, title, description, seq))
+        }
+
+        /*
         for (item in datas) {
             stepDatas.apply {
                 val imageUris = getImageDatasFromStep(item.imageUris)
@@ -123,6 +127,7 @@ class SearchRecipeFragment : Fragment() {
                 add(StepData(imageUris, videoUris, title, description, numberOfStep))
             }
         }
+         */
 
         return stepDatas
     }
@@ -145,5 +150,10 @@ class SearchRecipeFragment : Fragment() {
         }
 
         return videoUris
+    }
+
+    private fun putDataForRecyclerview() {
+        recyclerViewAdapter.datas = searchedRecipeAndStepDatas
+        recyclerViewAdapter.notifyItemRangeInserted(0, recyclerViewAdapter.datas.size - 1)
     }
 }

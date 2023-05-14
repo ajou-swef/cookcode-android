@@ -1,7 +1,7 @@
 package com.swef.cookcode.api
 
 import com.swef.cookcode.data.response.ImageResponse
-import com.swef.cookcode.data.response.RecipeContent
+import com.swef.cookcode.data.response.RecipeContentResponse
 import com.swef.cookcode.data.response.RecipeResponse
 import com.swef.cookcode.data.response.RecipeStatusResponse
 import com.swef.cookcode.data.response.VideoResponse
@@ -15,6 +15,7 @@ import retrofit2.http.Header
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface RecipeAPI {
@@ -54,8 +55,8 @@ interface RecipeAPI {
     @GET("recipe/{recipeId}")
     fun getRecipe(
         @Header("accessToken") accessToken: String,
-        @Query("recipeId") recipeId: Int
-    ): Call<RecipeContent>
+        @Path("recipeId") recipeId: Int
+    ): Call<RecipeContentResponse>
 
     companion object {
         private const val BASE_URL = "http://54.180.117.179:8080/api/v1/"

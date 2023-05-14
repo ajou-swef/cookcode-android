@@ -212,7 +212,7 @@ class IngredientRecyclerviewAdapter(
                                 item.value, item.ingredientData.unit
                             )
 
-                            CoroutineScope(Dispatchers.Default).async {
+                            CoroutineScope(Dispatchers.Default).launch {
                                 item.fridgeIngredId = listener.postIngredient(
                                     item.ingredientData.ingredId,
                                     item.expiredAt!!,
