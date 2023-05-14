@@ -41,6 +41,22 @@ class SearchResultActivity : AppCompatActivity() {
         bundle.putString("access_token", accessToken)
 
         // 최초 실행 되는 화면은 레시피 검색 화면
+        showRecipeFragment(bundle)
+
+        // 각 버튼 클릭 시 해당 클릭된 컴포넌트를 제외한 버튼 들은 회색 처리
+        // 각 버튼 클릭 시 해당하는 Fragment 실행
+        binding.btnRecipe.setOnClickListener {
+            showRecipeFragment(bundle)
+        }
+        binding.btnCookie.setOnClickListener {
+            showCookieFragment(bundle)
+        }
+        binding.btnUser.setOnClickListener {
+            showUserFragment(bundle)
+        }
+    }
+
+    private fun showRecipeFragment(bundle: Bundle) {
         val searchRecipeFragment = SearchRecipeFragment()
         searchRecipeFragment.arguments = bundle
 
@@ -50,41 +66,29 @@ class SearchResultActivity : AppCompatActivity() {
         binding.btnRecipe.setBackgroundResource(R.drawable.filled_round_component_clicked)
         binding.btnCookie.setBackgroundResource(R.drawable.filled_round_component)
         binding.btnUser.setBackgroundResource(R.drawable.filled_round_component)
+    }
 
-        // 각 버튼 클릭 시 해당 클릭된 컴포넌트를 제외한 버튼 들은 회색 처리
-        // 각 버튼 클릭 시 해당하는 Fragment 실행
-        binding.btnRecipe.setOnClickListener {
-            binding.btnRecipe.setBackgroundResource(R.drawable.filled_round_component_clicked)
-            binding.btnCookie.setBackgroundResource(R.drawable.filled_round_component)
-            binding.btnUser.setBackgroundResource(R.drawable.filled_round_component)
+    private fun showCookieFragment(bundle: Bundle) {
+        val searchCookieFragment = SearchCookieFragment()
+        searchCookieFragment.arguments = bundle
 
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.fl_container, searchRecipeFragment)
-                .commitAllowingStateLoss()
-        }
-        binding.btnCookie.setOnClickListener {
-            val searchCookieFragment = SearchCookieFragment()
-            searchCookieFragment.arguments = bundle
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fl_container, searchCookieFragment)
+            .commitAllowingStateLoss()
+        binding.btnCookie.setBackgroundResource(R.drawable.filled_round_component_clicked)
+        binding.btnRecipe.setBackgroundResource(R.drawable.filled_round_component)
+        binding.btnUser.setBackgroundResource(R.drawable.filled_round_component)
+    }
 
-            binding.btnCookie.setBackgroundResource(R.drawable.filled_round_component_clicked)
-            binding.btnRecipe.setBackgroundResource(R.drawable.filled_round_component)
-            binding.btnUser.setBackgroundResource(R.drawable.filled_round_component)
+    private fun showUserFragment(bundle: Bundle) {
+        val searchUserFragment = SearchUserFragment()
+        searchUserFragment.arguments = bundle
 
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.fl_container, searchCookieFragment)
-                .commitAllowingStateLoss()
-        }
-        binding.btnUser.setOnClickListener {
-            val searchUserFragment = SearchUserFragment()
-            searchUserFragment.arguments = bundle
-
-            binding.btnUser.setBackgroundResource(R.drawable.filled_round_component_clicked)
-            binding.btnCookie.setBackgroundResource(R.drawable.filled_round_component)
-            binding.btnRecipe.setBackgroundResource(R.drawable.filled_round_component)
-
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.fl_container, searchUserFragment)
-                .commitAllowingStateLoss()
-        }
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fl_container, searchUserFragment)
+            .commitAllowingStateLoss()
+        binding.btnUser.setBackgroundResource(R.drawable.filled_round_component_clicked)
+        binding.btnCookie.setBackgroundResource(R.drawable.filled_round_component)
+        binding.btnRecipe.setBackgroundResource(R.drawable.filled_round_component)
     }
 }
