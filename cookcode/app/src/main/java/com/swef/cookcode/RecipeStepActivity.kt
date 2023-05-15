@@ -26,12 +26,10 @@ import com.swef.cookcode.data.StepImageData
 import com.swef.cookcode.data.StepVideoData
 import com.swef.cookcode.data.response.ImageResponse
 import com.swef.cookcode.databinding.ActivityRecipeStepBinding
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.io.File
 
 
 class RecipeStepActivity : AppCompatActivity() {
