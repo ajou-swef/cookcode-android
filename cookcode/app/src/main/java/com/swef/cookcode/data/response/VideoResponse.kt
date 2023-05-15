@@ -7,5 +7,7 @@ data class videoUrl(
 )
 
 data class VideoResponse(
+    @SerializedName("message") val message: String,
+    @SerializedName("status") val status: Int,
     @SerializedName("data") val videoUris: videoUrl
 )

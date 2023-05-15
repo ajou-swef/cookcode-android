@@ -9,6 +9,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -24,12 +25,18 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.swef.cookcode.adapter.IngredientRecyclerviewAdapter
 import com.swef.cookcode.adapter.StepRecyclerviewAdapter
+import com.swef.cookcode.api.RecipeAPI
 import com.swef.cookcode.data.MyIngredientData
 import com.swef.cookcode.data.StepData
 import com.swef.cookcode.data.host.IngredientDataHost
+import com.swef.cookcode.data.response.ImageResponse
 import com.swef.cookcode.databinding.ActivityRecipeFormBinding
 import com.swef.cookcode.databinding.RecipeIngredientSelectDialogBinding
 import com.swef.cookcode.`interface`.StepOnClickListener
+import okhttp3.MultipartBody
+import retrofit2.Call
+import retrofit2.Response
+import retrofit2.Callback
 
 class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
     private lateinit var binding : ActivityRecipeFormBinding
@@ -59,6 +66,8 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
     private var stepExist = false
 
     private val stepOutOfBound = -1
+
+    private val API = RecipeAPI.create()
 
     // 미리보기 단계에서 해당 스텝 수정을 위한 스텝 단계 정보 불러오기
     private val getResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -257,7 +266,7 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
                 getResult.launch(intent)
             }
             else {
-                Toast.makeText(this, "추가 재료를 제외한 항목을 입력해주세요.", Toast.LENGTH_SHORT).show()
+                putToastMessage("추가 재료를 제외한 항목을 입력해주세요.")
             }
         }
     }
@@ -420,6 +429,31 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
             val inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             inputMethodManager.hideSoftInputFromWindow(view.windowToken, hideFlags)
         }
+    }
+
+    /*
+    private fun putAndGetImageUrl(accessToken: String, images: MultipartBody.Part) {
+        API.postImage(accessToken, images).enqueue(object: Callback<ImageResponse> {
+            override fun onResponse(call: Call<ImageResponse>, response: Response<ImageResponse>) {
+                if(response.isSuccessful){
+                    Log.d("data_size", response.body().toString())
+                }
+                else {
+                    Log.d("data_size", response.errorBody()!!.string())
+                }
+            }
+
+            override fun onFailure(call: Call<ImageResponse>, t: Throwable) {
+                putToastMessage("다시 시도해주세요.")
+            }
+
+        })
+    }
+
+     */
+
+    private fun putToastMessage(message: String){
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }
 
