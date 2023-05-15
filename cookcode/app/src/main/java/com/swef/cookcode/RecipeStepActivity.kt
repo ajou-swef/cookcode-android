@@ -26,10 +26,13 @@ import com.swef.cookcode.data.StepImageData
 import com.swef.cookcode.data.StepVideoData
 import com.swef.cookcode.data.response.ImageResponse
 import com.swef.cookcode.databinding.ActivityRecipeStepBinding
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.io.File
 
 
 class RecipeStepActivity : AppCompatActivity() {
@@ -51,10 +54,16 @@ class RecipeStepActivity : AppCompatActivity() {
 
     private val API = RecipeAPI.create()
 
+    private lateinit var accessToken: String
+    private lateinit var refreshToken: String
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityRecipeStepBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        accessToken = intent.getStringExtra("access_token")!!
+        refreshToken = intent.getStringExtra("refresh_token")!!
 
         // 스텝 단계 넘버링
         val stepNumber = intent.getIntExtra("step_number", -1)
@@ -206,7 +215,7 @@ class RecipeStepActivity : AppCompatActivity() {
         // adapter에서는 registerForActivityResult를 사용할 수 없음
         val pickImageLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             // 받아온 uri를 datas에 추가하고, 업데이트
-            updateRecyclerImage(uri!!)
+            updateRecyclerImage(uri.toString())
         }
 
         // Recyclerview 초기화
@@ -227,15 +236,14 @@ class RecipeStepActivity : AppCompatActivity() {
     }
 
     // Image 선택 시 recyclerview 업데이트
-    private fun updateRecyclerImage(imageUri: Uri) {
+    private fun updateRecyclerImage(imageUri: String) {
         for(index: Int in 0..2) {
             if(imageDatas[index].imageUri == null) {
                 // 현재 이미지가 추가되어있지 않은 position에 이미지 추가
                 imageDatas.removeAt(index)
-                imageDatas.add(index, StepImageData(imageUri.toString()))
 
-                // recyclerview adapter에 해당 위치 알림
-                stepImageRecyclerviewAdapter.notifyItemChanged(index)
+                val file = makeMultiPartBodyPart(imageUri)
+                putAndGetImageUrl(accessToken, file, index)
                 return
             }
         }
@@ -291,10 +299,13 @@ class RecipeStepActivity : AppCompatActivity() {
             })
     }
 
-    private fun putAndGetImageUrl(accessToken: String, images: MultipartBody.Part) {
+    private fun putAndGetImageUrl(accessToken: String, images: MultipartBody.Part, index: Int) {
         API.postImage(accessToken, images).enqueue(object: Callback<ImageResponse> {
             override fun onResponse(call: Call<ImageResponse>, response: Response<ImageResponse>) {
                 if(response.isSuccessful){
+                    val data = response.body()!!.imageUris.listImageUri[0]
+                    imageDatas.add(index, StepImageData(data))
+                    stepImageRecyclerviewAdapter.notifyItemChanged(index)
                     Log.d("data_size", response.body().toString())
                 }
                 else {
@@ -306,6 +317,14 @@ class RecipeStepActivity : AppCompatActivity() {
                 putToastMessage("다시 시도해주세요.")
             }
         })
+    }
+
+    private fun makeMultiPartBodyPart(uri: String): MultipartBody.Part {
+        val file = File(uri)
+        val mediaType = "multipart/form-data".toMediaTypeOrNull()
+        val requestFile = file.asRequestBody(mediaType)
+
+        return MultipartBody.Part.createFormData("photo", file.name, requestFile)
     }
 
     private fun putToastMessage(message: String){

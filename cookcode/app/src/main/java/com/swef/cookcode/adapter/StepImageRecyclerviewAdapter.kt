@@ -1,11 +1,13 @@
 package com.swef.cookcode.adapter
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
 import androidx.activity.result.ActivityResultLauncher
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.swef.cookcode.R
 import com.swef.cookcode.data.StepImageData
 import com.swef.cookcode.databinding.StepImageRecyclerviewItemBinding
@@ -13,7 +15,8 @@ import com.swef.cookcode.databinding.StepImageRecyclerviewItemBinding
 // Step에 들어갈 Image를 보여줄 RecyclerView를 위한 adapter
 class StepImageRecyclerviewAdapter(
     // 갤러리에서 이미지를 선택할 수 있는 launcher는 activity에서 구현하여 어댑터에 넘겨준다
-    private val pickImageLauncher: ActivityResultLauncher<String>
+    private val pickImageLauncher: ActivityResultLauncher<String>,
+    private val context: Context
     ): RecyclerView.Adapter<StepImageRecyclerviewAdapter.ViewHolder>() {
 
     // data는 StepImageData class에 정의되어있다
@@ -34,7 +37,7 @@ class StepImageRecyclerviewAdapter(
         val uriData = mutableListOf<String>()
         for(index: Int in 0..2){
             if(datas[index].imageUri != null)
-                uriData.add(datas[index].imageUri.toString())
+                uriData.add(datas[index].imageUri!!)
             }
         return uriData.toTypedArray()
     }
@@ -62,13 +65,11 @@ class StepImageRecyclerviewAdapter(
 
             // image가 있으면 등록
             if (item.imageUri != null) {
-                binding.image.setBackgroundResource(0)
-                binding.image.setImageURI(item.imageUri)
+                getImageFromUrl(item.imageUri!!)
             }
             // 없으면 기본 이미지 등록
             else {
-                binding.image.setImageURI(null)
-                binding.image.setBackgroundResource(item.basicImage)
+                setBasicImageForGlide(item.basicImage)
             }
         }
 
@@ -103,6 +104,21 @@ class StepImageRecyclerviewAdapter(
                 }
             }
             popupMenu.show()
+        }
+
+        private fun getImageFromUrl(imageUrl: String) {
+            Glide.with(context)
+                .load(imageUrl)
+                .into(binding.image)
+
+            binding.image.setBackgroundResource(0)
+        }
+
+        private fun setBasicImageForGlide(basicImage: Int) {
+            Glide.with(context)
+                .clear(binding.image)
+
+            binding.image.setBackgroundResource(basicImage)
         }
     }
 }

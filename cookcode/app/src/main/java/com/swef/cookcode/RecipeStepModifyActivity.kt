@@ -8,6 +8,7 @@ import android.graphics.drawable.Drawable
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -21,9 +22,18 @@ import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.swef.cookcode.adapter.StepImageRecyclerviewAdapter
 import com.swef.cookcode.adapter.StepVideoRecyclerviewAdapter
+import com.swef.cookcode.api.RecipeAPI
 import com.swef.cookcode.data.StepImageData
 import com.swef.cookcode.data.StepVideoData
+import com.swef.cookcode.data.response.ImageResponse
 import com.swef.cookcode.databinding.ActivityRecipeStepModifyBinding
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import java.io.File
 
 class RecipeStepModifyActivity : AppCompatActivity() {
     private lateinit var binding: ActivityRecipeStepModifyBinding
@@ -38,10 +48,18 @@ class RecipeStepModifyActivity : AppCompatActivity() {
     private var descriptionTyped = false
     private var imageUploaded = false
 
+    private val API = RecipeAPI.create()
+
+    private lateinit var accessToken: String
+    private lateinit var refreshToken: String
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityRecipeStepModifyBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        accessToken = intent.getStringExtra("access_token")!!
+        refreshToken = intent.getStringExtra("refresh_token")!!
 
         // 스텝 단계 넘버링
         val stepNumber = intent.getIntExtra("step_number", -1)
@@ -142,7 +160,7 @@ class RecipeStepModifyActivity : AppCompatActivity() {
 
     private fun initImageRecycler() {
         val pickImageLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-            updateRecyclerImage(uri!!)
+            updateRecyclerImage(uri.toString())
         }
 
         stepImageRecyclerviewAdapter = StepImageRecyclerviewAdapter(pickImageLauncher, this)
@@ -160,15 +178,14 @@ class RecipeStepModifyActivity : AppCompatActivity() {
         stepImageRecyclerviewAdapter.notifyDataSetChanged()
     }
 
-    private fun updateRecyclerImage(imageUri: Uri) {
+    private fun updateRecyclerImage(imageUri: String) {
         for(index: Int in 0..2) {
             if(imageDatas[index].imageUri == null) {
                 // 현재 이미지가 추가되어있지 않은 position에 이미지 추가
                 imageDatas.removeAt(index)
-                imageDatas.add(index, StepImageData(imageUri.toString()))
 
-                // recyclerview adapter에 해당 위치 알림
-                stepImageRecyclerviewAdapter.notifyItemChanged(index)
+                val file = makeMultiPartBodyPart(imageUri)
+                putAndGetImageUrl(accessToken, file, index)
                 return
             }
         }
@@ -255,7 +272,6 @@ class RecipeStepModifyActivity : AppCompatActivity() {
         binding.editTitle.setText(stepTitle)
         binding.editDescription.setText(stepDescription)
 
-        // String으로 cast된 Uri를 다시 Uri로 변환하여 image 불러오기
         for(index: Int in stepImages.indices){
             imageDatas[index] = (StepImageData(stepImages[index]))
             stepImageRecyclerviewAdapter.notifyItemChanged(index)
@@ -263,9 +279,41 @@ class RecipeStepModifyActivity : AppCompatActivity() {
 
         // String으로 cast된 Uri로 변환하여 video 업로드 후 썸네일 추출
         if(stepVideos?.isNotEmpty() == true) {
-            for (i: Int in stepVideos.indices){
-                getVideoInfoAndThumbnail(stepVideos[i].toUri())
+            for (index: Int in stepVideos.indices){
+                getVideoInfoAndThumbnail(stepVideos[index].toUri())
             }
         }
+    }
+
+    private fun putAndGetImageUrl(accessToken: String, images: MultipartBody.Part, index: Int) {
+        API.postImage(accessToken, images).enqueue(object: Callback<ImageResponse> {
+            override fun onResponse(call: Call<ImageResponse>, response: Response<ImageResponse>) {
+                if(response.isSuccessful){
+                    val data = response.body()!!.imageUris.listImageUri[0]
+                    imageDatas.add(index, StepImageData(data))
+                    stepImageRecyclerviewAdapter.notifyItemChanged(index)
+                    Log.d("data_size", response.body().toString())
+                }
+                else {
+                    Log.d("data_size", response.errorBody()!!.string())
+                }
+            }
+
+            override fun onFailure(call: Call<ImageResponse>, t: Throwable) {
+                putToastMessage("다시 시도해주세요.")
+            }
+        })
+    }
+
+    private fun makeMultiPartBodyPart(uri: String): MultipartBody.Part {
+        val file = File(uri)
+        val mediaType = "multipart/form-data".toMediaTypeOrNull()
+        val requestFile = file.asRequestBody(mediaType)
+
+        return MultipartBody.Part.createFormData("photo", file.name, requestFile)
+    }
+
+    private fun putToastMessage(message: String){
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }
