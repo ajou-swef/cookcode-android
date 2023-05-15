@@ -119,19 +119,19 @@
             android:id="@+id/recipe_name"
             android:text="@string/recipe_name"
             android:textColor="@color/white"
-            android:textSize="25sp"
+            android:textSize="22sp"
             android:textStyle="bold"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginBottom="30dp"
-            android:layout_marginEnd="10dp"
-            android:gravity="end"
+            android:layout_marginEnd="20dp"
             android:shadowRadius="7.0"
             android:shadowDx="7.0"
             android:shadowDy="7.0"
             android:shadowColor="#000000"
-            app:layout_constraintEnd_toEndOf="parent"
+            android:gravity="end"
             app:layout_constraintStart_toStartOf="@+id/main_image"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="@+id/main_image"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

@@ -7,6 +7,7 @@ import android.graphics.Rect
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -20,9 +21,17 @@ import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.swef.cookcode.adapter.StepImageRecyclerviewAdapter
 import com.swef.cookcode.adapter.StepVideoRecyclerviewAdapter
+import com.swef.cookcode.api.RecipeAPI
 import com.swef.cookcode.data.StepImageData
 import com.swef.cookcode.data.StepVideoData
+import com.swef.cookcode.data.response.ImageResponse
 import com.swef.cookcode.databinding.ActivityRecipeStepBinding
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import java.io.File
 
 
 class RecipeStepActivity : AppCompatActivity() {
@@ -41,6 +50,8 @@ class RecipeStepActivity : AppCompatActivity() {
     private var titleTyped = false
     private var descriptionTyped = false
     private var imageUploaded = false
+
+    private val API = RecipeAPI.create()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -137,14 +148,12 @@ class RecipeStepActivity : AppCompatActivity() {
 
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
 
-                Toast.makeText(this, stepNumber.toString() + "단계 스텝 작성 완료", Toast.LENGTH_SHORT)
-                    .show()
+                putToastMessage(stepNumber.toString() + "단계 스텝 작성 완료")
                 setResult(RESULT_OK, intent)
                 finish()
             }
             else {
-                Toast.makeText(this, "이미지 한장, 제목, 설명은 필수입니다.", Toast.LENGTH_SHORT)
-                    .show()
+                putToastMessage("이미지 한장, 제목, 설명은 필수입니다.")
             }
         }
     }
@@ -269,19 +278,40 @@ class RecipeStepActivity : AppCompatActivity() {
                     // videodata로 return해준다
                     val video = StepVideoData(thumbnail, uri)
 
-                    for(i: Int in 0..2) {
-                        if(videoDatas[i].uri == null) {
+                    for(index: Int in 0..2) {
+                        if(videoDatas[index].uri == null) {
                             // 현재 비디오가 추가되어있지 않은 position에 비디오 추가
-                            videoDatas.removeAt(i)
-                            videoDatas.add(i, video)
+                            videoDatas.removeAt(index)
+                            videoDatas.add(index, video)
 
                             // recyclerview adapter에 해당 위치 알림
-                            stepVideoRecyclerviewAdapter.notifyItemChanged(i)
+                            stepVideoRecyclerviewAdapter.notifyItemChanged(index)
                             return
                         }
                     }
                 }
             })
+    }
+
+    private fun putAndGetImageUrl(accessToken: String, images: MultipartBody.Part) {
+        API.postImage(accessToken, images).enqueue(object: Callback<ImageResponse> {
+            override fun onResponse(call: Call<ImageResponse>, response: Response<ImageResponse>) {
+                if(response.isSuccessful){
+                    Log.d("data_size", response.body().toString())
+                }
+                else {
+                    Log.d("data_size", response.errorBody()!!.string())
+                }
+            }
+
+            override fun onFailure(call: Call<ImageResponse>, t: Throwable) {
+                putToastMessage("다시 시도해주세요.")
+            }
+        })
+    }
+
+    private fun putToastMessage(message: String){
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
     private fun testInfoTyped(): Boolean {
