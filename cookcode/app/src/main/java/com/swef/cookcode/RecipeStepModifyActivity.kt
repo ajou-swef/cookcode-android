@@ -145,7 +145,7 @@ class RecipeStepModifyActivity : AppCompatActivity() {
             updateRecyclerImage(uri!!)
         }
 
-        stepImageRecyclerviewAdapter = StepImageRecyclerviewAdapter(pickImageLauncher)
+        stepImageRecyclerviewAdapter = StepImageRecyclerviewAdapter(pickImageLauncher, this)
         binding.imageRecyclerview.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         binding.imageRecyclerview.adapter = stepImageRecyclerviewAdapter
 
@@ -161,14 +161,14 @@ class RecipeStepModifyActivity : AppCompatActivity() {
     }
 
     private fun updateRecyclerImage(imageUri: Uri) {
-        for(i: Int in 0..2) {
-            if(imageDatas[i].imageUri == null) {
+        for(index: Int in 0..2) {
+            if(imageDatas[index].imageUri == null) {
                 // 현재 이미지가 추가되어있지 않은 position에 이미지 추가
-                imageDatas.removeAt(i)
-                imageDatas.add(i, StepImageData(imageUri))
+                imageDatas.removeAt(index)
+                imageDatas.add(index, StepImageData(imageUri.toString()))
 
                 // recyclerview adapter에 해당 위치 알림
-                stepImageRecyclerviewAdapter.notifyItemChanged(i)
+                stepImageRecyclerviewAdapter.notifyItemChanged(index)
                 return
             }
         }
@@ -256,9 +256,9 @@ class RecipeStepModifyActivity : AppCompatActivity() {
         binding.editDescription.setText(stepDescription)
 
         // String으로 cast된 Uri를 다시 Uri로 변환하여 image 불러오기
-        for(i: Int in stepImages.indices){
-            imageDatas[i] = (StepImageData(Uri.parse(stepImages[i])))
-            stepImageRecyclerviewAdapter.notifyItemChanged(i)
+        for(index: Int in stepImages.indices){
+            imageDatas[index] = (StepImageData(stepImages[index]))
+            stepImageRecyclerviewAdapter.notifyItemChanged(index)
         }
 
         // String으로 cast된 Uri로 변환하여 video 업로드 후 썸네일 추출

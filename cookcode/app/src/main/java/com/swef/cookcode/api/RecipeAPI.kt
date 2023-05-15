@@ -12,6 +12,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.Headers
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
@@ -21,18 +22,18 @@ import retrofit2.http.Query
 interface RecipeAPI {
 
     @Multipart
+    @Headers("Content-Type: multipart/form-data")
     @POST("recipe/photos")
     fun postImage(
         @Header("accessToken") accessToken: String,
-        @Header("Content-Type") value: String = "multipart/form-data",
         @Part("stepImages") file: MultipartBody.Part
     ): Call<ImageResponse>
 
     @Multipart
+    @Headers("Content-Type: multipart/form-data")
     @POST("recipe/videos")
     fun postVideo(
         @Header("accessToken") accessToken: String,
-        @Header("Content-Type") value: String = "multipart/form-data",
         @Part("stepVideos") file: MultipartBody.Part
     ): Call<VideoResponse>
 

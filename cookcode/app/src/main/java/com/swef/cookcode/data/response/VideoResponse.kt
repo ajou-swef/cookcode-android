@@ -2,10 +2,12 @@ package com.swef.cookcode.data.response
 
 import com.google.gson.annotations.SerializedName
 
-data class videoUrl(
+data class VideoUrl(
     @SerializedName("videoUrl") val videoUris: List<String>
 )
 
 data class VideoResponse(
-    @SerializedName("data") val videoUris: videoUrl
+    @SerializedName("message") val message: String,
+    @SerializedName("status") val status: Int,
+    @SerializedName("data") val videoUris: VideoUrl
 )

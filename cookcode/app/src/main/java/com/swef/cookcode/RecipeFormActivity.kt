@@ -9,6 +9,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -22,14 +23,24 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Glide
 import com.swef.cookcode.adapter.IngredientRecyclerviewAdapter
 import com.swef.cookcode.adapter.StepRecyclerviewAdapter
+import com.swef.cookcode.api.RecipeAPI
 import com.swef.cookcode.data.MyIngredientData
 import com.swef.cookcode.data.StepData
 import com.swef.cookcode.data.host.IngredientDataHost
+import com.swef.cookcode.data.response.ImageResponse
 import com.swef.cookcode.databinding.ActivityRecipeFormBinding
 import com.swef.cookcode.databinding.RecipeIngredientSelectDialogBinding
 import com.swef.cookcode.`interface`.StepOnClickListener
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import java.io.File
 
 class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
     private lateinit var binding : ActivityRecipeFormBinding
@@ -60,6 +71,11 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
 
     private val stepOutOfBound = -1
 
+    private val API = RecipeAPI.create()
+
+    private lateinit var accessToken: String
+    private lateinit var refreshToken: String
+
     // 미리보기 단계에서 해당 스텝 수정을 위한 스텝 단계 정보 불러오기
     private val getResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == RESULT_OK) {
@@ -77,8 +93,8 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
         binding = ActivityRecipeFormBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val accessToken = intent.getStringExtra("access_token")
-        val refreshToken = intent.getStringExtra("refresh_token")
+        accessToken = intent.getStringExtra("access_token")!!
+        refreshToken = intent.getStringExtra("refresh_token")!!
 
         // 사진을 불러오기 위한 권한 요청
         val permission = Manifest.permission.READ_EXTERNAL_STORAGE
@@ -87,14 +103,11 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
         }
 
         // 레시피 업로드시 이미지 등록을 위한 변수
-        lateinit var recipeImage: Uri
+        lateinit var recipeImage: String
 
         // 갤러리에서 image를 불러왔을 때 선택한 image로 수행하는 코드
         val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-            // 이미지 추가하는 버튼 안보이게 하기
-            recipeImage = uri!!
-            binding.uploadImageBtn.visibility = View.INVISIBLE
-            binding.uploadImageBox.setImageURI(recipeImage)
+            postMainImage(accessToken, uri.toString())
         }
 
         // 뒤로가기 버튼 클릭시 activity 종료
@@ -170,7 +183,6 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
         binding.addStep.setOnClickListener {
             val intent = Intent(this, RecipeStepActivity::class.java)
             intent.putExtra("step_number", numberOfStep)
-
             activityResultLauncher.launch(intent)
         }
 
@@ -197,7 +209,7 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
                 // 레시피 정보 전달
                 intent.putExtra("recipe_title", binding.editRecipeName.text.toString())
                 intent.putExtra("recipe_description", binding.editDescription.text.toString())
-                intent.putExtra("main_image", recipeImage.toString())
+                intent.putExtra("main_image", recipeImage)
                 intent.putExtra("access_token", accessToken)
                 intent.putExtra("refresh_token", refreshToken)
 
@@ -257,7 +269,7 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
                 getResult.launch(intent)
             }
             else {
-                Toast.makeText(this, "추가 재료를 제외한 항목을 입력해주세요.", Toast.LENGTH_SHORT).show()
+                putToastMessage("추가 재료를 제외한 항목을 입력해주세요.")
             }
         }
     }
@@ -420,6 +432,45 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
             val inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             inputMethodManager.hideSoftInputFromWindow(view.windowToken, hideFlags)
         }
+    }
+
+    private fun postMainImage(accessToken: String, uri: String) {
+        val imageFile = makeMultiPartBodyPart(uri)
+        API.postImage(accessToken, imageFile).enqueue(object: Callback<ImageResponse>{
+            override fun onResponse(call: Call<ImageResponse>, response: Response<ImageResponse>) {
+                if(response.isSuccessful){
+                    val data = response.body()!!.imageUris.listImageUri
+                    getImageFromUrl(data[0])
+                }
+                else {
+                    Log.d("data_size", response.errorBody()!!.string())
+                }
+            }
+
+            override fun onFailure(call: Call<ImageResponse>, t: Throwable) {
+                putToastMessage("잠시 후 다시 시도해주세요.")
+            }
+        })
+    }
+
+    private fun getImageFromUrl(imageUrl: String) {
+        Glide.with(this)
+            .load(imageUrl)
+            .into(binding.uploadImageBox)
+
+        binding.uploadImageBtn.visibility = View.GONE
+    }
+
+    private fun makeMultiPartBodyPart(uri: String): MultipartBody.Part {
+        val file = File(uri)
+        val mediaType = "multipart/form-data".toMediaTypeOrNull()
+        val requestFile = file.asRequestBody(mediaType)
+
+        return MultipartBody.Part.createFormData("photo", file.name, requestFile)
+    }
+
+    private fun putToastMessage(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }
 

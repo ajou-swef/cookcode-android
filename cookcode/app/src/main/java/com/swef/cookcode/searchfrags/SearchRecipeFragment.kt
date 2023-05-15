@@ -29,7 +29,6 @@ class SearchRecipeFragment : Fragment() {
     private var _binding: FragmentSearchRecipeBinding? = null
     private val binding get() = _binding!!
 
-    // 레시피 mock data
     private var searchedRecipeAndStepDatas = mutableListOf<RecipeAndStepData>()
 
     private lateinit var recyclerViewAdapter: SearchRecipeRecyclerviewAdapter
