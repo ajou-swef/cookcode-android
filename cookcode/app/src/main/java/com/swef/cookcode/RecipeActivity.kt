@@ -4,7 +4,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
-import androidx.core.net.toUri
 import com.swef.cookcode.adapter.RecipeViewpagerAdapter
 import com.swef.cookcode.api.RecipeAPI
 import com.swef.cookcode.data.RecipeAndStepData
@@ -39,7 +38,7 @@ class RecipeActivity : AppCompatActivity() {
         Log.d("data_size", accessToken)
         Log.d("data_size", recipeId.toString())
 
-        recipeViewpagerAdapter = RecipeViewpagerAdapter()
+        recipeViewpagerAdapter = RecipeViewpagerAdapter(this)
         binding.viewpager.adapter = recipeViewpagerAdapter
 
         getRecipeDataFromRecipeID(recipeId, accessToken)
@@ -75,7 +74,7 @@ class RecipeActivity : AppCompatActivity() {
     private fun getRecipeDataFromResponseBody(data: RecipeContent): RecipeAndStepData {
         val recipeAndStepData: RecipeAndStepData
 
-        val recipeData = RecipeData(data.recipeId, data.title, data.description, data.mainImage.toUri(), data.likeCount, data.user)
+        val recipeData = RecipeData(data.recipeId, data.title, data.description, data.mainImage, data.likeCount, data.user)
         val stepDatas = getStepDatasFromRecipeContent(data.steps)
 
         recipeAndStepData = RecipeAndStepData(recipeData, stepDatas)
@@ -86,18 +85,6 @@ class RecipeActivity : AppCompatActivity() {
     private fun getStepDatasFromRecipeContent(datas: List<Step>): MutableList<StepData> {
         val stepDatas = mutableListOf<StepData>()
 
-        // mock data
-        stepDatas.apply {
-            val imageUri = mutableListOf<String>()
-            imageUri.add("https://picsum.photos/200/300")
-            val videoUri = null
-            val title = "요리 만들기"
-            val description = "쿡코드를 연다"
-            val seq = 1
-
-            add(StepData(imageUri, videoUri, title, description, seq))
-        }
-        /*
         for (item in datas) {
             stepDatas.apply {
                 val imageUris = getImageDatasFromStep(item.imageUris)
@@ -109,8 +96,6 @@ class RecipeActivity : AppCompatActivity() {
                 add(StepData(imageUris, videoUris, title, description, numberOfStep))
             }
         }
-
-         */
 
         return stepDatas
     }

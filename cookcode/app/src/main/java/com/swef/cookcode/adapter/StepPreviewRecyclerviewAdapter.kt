@@ -1,8 +1,8 @@
 package com.swef.cookcode.adapter
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.core.net.toUri
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.swef.cookcode.data.StepData
@@ -10,7 +10,8 @@ import com.swef.cookcode.data.StepMediaData
 import com.swef.cookcode.databinding.StepPreviewRecyclerviewItemBinding
 
 class StepPreviewRecyclerviewAdapter(
-    stepData: List<StepData>
+    stepData: List<StepData>,
+    private val context: Context
 ) : RecyclerView.Adapter<StepPreviewRecyclerviewAdapter.ViewHolder>() {
 
     private lateinit var binding: StepPreviewRecyclerviewItemBinding
@@ -51,7 +52,7 @@ class StepPreviewRecyclerviewAdapter(
             binding.stepDescription.text = item.description
 
             // step 이미지나 영상을 위한 adapter
-            stepMediaRecyclerviewAdapter = StepMediaRecyclerviewAdapter(uri)
+            stepMediaRecyclerviewAdapter = StepMediaRecyclerviewAdapter(uri, context)
 
             // viewpager에 apply 함으로써 recyclerview + viewpager 사용
             binding.mediaViewpager.apply {
@@ -67,11 +68,11 @@ class StepPreviewRecyclerviewAdapter(
             val tempList = mutableListOf<StepMediaData>()
 
             for (data in item.imageData) {
-                tempList.add(StepMediaData(data.toUri(), "image"))
+                tempList.add(StepMediaData(data, "image"))
             }
             if (item.videoData != null) {
                 for (data in item.videoData) {
-                    tempList.add(StepMediaData(data.toUri(), "video"))
+                    tempList.add(StepMediaData(data, "video"))
                 }
             }
 

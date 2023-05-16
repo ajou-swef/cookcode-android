@@ -1,20 +1,24 @@
 package com.swef.cookcode.adapter
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.swef.cookcode.data.RecipeData
 import com.swef.cookcode.databinding.RecipePreviewItemBinding
 
 class RecipePreviewAdapter(
-    recipeData: RecipeData
+    recipeData: RecipeData,
+    private val context: Context
 ) : RecyclerView.Adapter<RecipePreviewAdapter.ViewHolder>() {
 
     var data = recipeData
+    private lateinit var binding: RecipePreviewItemBinding
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val binding = RecipePreviewItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        binding = RecipePreviewItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return ViewHolder(binding)
     }
 
@@ -28,7 +32,7 @@ class RecipePreviewAdapter(
         private val binding: RecipePreviewItemBinding
     ): RecyclerView.ViewHolder(binding.root) {
         fun bind(item: RecipeData){
-            binding.mainImage.setImageURI(item.mainImage)
+            getImageFromUrl(item.mainImage)
             binding.recipeName.text = item.title
             binding.madeUser.text = item.madeUser.nickname
             binding.likeNumber.text = item.likes.toString()
@@ -41,5 +45,9 @@ class RecipePreviewAdapter(
         }
     }
 
-
+    private fun getImageFromUrl(imageUrl: String) {
+        Glide.with(context)
+            .load(imageUrl)
+            .into(binding.mainImage)
+    }
 }

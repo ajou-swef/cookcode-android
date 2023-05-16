@@ -37,6 +37,5 @@ class StepRecyclerviewAdapter(
                 listener.stepOnClick(item.numberOfStep - 1)
             }
         }
-
     }
 }

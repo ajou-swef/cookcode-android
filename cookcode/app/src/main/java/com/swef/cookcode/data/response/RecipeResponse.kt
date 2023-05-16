@@ -57,6 +57,6 @@ data class Photos(
 )
 
 data class Videos(
-    @SerializedName("stepPhotoId") val videoId: Int,
-    @SerializedName("photoUrl") val videoUri: String
+    @SerializedName("stepVideoId") val videoId: Int,
+    @SerializedName("videoUrl") val videoUri: String
 )

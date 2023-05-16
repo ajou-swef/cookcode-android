@@ -7,7 +7,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.core.net.toUri
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.swef.cookcode.adapter.SearchRecipeRecyclerviewAdapter
 import com.swef.cookcode.api.RecipeAPI
@@ -51,12 +50,11 @@ class SearchRecipeFragment : Fragment() {
 
         var currentPage = 0
 
-        recyclerViewAdapter = SearchRecipeRecyclerviewAdapter()
+        recyclerViewAdapter = SearchRecipeRecyclerviewAdapter(requireContext())
 
         recyclerViewAdapter.accessToken = accessToken
         binding.recyclerView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         binding.recyclerView.adapter = recyclerViewAdapter
-
 
         // searchedRecipeAndStepDatas = getRecipeDatas(accessToken, currentPage, pageSize, cookable, sort, createdMonth)
 
@@ -91,7 +89,7 @@ class SearchRecipeFragment : Fragment() {
         val recipeAndStepDatas = mutableListOf<RecipeAndStepData>()
 
         for (item in datas) {
-            val recipeData = RecipeData(item.recipeId, item.title, item.description, item.mainImage.toUri(), item.likeCount, item.user)
+            val recipeData = RecipeData(item.recipeId, item.title, item.description, item.mainImage, item.likeCount, item.user)
             val stepDatas = getStepDatasFromRecipeContent(item.steps)
             recipeAndStepDatas.add(RecipeAndStepData(recipeData, stepDatas))
         }
@@ -102,19 +100,6 @@ class SearchRecipeFragment : Fragment() {
     private fun getStepDatasFromRecipeContent(datas: List<Step>): MutableList<StepData> {
         val stepDatas = mutableListOf<StepData>()
 
-        // mock data
-        stepDatas.apply {
-            val imageUri = mutableListOf<String>()
-            imageUri.add("https://picsum.photos/200")
-            val videoUri = null
-            val title = "요리 만들기"
-            val description = "쿡코드를 연다"
-            val seq = 1
-
-            add(StepData(imageUri, videoUri, title, description, seq))
-        }
-
-        /*
         for (item in datas) {
             stepDatas.apply {
                 val imageUris = getImageDatasFromStep(item.imageUris)
@@ -126,7 +111,6 @@ class SearchRecipeFragment : Fragment() {
                 add(StepData(imageUris, videoUris, title, description, numberOfStep))
             }
         }
-         */
 
         return stepDatas
     }

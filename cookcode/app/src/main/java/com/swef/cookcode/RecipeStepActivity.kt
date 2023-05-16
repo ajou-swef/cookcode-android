@@ -24,7 +24,7 @@ import com.swef.cookcode.adapter.StepVideoRecyclerviewAdapter
 import com.swef.cookcode.api.RecipeAPI
 import com.swef.cookcode.data.StepImageData
 import com.swef.cookcode.data.StepVideoData
-import com.swef.cookcode.data.response.ImageResponse
+import com.swef.cookcode.data.response.FileResponse
 import com.swef.cookcode.databinding.ActivityRecipeStepBinding
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -33,6 +33,9 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.io.File
+import java.io.FileOutputStream
+import java.io.InputStream
+import java.io.OutputStream
 
 
 class RecipeStepActivity : AppCompatActivity() {
@@ -79,6 +82,12 @@ class RecipeStepActivity : AppCompatActivity() {
 
         // 뒤로가기 버튼 클릭 시 activity 종료
         binding.beforeArrow.setOnClickListener {
+            val intent = Intent()
+            if (stepImageRecyclerviewAdapter.deleteImages.isNotEmpty()) {
+                intent.putExtra("step_delete_images", stepImageRecyclerviewAdapter.deleteImages.toTypedArray())
+                intent.putExtra("step_delete_videos", stepVideoRecyclerviewAdapter.deleteVideos.toTypedArray())
+                setResult(RESULT_CANCELED, intent)
+            }
             finish()
         }
 
@@ -113,36 +122,10 @@ class RecipeStepActivity : AppCompatActivity() {
                 // 스텝의 정보들 불러오기
                 val imageData = stepImageRecyclerviewAdapter.getData()
                 val videoData = stepVideoRecyclerviewAdapter.getData()
+                val deleteImageData = stepImageRecyclerviewAdapter.deleteImages.toTypedArray()
+                val deleteVideoData = stepVideoRecyclerviewAdapter.deleteVideos.toTypedArray()
                 val title = binding.editTitle.text.toString()
                 val description = binding.editDescription.text.toString()
-
-                /*
-                val imageFiles = mutableListOf<MultipartBody.Part>()
-                val videoFiles = mutableListOf<MultipartBody.Part>()
-
-                for (item in imageData) {
-                    if(item.imageUri != null) {
-                        val file = File(item.imageUri.toString())
-                        val mediaType = "multipart/form-data".toMediaTypeOrNull()
-                        val requestFile = file.asRequestBody(mediaType)
-                        val part = MultipartBody.Part.createFormData("photo", file.name, requestFile)
-
-                        imageFiles.add(part)
-                    }
-                }
-
-                for (item in videoData) {
-                    if(item.uri != null) {
-                        val file = File(item.uri.toString())
-                        val mediaType = "multipart/form-data".toMediaTypeOrNull()
-                        val requestFile = file.asRequestBody(mediaType)
-                        val part = MultipartBody.Part.createFormData("photo", file.name, requestFile)
-
-                        imageFiles.add(part)
-                    }
-                }
-
-                 */
 
                 // recipe form activity로 돌아갈때 intent로 정보 넘겨줌
                 val intent = Intent()
@@ -152,6 +135,8 @@ class RecipeStepActivity : AppCompatActivity() {
                 intent.putExtra("description", description)
                 intent.putExtra("step_number", stepNumber)
                 intent.putExtra("type", "add")
+                intent.putExtra("delete_images", deleteImageData)
+                intent.putExtra("delete_videos", deleteVideoData)
 
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
 
@@ -215,7 +200,7 @@ class RecipeStepActivity : AppCompatActivity() {
         // adapter에서는 registerForActivityResult를 사용할 수 없음
         val pickImageLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             // 받아온 uri를 datas에 추가하고, 업데이트
-            updateRecyclerImage(uri.toString())
+            updateRecyclerImage(uri!!)
         }
 
         // Recyclerview 초기화
@@ -236,14 +221,14 @@ class RecipeStepActivity : AppCompatActivity() {
     }
 
     // Image 선택 시 recyclerview 업데이트
-    private fun updateRecyclerImage(imageUri: String) {
+    private fun updateRecyclerImage(imageUri: Uri) {
         for(index: Int in 0..2) {
             if(imageDatas[index].imageUri == null) {
                 // 현재 이미지가 추가되어있지 않은 position에 이미지 추가
                 imageDatas.removeAt(index)
 
-                val file = makeMultiPartBodyPart(imageUri)
-                putAndGetImageUrl(accessToken, file, index)
+                val imageFile = makeImageMultipartBody(imageUri)
+                putAndGetImageUrl(accessToken, imageFile, index)
                 return
             }
         }
@@ -251,8 +236,9 @@ class RecipeStepActivity : AppCompatActivity() {
 
     private fun initVideoRecycler(){
         // 동영상을 불러오는 launcher를 구현하여 adapter에 넘겨줌
-        val pickVideoLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) {
-            uri: Uri? -> getVideoInfoAndThumbnail(uri!!)
+        val pickVideoLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri?
+            -> val videoFile = makeVideoMultipartBody(uri!!)
+            putAndGetVideoUrl(accessToken, videoFile)
         }
 
         stepVideoRecyclerviewAdapter = StepVideoRecyclerviewAdapter(pickVideoLauncher)
@@ -269,11 +255,11 @@ class RecipeStepActivity : AppCompatActivity() {
     }
 
     // 동영상을 가져왔을 때 썸네일을 뽑아주는 함수
-    private fun getVideoInfoAndThumbnail(uri: Uri) {
+    private fun getVideoInfoAndThumbnail(videoUrl: String) {
         // Glide를 사용해서 thumbnail을 가져온다.
         Glide.with(this)
             .asBitmap()
-            .load(uri)
+            .load(videoUrl)
             .into(object: CustomTarget<Bitmap>() {
                 override fun onLoadCleared(placeholder: Drawable?) {
                     // 아래 resource가 들어간 뷰가 사라지는 등의 경우의 처리
@@ -282,7 +268,7 @@ class RecipeStepActivity : AppCompatActivity() {
                 override fun onResourceReady(thumbnail: Bitmap, transition: Transition<in Bitmap>?) {
                     // 얻어낸 Bitmap 자원을 resource를 통하여 접근
                     // videodata로 return해준다
-                    val video = StepVideoData(thumbnail, uri)
+                    val video = StepVideoData(thumbnail, videoUrl)
 
                     for(index: Int in 0..2) {
                         if(videoDatas[index].uri == null) {
@@ -299,11 +285,11 @@ class RecipeStepActivity : AppCompatActivity() {
             })
     }
 
-    private fun putAndGetImageUrl(accessToken: String, images: MultipartBody.Part, index: Int) {
-        API.postImage(accessToken, images).enqueue(object: Callback<ImageResponse> {
-            override fun onResponse(call: Call<ImageResponse>, response: Response<ImageResponse>) {
+    private fun putAndGetImageUrl(accessToken: String, imageFile: MultipartBody.Part, index: Int) {
+        API.postImage(accessToken, imageFile).enqueue(object: Callback<FileResponse> {
+            override fun onResponse(call: Call<FileResponse>, response: Response<FileResponse>) {
                 if(response.isSuccessful){
-                    val data = response.body()!!.imageUris.listImageUri[0]
+                    val data = response.body()!!.fileUrls.listUrl[0]
                     imageDatas.add(index, StepImageData(data))
                     stepImageRecyclerviewAdapter.notifyItemChanged(index)
                     Log.d("data_size", response.body().toString())
@@ -313,18 +299,55 @@ class RecipeStepActivity : AppCompatActivity() {
                 }
             }
 
-            override fun onFailure(call: Call<ImageResponse>, t: Throwable) {
+            override fun onFailure(call: Call<FileResponse>, t: Throwable) {
                 putToastMessage("다시 시도해주세요.")
             }
         })
     }
 
-    private fun makeMultiPartBodyPart(uri: String): MultipartBody.Part {
-        val file = File(uri)
-        val mediaType = "multipart/form-data".toMediaTypeOrNull()
-        val requestFile = file.asRequestBody(mediaType)
+    private fun putAndGetVideoUrl(accessToken: String, videoFile: MultipartBody.Part) {
+        API.postImage(accessToken, videoFile).enqueue(object: Callback<FileResponse> {
+            override fun onResponse(call: Call<FileResponse>, response: Response<FileResponse>) {
+                if(response.isSuccessful){
+                    val data = response.body()!!.fileUrls.listUrl[0]
+                    getVideoInfoAndThumbnail(data)
+                    Log.d("data_size", response.body().toString())
+                }
+                else {
+                    Log.d("data_size", response.errorBody()!!.string())
+                }
+            }
 
-        return MultipartBody.Part.createFormData("photo", file.name, requestFile)
+            override fun onFailure(call: Call<FileResponse>, t: Throwable) {
+                putToastMessage("다시 시도해주세요.")
+            }
+        })
+    }
+
+    private fun makeImageMultipartBody(uri: Uri): MultipartBody.Part {
+        val inputStream: InputStream? = contentResolver.openInputStream(uri)
+        val file = File(cacheDir, "image.jpg") // 임시 파일 생성
+
+        val outputStream: OutputStream = FileOutputStream(file)
+        inputStream?.copyTo(outputStream) // 이미지를 임시 파일로 복사
+        inputStream?.close()
+        outputStream.close()
+
+        val requestBody = file.asRequestBody("image/*".toMediaTypeOrNull())
+        return MultipartBody.Part.createFormData("stepFiles", file.name, requestBody)
+    }
+
+    private fun makeVideoMultipartBody(uri: Uri): MultipartBody.Part {
+        val inputStream: InputStream? = contentResolver.openInputStream(uri)
+        val file = File(cacheDir, "image.jpg") // 임시 파일 생성
+
+        val outputStream: OutputStream = FileOutputStream(file)
+        inputStream?.copyTo(outputStream) // 이미지를 임시 파일로 복사
+        inputStream?.close()
+        outputStream.close()
+
+        val requestBody = file.asRequestBody("video/*".toMediaTypeOrNull())
+        return MultipartBody.Part.createFormData("stepFiles", file.name, requestBody)
     }
 
     private fun putToastMessage(message: String){

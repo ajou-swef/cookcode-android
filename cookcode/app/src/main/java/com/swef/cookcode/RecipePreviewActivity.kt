@@ -1,15 +1,19 @@
 package com.swef.cookcode
 
 import android.content.Intent
-import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.viewpager2.widget.ViewPager2
 import com.swef.cookcode.adapter.StepPreviewRecyclerviewAdapter
 import com.swef.cookcode.api.RecipeAPI
 import com.swef.cookcode.data.StepData
+import com.swef.cookcode.data.response.RecipeStatusResponse
 import com.swef.cookcode.databinding.ActivityRecipePreviewBinding
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class RecipePreviewActivity : AppCompatActivity() {
 
@@ -27,11 +31,16 @@ class RecipePreviewActivity : AppCompatActivity() {
         // 레시피 정보 불러오기
         val title = intent.getStringExtra("recipe_title")!!
         val description = intent.getStringExtra("recipe_description")!!
-        val mainImage = Uri.parse(intent.getStringExtra("main_image"))!!
+        val mainImage = intent.getStringExtra("main_image")!!
         val essentialIngreds = intent.getStringArrayExtra("essential_ingreds")!!.toList()
         val essentialValues = intent.getStringArrayExtra("essential_values")!!.toList()
         val additionalIngreds = intent.getStringArrayExtra("additional_ingreds")!!.toList()
         val additionalValues = intent.getStringArrayExtra("additional_values")!!.toList()
+
+        val deleteImages = if (intent.getStringArrayExtra("delete_images") != null)
+            intent.getStringArrayExtra("delete_images")!!.toList()
+        else emptyList<String>()
+
         val accessToken = intent.getStringExtra("access_token")!!
         val refreshToken = intent.getStringExtra("refresh_token")!!
 
@@ -57,7 +66,7 @@ class RecipePreviewActivity : AppCompatActivity() {
             }
         }
 
-        stepPreviewRecyclerviewAdapter = StepPreviewRecyclerviewAdapter(datas)
+        stepPreviewRecyclerviewAdapter = StepPreviewRecyclerviewAdapter(datas, this)
         binding.viewpager.apply {
             adapter = stepPreviewRecyclerviewAdapter
             orientation = ViewPager2.ORIENTATION_HORIZONTAL
@@ -83,33 +92,73 @@ class RecipePreviewActivity : AppCompatActivity() {
             postBody["description"] = description
             postBody["ingredients"] = essentialIngreds
             postBody["optionalIngredients"] = additionalIngreds
-            // postBody["thumbnail"] = mainImage 사진 업로드 된 url 사용
+            postBody["thumbnail"] = mainImage
+            postBody["deletedThumbnails"] = deleteImages
 
             val stepData = HashMap<String, Any>()
-            var i = 1
+
             for(item in datas){
-                stepData["seq"] = i
+                stepData["seq"] = item.numberOfStep
                 stepData["title"] = item.title
                 stepData["description"] = item.description
                 stepData["photos"] = item.imageData
+                stepData["deletedPhotos"] = emptyList<String>()
+                stepData["deletedVideos"] = emptyList<String>()
                 if(item.videoData != null) stepData["videos"] = item.videoData
-                // stepData["deletedVideos"] =
-                // stepData["deletedPhotos"] =
+                else stepData["videos"] = emptyList<String>()
             }
+            val stepDatas = mutableListOf<HashMap<String, Any>>()
+            stepDatas.add(stepData)
+            postBody["steps"] = stepDatas
 
-            Toast.makeText(this, "정상적으로 업로드 되었습니다.", Toast.LENGTH_SHORT).show()
-            val intent = Intent(this, HomeActivity::class.java)
-            startActivity(intent)
+            postRecipeData(accessToken, refreshToken, postBody)
         }
 
         // 미리보기 단계에서 수정
         binding.editButton.setOnClickListener {
             val intent = Intent()
             intent.putExtra("step_number", currentPosition)
-
             setResult(RESULT_OK, intent)
             finish()
         }
 
+    }
+
+    private fun postRecipeData(accessToken: String, refreshToken: String, postBody: HashMap<String, Any>) {
+        API.postRecipe(accessToken, postBody).enqueue(object: Callback<RecipeStatusResponse>{
+            override fun onResponse(
+                call: Call<RecipeStatusResponse>,
+                response: Response<RecipeStatusResponse>
+            ) {
+                if (response.isSuccessful) {
+                    Log.d("data_size", response.body()!!.toString())
+                    putToastMessage("레시피가 업로드되었습니다.")
+                    startHomeActivity(accessToken, refreshToken)
+                }
+                else {
+                    Log.d("data_size", call.request().toString())
+                    Log.d("data_size", response.errorBody()!!.string())
+                    putToastMessage("에러 발생! 관리자에게 문의하세요.")
+                }
+            }
+
+            override fun onFailure(call: Call<RecipeStatusResponse>, t: Throwable) {
+                Log.d("data_size", call.request().toString())
+                Log.d("data_size", t.message.toString())
+                putToastMessage("잠시 후 다시 시도해주세요.")
+            }
+
+        })
+    }
+
+    private fun startHomeActivity(accessToken: String, refreshToken: String) {
+        val intent = Intent(this, HomeActivity::class.java)
+        intent.putExtra("access_token", accessToken)
+        intent.putExtra("refresh_token", refreshToken)
+        startActivity(intent)
+    }
+
+    private fun putToastMessage(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }

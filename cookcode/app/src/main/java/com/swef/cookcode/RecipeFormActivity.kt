@@ -30,7 +30,7 @@ import com.swef.cookcode.api.RecipeAPI
 import com.swef.cookcode.data.MyIngredientData
 import com.swef.cookcode.data.StepData
 import com.swef.cookcode.data.host.IngredientDataHost
-import com.swef.cookcode.data.response.ImageResponse
+import com.swef.cookcode.data.response.FileResponse
 import com.swef.cookcode.databinding.ActivityRecipeFormBinding
 import com.swef.cookcode.databinding.RecipeIngredientSelectDialogBinding
 import com.swef.cookcode.`interface`.StepOnClickListener
@@ -41,11 +41,16 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.io.File
+import java.io.FileOutputStream
+import java.io.InputStream
+import java.io.OutputStream
 
 class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
     private lateinit var binding : ActivityRecipeFormBinding
 
     private val stepDatas = mutableListOf<StepData>()
+    private var mainImage: String? = null
+    private val deleteFiles = mutableListOf<String>()
 
     private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
 
@@ -67,6 +72,7 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
     private var descriptionTyped = false
     private var essentialIngredientSelected = false
     private var allIngredientValueTyped = false
+    private var thumbnailUploaded = false
     private var stepExist = false
 
     private val stepOutOfBound = -1
@@ -102,12 +108,11 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
             ActivityCompat.requestPermissions(this, arrayOf(permission), 1)
         }
 
-        // 레시피 업로드시 이미지 등록을 위한 변수
-        lateinit var recipeImage: String
-
         // 갤러리에서 image를 불러왔을 때 선택한 image로 수행하는 코드
         val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-            postMainImage(accessToken, uri.toString())
+            val imageFile = makeImageMultipartBody(uri!!)
+            postMainImage(accessToken, imageFile)
+            thumbnailUploaded = true
         }
 
         // 뒤로가기 버튼 클릭시 activity 종료
@@ -183,6 +188,8 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
         binding.addStep.setOnClickListener {
             val intent = Intent(this, RecipeStepActivity::class.java)
             intent.putExtra("step_number", numberOfStep)
+            intent.putExtra("access_token", accessToken)
+            intent.putExtra("refresh_token", refreshToken)
             activityResultLauncher.launch(intent)
         }
 
@@ -209,9 +216,11 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
                 // 레시피 정보 전달
                 intent.putExtra("recipe_title", binding.editRecipeName.text.toString())
                 intent.putExtra("recipe_description", binding.editDescription.text.toString())
-                intent.putExtra("main_image", recipeImage)
+                intent.putExtra("main_image", mainImage)
                 intent.putExtra("access_token", accessToken)
                 intent.putExtra("refresh_token", refreshToken)
+
+                Log.d("data_size", mainImage!!)
 
                 // 필수재료, 추가재료 정보 전달
                 val essentialIngreds = mutableListOf<String>()
@@ -277,14 +286,33 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
     override fun onStart() {
         super.onStart()
         activityResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == RESULT_OK) {
-                // 받은 데이터 처리
+            if (result.resultCode == RESULT_CANCELED) {
+                if (result.data != null) {
+                    val stepDeleteImages = result.data!!.getStringArrayExtra("step_delete_images")
+                    val stepDeleteVideos = result.data!!.getStringArrayExtra("step_delete_videos")
+                    if (stepDeleteImages != null) {
+                        deleteFiles.addAll(stepDeleteImages.toList())
+                    }
+                    if (stepDeleteVideos != null){
+                        deleteFiles.addAll(stepDeleteVideos.toList())
+                    }
+                }
+            }
+            else if (result.resultCode == RESULT_OK) {
                 if (result.data != null && !result.data?.getStringExtra("type").equals("delete")) {
                     val stepNumber = result.data?.getIntExtra("step_number", stepOutOfBound)!!
                     val stepImages = result.data?.getStringArrayExtra("images")!!.toList()
                     val stepVideos = result.data?.getStringArrayExtra("videos")!!.toList()
                     val stepTitle = result.data?.getStringExtra("title")!!
                     val stepDescription = result.data?.getStringExtra("description")!!
+
+                    val deleteImages = if (result.data?.getStringArrayExtra("delete_images") != null)
+                        result.data?.getStringArrayExtra("delete_images")!!.toList()
+                    else emptyList<String>()
+
+                    val deleteVideos = if (result.data?.getStringArrayExtra("delete_videos") != null)
+                        result.data?.getStringArrayExtra("delete_videos")!!.toList()
+                    else emptyList<String>()
 
                     val stepData = StepData(
                         stepImages, stepVideos, stepTitle, stepDescription, stepNumber)
@@ -298,6 +326,9 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
                     else if (result.data?.getStringExtra("type").equals("modify")) {
                         stepDatas[stepNumber - 1] = stepData
                     }
+
+                    if (deleteImages.isNotEmpty()) deleteFiles.addAll(deleteImages)
+                    if (deleteVideos.isNotEmpty()) deleteFiles.addAll(deleteVideos)
 
                     stepRecyclerviewAdapter.datas = stepDatas
                     stepRecyclerviewAdapter.notifyItemChanged(stepData.numberOfStep)
@@ -346,6 +377,9 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
         intent.putExtra("step_description", stepData.description)
         intent.putExtra("step_number", stepData.numberOfStep)
 
+        intent.putExtra("access_token", accessToken)
+        intent.putExtra("refresh_token", refreshToken)
+
         activityResultLauncher.launch(intent)
     }
 
@@ -369,13 +403,14 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
     // 필수 정보 입력 여부 판단
     private fun testInfoTyped(): Boolean {
         // 모든 식재료에 양이 입력 되었는지 판단
+        allIngredientValueTyped = true
         for (item in searchIngredientRecyclerviewAdapter.selectedItems) {
             if (item.value == null) {
                 allIngredientValueTyped = false
                 break
             }
         }
-        return titleTyped && descriptionTyped && essentialIngredientSelected && stepExist && allIngredientValueTyped
+        return titleTyped && descriptionTyped && essentialIngredientSelected && stepExist && allIngredientValueTyped && thumbnailUploaded
     }
 
     private fun filteringForKeyword(): TextWatcher {
@@ -434,20 +469,24 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
         }
     }
 
-    private fun postMainImage(accessToken: String, uri: String) {
-        val imageFile = makeMultiPartBodyPart(uri)
-        API.postImage(accessToken, imageFile).enqueue(object: Callback<ImageResponse>{
-            override fun onResponse(call: Call<ImageResponse>, response: Response<ImageResponse>) {
+    private fun postMainImage(accessToken: String, imageFile: MultipartBody.Part) {
+        API.postImage(accessToken, imageFile).enqueue(object: Callback<FileResponse>{
+            override fun onResponse(call: Call<FileResponse>, response: Response<FileResponse>) {
                 if(response.isSuccessful){
-                    val data = response.body()!!.imageUris.listImageUri
+                    if (mainImage != null) deleteFiles.add(mainImage!!)
+                    val data = response.body()!!.fileUrls.listUrl
                     getImageFromUrl(data[0])
                 }
                 else {
+                    Log.d("data_size", call.request().toString())
                     Log.d("data_size", response.errorBody()!!.string())
                 }
             }
 
-            override fun onFailure(call: Call<ImageResponse>, t: Throwable) {
+            override fun onFailure(call: Call<FileResponse>, t: Throwable) {
+                Log.d("data_size", call.request().toString())
+                Log.d("data_size", t.toString())
+                Log.d("data_size", t.message.toString())
                 putToastMessage("잠시 후 다시 시도해주세요.")
             }
         })
@@ -458,15 +497,21 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
             .load(imageUrl)
             .into(binding.uploadImageBox)
 
+        mainImage = imageUrl
         binding.uploadImageBtn.visibility = View.GONE
     }
 
-    private fun makeMultiPartBodyPart(uri: String): MultipartBody.Part {
-        val file = File(uri)
-        val mediaType = "multipart/form-data".toMediaTypeOrNull()
-        val requestFile = file.asRequestBody(mediaType)
+    private fun makeImageMultipartBody(uri: Uri): MultipartBody.Part {
+        val inputStream: InputStream? = contentResolver.openInputStream(uri)
+        val file = File(cacheDir, "image.jpg") // 임시 파일 생성
 
-        return MultipartBody.Part.createFormData("photo", file.name, requestFile)
+        val outputStream: OutputStream = FileOutputStream(file)
+        inputStream?.copyTo(outputStream) // 이미지를 임시 파일로 복사
+        inputStream?.close()
+        outputStream.close()
+
+        val requestBody = file.asRequestBody("image/*".toMediaTypeOrNull())
+        return MultipartBody.Part.createFormData("stepFiles", file.name, requestBody)
     }
 
     private fun putToastMessage(message: String) {

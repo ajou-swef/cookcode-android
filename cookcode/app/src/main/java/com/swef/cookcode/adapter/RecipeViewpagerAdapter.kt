@@ -1,5 +1,6 @@
 package com.swef.cookcode.adapter
 
+import android.content.Context
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -10,7 +11,9 @@ import com.swef.cookcode.data.RecipeData
 import com.swef.cookcode.data.StepData
 import com.swef.cookcode.databinding.ShowLoadingViewBinding
 
-class RecipeViewpagerAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class RecipeViewpagerAdapter(
+    private val context: Context
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private var recipeData: RecipeData? = null
     private var stepDatas: List<StepData>? = null
 
@@ -36,10 +39,10 @@ class RecipeViewpagerAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>()
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         if (recipeData != null) {
             if (viewType == VIEW_TYPE_RECIPE) {
-                recipeTitleAdapter = RecipePreviewAdapter(recipeData!!)
+                recipeTitleAdapter = RecipePreviewAdapter(recipeData!!, context)
                 return recipeTitleAdapter.onCreateViewHolder(parent, viewType)
             } else {
-                recipeStepAdapter = StepPreviewRecyclerviewAdapter(stepDatas!!)
+                recipeStepAdapter = StepPreviewRecyclerviewAdapter(stepDatas!!, context)
                 return recipeStepAdapter.onCreateViewHolder(parent, viewType)
             }
         }

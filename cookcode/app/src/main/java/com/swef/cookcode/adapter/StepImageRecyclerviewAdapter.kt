@@ -21,6 +21,7 @@ class StepImageRecyclerviewAdapter(
 
     // data는 StepImageData class에 정의되어있다
     var datas = mutableListOf<StepImageData>()
+    val deleteImages = mutableListOf<String>()
 
     // view 접근에 용이하게 하기 위해 Viewbinding 사용
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -59,7 +60,7 @@ class StepImageRecyclerviewAdapter(
                     showPopupMenu(binding.image, item, position)
                 }
                 else {
-                    pickImageLauncher.launch("*/image")
+                    pickImageLauncher.launch("image/*")
                 }
             }
 
@@ -82,12 +83,14 @@ class StepImageRecyclerviewAdapter(
                 when (menuItem.itemId) {
                     // 이미지 수정 버튼 클릭 시 이미지 불러오기
                     R.id.update_image -> {
+                        deleteImages.add(item.imageUri!!)
                         item.imageUri = null
                         pickImageLauncher.launch("*/image")
                         true
                     }
                     // 이미지 삭제 버튼 클릭 시 해당 이미지 삭제 및 순서 당기기
                     R.id.delete_image -> {
+                        deleteImages.add(item.imageUri!!)
                         item.imageUri = null
                         for(index: Int in position until datas.size - 1) {
                             // 해당 위치보다 뒤에 image가 있다면 앞으로 당겨오기

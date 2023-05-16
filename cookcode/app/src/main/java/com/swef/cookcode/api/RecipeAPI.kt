@@ -1,10 +1,9 @@
 package com.swef.cookcode.api
 
-import com.swef.cookcode.data.response.ImageResponse
+import com.swef.cookcode.data.response.FileResponse
 import com.swef.cookcode.data.response.RecipeContentResponse
 import com.swef.cookcode.data.response.RecipeResponse
 import com.swef.cookcode.data.response.RecipeStatusResponse
-import com.swef.cookcode.data.response.VideoResponse
 import okhttp3.MultipartBody
 import retrofit2.Call
 import retrofit2.Retrofit
@@ -12,7 +11,6 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
-import retrofit2.http.Headers
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
@@ -22,20 +20,12 @@ import retrofit2.http.Query
 interface RecipeAPI {
 
     @Multipart
-    @Headers("Content-Type: multipart/form-data")
-    @POST("recipe/photos")
+    @JvmSuppressWildcards
+    @POST("recipe/files")
     fun postImage(
         @Header("accessToken") accessToken: String,
-        @Part("stepImages") file: MultipartBody.Part
-    ): Call<ImageResponse>
-
-    @Multipart
-    @Headers("Content-Type: multipart/form-data")
-    @POST("recipe/videos")
-    fun postVideo(
-        @Header("accessToken") accessToken: String,
-        @Part("stepVideos") file: MultipartBody.Part
-    ): Call<VideoResponse>
+        @Part file: MultipartBody.Part
+    ): Call<FileResponse>
 
     @POST("recipe")
     fun postRecipe(
