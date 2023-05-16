@@ -13,6 +13,9 @@ class HomeActivity : AppCompatActivity() {
     // refreshtoken이 유효하지 않을 경우 로그아웃
     private lateinit var refreshToken : String
 
+    private val USER_ERR_CODE = -1
+    private var userId = USER_ERR_CODE
+
     private val bundle = Bundle()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,8 +31,11 @@ class HomeActivity : AppCompatActivity() {
             refreshToken = intent.getStringExtra("refresh_token")!!
         }
 
+        userId = intent.getIntExtra("user_id", USER_ERR_CODE)
+
         bundle.putString("access_token", accessToken)
         bundle.putString("refresh_token", refreshToken)
+        bundle.putInt("user_id", userId)
 
         // bottom navigation bar 초기화
         initBottomNavigation()

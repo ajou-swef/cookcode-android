@@ -18,6 +18,7 @@ import com.swef.cookcode.R
 import com.swef.cookcode.RecipeFormActivity
 import com.swef.cookcode.SearchActivity
 import com.swef.cookcode.adapter.SearchRecipeRecyclerviewAdapter
+import com.swef.cookcode.api.AccountAPI
 import com.swef.cookcode.api.RecipeAPI
 import com.swef.cookcode.data.RecipeAndStepData
 import com.swef.cookcode.data.RecipeData
@@ -26,6 +27,7 @@ import com.swef.cookcode.data.response.Photos
 import com.swef.cookcode.data.response.RecipeContent
 import com.swef.cookcode.data.response.RecipeResponse
 import com.swef.cookcode.data.response.Step
+import com.swef.cookcode.data.response.UserResponse
 import com.swef.cookcode.data.response.Videos
 import com.swef.cookcode.databinding.FragmentHomeBinding
 import retrofit2.Call
@@ -40,8 +42,11 @@ class HomeFragment : Fragment() {
     // nullable할 경우 ?를 계속 붙여줘야 하기 때문에 non-null 타입으로 포장
     private val binding get() = _binding!!
 
+    private val USER_ERR_CODE = -1
+
     private lateinit var accessToken: String
     private lateinit var refreshToken: String
+    private var userId = USER_ERR_CODE
 
     private var searchedRecipeAndStepDatas = mutableListOf<RecipeAndStepData>()
 
@@ -57,11 +62,9 @@ class HomeFragment : Fragment() {
 
     private var cookable = 0
 
-    private val API = RecipeAPI.create()
+    private val recipeAPI = RecipeAPI.create()
+    private val accountAPI = AccountAPI.create()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -71,6 +74,7 @@ class HomeFragment : Fragment() {
 
         accessToken = arguments?.getString("access_token")!!
         refreshToken = arguments?.getString("refresh_token")!!
+        userId = arguments?.getInt("user_id")!!
 
         // 컨텐츠 추가 버튼 click listener
         binding.btnAddContents.setOnClickListener{
@@ -100,11 +104,7 @@ class HomeFragment : Fragment() {
         }
 
         binding.userMark.setOnClickListener {
-            val nextIntent = Intent(activity, MypageActivity::class.java)
-            nextIntent.putExtra("user_name", "쿡코드")
-            nextIntent.putExtra("access_token", accessToken)
-            nextIntent.flags = FLAG_ACTIVITY_CLEAR_TOP
-            startActivity(nextIntent)
+            getUserData(accessToken, userId)
         }
 
         recyclerViewAdapter = SearchRecipeRecyclerviewAdapter(requireContext())
@@ -188,7 +188,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun getRecipeDatas() {
-        API.getRecipes(accessToken, currentPage, pageSize).enqueue(object :
+        recipeAPI.getRecipes(accessToken, currentPage, pageSize).enqueue(object :
             Callback<RecipeResponse> {
             override fun onResponse(call: Call<RecipeResponse>, response: Response<RecipeResponse>) {
                 val datas = response.body()
@@ -266,5 +266,34 @@ class HomeFragment : Fragment() {
         else {
             recyclerViewAdapter.notifyItemRangeChanged(0, recyclerViewAdapter.datas.size - 1)
         }
+    }
+
+    private fun getUserData(accessToken: String, userId: Int) {
+        accountAPI.getUserInfo(accessToken, userId).enqueue(object: Callback<UserResponse>{
+            override fun onResponse(call: Call<UserResponse>, response: Response<UserResponse>) {
+                if (response.isSuccessful) {
+                    val nickname = response.body()!!.userData.nickname
+                    startMyPageActivity(nickname)
+                }
+                else {
+                    Log.d("data_size", response.errorBody()!!.string())
+                    Log.d("data_size", call.request().toString())
+                    putToastMessage("에러 발생! 관리자에게 문의해주세요.")
+                }
+            }
+
+            override fun onFailure(call: Call<UserResponse>, t: Throwable) {
+                putToastMessage("잠시 후 다시 시도해주세요.")
+            }
+        })
+    }
+
+    private fun startMyPageActivity(nickname: String) {
+        val nextIntent = Intent(activity, MypageActivity::class.java)
+        nextIntent.putExtra("user_name", nickname)
+        nextIntent.putExtra("access_token", accessToken)
+        nextIntent.putExtra("user_id", userId)
+        nextIntent.flags = FLAG_ACTIVITY_CLEAR_TOP
+        startActivity(nextIntent)
     }
 }

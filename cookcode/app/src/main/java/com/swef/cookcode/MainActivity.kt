@@ -58,12 +58,14 @@ class MainActivity : AppCompatActivity() {
                         if (response.body()!!.status == 200) {
                             // 만족시 HomeActivity로 이동
                             // 메인 페이지에서 활동 시 Token이 필요하므로 token 정보를 다음 activity로 넘겨준다
+                            val userId = response.body()!!.tokenData.userId
                             val accessToken = response.body()!!.tokenData.accessToken
                             val refreshToken = response.body()!!.tokenData.refreshToken
 
                             // 데이터는 key, value 쌍으로 넘어간다
                             homeActivityIntent.putExtra("access_token", accessToken)
                             homeActivityIntent.putExtra("refresh_token", refreshToken)
+                            homeActivityIntent.putExtra("user_id", userId)
                             homeActivityIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
                             startActivity(homeActivityIntent)
                             Toast.makeText(this@MainActivity, "정상적으로 로그인 되었습니다.", Toast.LENGTH_SHORT).show()
