@@ -100,6 +100,7 @@ class HomeFragment : Fragment() {
         binding.btnSearch.setOnClickListener {
             val nextIntent = Intent(activity, SearchActivity::class.java)
             nextIntent.putExtra("access_token", accessToken)
+            nextIntent.putExtra("user_id", userId)
             startActivity(nextIntent)
         }
 
@@ -110,6 +111,7 @@ class HomeFragment : Fragment() {
         recyclerViewAdapter = SearchRecipeRecyclerviewAdapter(requireContext())
 
         recyclerViewAdapter.accessToken = accessToken
+        recyclerViewAdapter.userId = userId
         binding.recyclerView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         binding.recyclerView.adapter = recyclerViewAdapter
 
@@ -193,7 +195,6 @@ class HomeFragment : Fragment() {
             override fun onResponse(call: Call<RecipeResponse>, response: Response<RecipeResponse>) {
                 val datas = response.body()
                 if (datas != null && datas.status == 200) {
-                    Log.d("data_size", response.body().toString())
                     searchedRecipeAndStepDatas = getRecipeDatasFromResponseBody(datas.recipes.content)
                     putDataForRecyclerview()
                 }

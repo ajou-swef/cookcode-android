@@ -16,7 +16,11 @@ class SearchRecipeRecyclerviewAdapter(
 ): RecyclerView.Adapter<SearchRecipeRecyclerviewAdapter.ViewHolder>() {
     private lateinit var binding: SearchRecipeRecyclerviewItemBinding
 
+    private val ERR_USER_CODE = -1
+
     var datas = mutableListOf<RecipeAndStepData>()
+    var userId = ERR_USER_CODE
+
     lateinit var accessToken: String
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -50,6 +54,7 @@ class SearchRecipeRecyclerviewAdapter(
             binding.layout.setOnClickListener {
                 val intent = Intent(binding.layout.context, RecipeActivity::class.java)
                 intent.putExtra("recipe_id", item.recipeData.recipeId)
+                intent.putExtra("user_id", userId)
                 intent.putExtra("access_token", accessToken)
                 binding.layout.context.startActivity(intent)
             }

@@ -4,11 +4,13 @@ import com.swef.cookcode.data.response.FileResponse
 import com.swef.cookcode.data.response.RecipeContentResponse
 import com.swef.cookcode.data.response.RecipeResponse
 import com.swef.cookcode.data.response.RecipeStatusResponse
+import com.swef.cookcode.data.response.StatusResponse
 import okhttp3.MultipartBody
 import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Multipart
@@ -48,6 +50,12 @@ interface RecipeAPI {
         @Header("accessToken") accessToken: String,
         @Path("recipeId") recipeId: Int
     ): Call<RecipeContentResponse>
+
+    @DELETE("recipe/{recipeId}")
+    fun deleteRecipe(
+        @Header("accessToken") accessToken: String,
+        @Path("recipeId") recipeId: Int
+    ): Call<StatusResponse>
 
     companion object {
         private const val BASE_URL = "http://54.180.117.179:8080/api/v1/"
