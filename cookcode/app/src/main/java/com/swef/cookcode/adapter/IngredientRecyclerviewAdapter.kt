@@ -18,6 +18,8 @@ import com.swef.cookcode.databinding.RecipeIngredientDialogBinding
 import com.swef.cookcode.databinding.RefrigeratorIngredientDialogBinding
 import com.swef.cookcode.navifrags.OnDialogRecyclerviewItemClickListener
 import kotlinx.coroutines.*
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 class IngredientRecyclerviewAdapter(
     private val type: String
@@ -169,6 +171,8 @@ class IngredientRecyclerviewAdapter(
                         refrigeratorAlertDialog.dismiss()
                     }
 
+                    refrigeratorDialogView.btnConfirm.bringToFront()
+
                     refrigeratorDialogView.btnConfirm.setOnClickListener {
                         val value = refrigeratorDialogView.editIngredientValue.text.toString()
                         val date = refrigeratorDialogView.editIngredientExpiredAt.text.toString()
@@ -217,6 +221,19 @@ class IngredientRecyclerviewAdapter(
                     binding.value.text = parent.context.getString(
                         R.string.ingred_quantity, item.value, item.ingredientData.unit)
 
+                    val currentDate = LocalDate.now()
+                    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                    val ingredientExpiredDate = LocalDate.parse(item.expiredAt, formatter)
+
+                    val isExpiredIngredient = ingredientExpiredDate.minusDays(7)
+
+                    if (isExpiredIngredient.isBefore(currentDate)) {
+                        binding.expiredSoon.visibility = View.VISIBLE
+                    }
+                    else {
+                        binding.expiredSoon.visibility = View.GONE
+                    }
+
                     val refrigeratorDialogView = RefrigeratorIngredientDialogBinding.inflate(
                         LayoutInflater.from(parent.context), parent, false)
 
@@ -244,6 +261,8 @@ class IngredientRecyclerviewAdapter(
                         notifyItemRangeRemoved(position, filteredDatas.size - position)
                         refrigeratorAlertDialog.dismiss()
                     }
+
+                    refrigeratorDialogView.btnConfirm.bringToFront()
 
                     refrigeratorDialogView.btnConfirm.setOnClickListener {
                         val value = refrigeratorDialogView.editIngredientValue.text.toString()
@@ -307,9 +326,9 @@ class IngredientRecyclerviewAdapter(
             Toast.makeText(parent.context, "정확한 날짜를 입력해주세요.", Toast.LENGTH_SHORT).show()
         }
         else
-            return false
+            return true
 
-        return true
+        return false
     }
 
     private fun getColorFromContext(color: String, parent: ViewGroup): Int {

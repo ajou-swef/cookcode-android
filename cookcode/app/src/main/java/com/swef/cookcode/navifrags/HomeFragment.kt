@@ -51,7 +51,7 @@ class HomeFragment : Fragment() {
 
     private var sort = "createdAt"
     private var createdMonth = 5
-    private val pageSize = 10
+    private val pageSize = 30
     private var currentPage = 0
 
     private val TRUE = 1
