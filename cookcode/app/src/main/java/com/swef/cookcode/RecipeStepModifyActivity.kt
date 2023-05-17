@@ -355,7 +355,7 @@ class RecipeStepModifyActivity : AppCompatActivity() {
 
     private fun makeImageMultipartBody(uri: Uri): MultipartBody.Part {
         val inputStream: InputStream? = contentResolver.openInputStream(uri)
-        val file = File(cacheDir, "image.jpg") // 임시 파일 생성
+        val file = File(cacheDir, "video.mp4") // 임시 파일 생성
 
         val outputStream: OutputStream = FileOutputStream(file)
         inputStream?.copyTo(outputStream) // 이미지를 임시 파일로 복사
