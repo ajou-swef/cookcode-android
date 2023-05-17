@@ -3,6 +3,7 @@ package com.swef.cookcode.adapter
 import android.content.Context
 import android.content.Intent
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
@@ -22,6 +23,7 @@ class SearchRecipeRecyclerviewAdapter(
     var userId = ERR_USER_CODE
 
     lateinit var accessToken: String
+    lateinit var refreshToken: String
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
@@ -46,16 +48,24 @@ class SearchRecipeRecyclerviewAdapter(
     ): RecyclerView.ViewHolder(binding.root) {
         fun bind(item: RecipeAndStepData){
             binding.recipeName.text = item.recipeData.title
-            // binding.viewNumber.text = item.views.toString()
             binding.likeNumber.text = item.recipeData.likes.toString()
             binding.madeUser.text = item.recipeData.madeUser.nickname
             getImageFromUrl(item.recipeData.mainImage, binding.mainImage)
+
+            if (item.recipeData.cookable) {
+                binding.isCookable.visibility = View.VISIBLE
+            }
+            else {
+                binding.isCookable.visibility = View.INVISIBLE
+            }
 
             binding.layout.setOnClickListener {
                 val intent = Intent(binding.layout.context, RecipeActivity::class.java)
                 intent.putExtra("recipe_id", item.recipeData.recipeId)
                 intent.putExtra("user_id", userId)
                 intent.putExtra("access_token", accessToken)
+                intent.putExtra("refresh_token", refreshToken)
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 binding.layout.context.startActivity(intent)
             }
         }

@@ -28,9 +28,16 @@ import com.swef.cookcode.adapter.IngredientRecyclerviewAdapter
 import com.swef.cookcode.adapter.StepRecyclerviewAdapter
 import com.swef.cookcode.api.RecipeAPI
 import com.swef.cookcode.data.MyIngredientData
+import com.swef.cookcode.data.RecipeAndStepData
+import com.swef.cookcode.data.RecipeData
 import com.swef.cookcode.data.StepData
 import com.swef.cookcode.data.host.IngredientDataHost
 import com.swef.cookcode.data.response.FileResponse
+import com.swef.cookcode.data.response.Photos
+import com.swef.cookcode.data.response.RecipeContent
+import com.swef.cookcode.data.response.RecipeContentResponse
+import com.swef.cookcode.data.response.Step
+import com.swef.cookcode.data.response.Videos
 import com.swef.cookcode.databinding.ActivityRecipeFormBinding
 import com.swef.cookcode.databinding.RecipeIngredientSelectDialogBinding
 import com.swef.cookcode.`interface`.StepOnClickListener
@@ -76,6 +83,7 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
     private var stepExist = false
 
     private val stepOutOfBound = -1
+    private val ERR_RECIPE_CODE = -1
 
     private val API = RecipeAPI.create()
 
@@ -101,6 +109,8 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
 
         accessToken = intent.getStringExtra("access_token")!!
         refreshToken = intent.getStringExtra("refresh_token")!!
+
+        val recipeId = intent.getIntExtra("recipe_id", ERR_RECIPE_CODE)
 
         // 사진을 불러오기 위한 권한 요청
         val permission = Manifest.permission.READ_EXTERNAL_STORAGE
@@ -273,6 +283,10 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
                     intent.putExtra("step_number$index", stepDatas[index].numberOfStep)
                 }
 
+                if (recipeId != ERR_RECIPE_CODE) {
+                    intent.putExtra("recipe_id", recipeId)
+                }
+
                 // 미리보기 종료 시 home activity를 제외한 액티비티는 모두 종료
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 getResult.launch(intent)
@@ -280,6 +294,11 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
             else {
                 putToastMessage("추가 재료를 제외한 항목을 입력해주세요.")
             }
+        }
+
+        if (recipeId != ERR_RECIPE_CODE) {
+            // recipeId가 존재할 경우 수정하는 경우이므로 정보를 불러옴
+            getRecipeDataFromRecipeID(recipeId, accessToken)
         }
     }
 
@@ -346,6 +365,80 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
                 stepExist = stepDatas.isNotEmpty()
             }
         }
+    }
+
+    private fun getRecipeDataFromRecipeID(recipeId: Int, accessToken: String) {
+        API.getRecipe(accessToken, recipeId).enqueue(object : Callback<RecipeContentResponse> {
+            override fun onResponse(
+                call: Call<RecipeContentResponse>,
+                response: Response<RecipeContentResponse>
+            ) {
+                if (response.body() != null) {
+                    val recipeAndStepData = getRecipeDataFromResponseBody(response.body()!!.recipeData)
+                    val recipeData = recipeAndStepData.recipeData
+                    val stepDatas = recipeAndStepData.stepData
+
+                    initRecipeForm(recipeData, stepDatas)
+                }
+                else {
+                    putToastMessage("데이터를 불러오는데 실패했습니다.")
+                    Log.d("data_size", response.errorBody()!!.string())
+                }
+            }
+
+            override fun onFailure(call: Call<RecipeContentResponse>, t: Throwable) {
+                putToastMessage("잠시 후 다시 시도해주세요.")
+            }
+        })
+    }
+
+    private fun getRecipeDataFromResponseBody(data: RecipeContent): RecipeAndStepData {
+        val recipeAndStepData: RecipeAndStepData
+
+        val recipeData = RecipeData(data.recipeId, data.title, data.description, data.mainImage, data.likeCount, data.isCookable, data.user)
+        val stepDatas = getStepDatasFromRecipeContent(data.steps)
+
+        recipeAndStepData = RecipeAndStepData(recipeData, stepDatas)
+
+        return recipeAndStepData
+    }
+
+    private fun getStepDatasFromRecipeContent(datas: List<Step>): MutableList<StepData> {
+        val stepDatas = mutableListOf<StepData>()
+
+        for (item in datas) {
+            stepDatas.apply {
+                val imageUris = getImageDatasFromStep(item.imageUris)
+                val videoUris = getVideoDatasFromStep(item.videoUris)
+                val title = item.title
+                val description = item.description
+                val numberOfStep = item.sequence
+
+                add(StepData(imageUris, videoUris, title, description, numberOfStep))
+            }
+        }
+
+        return stepDatas
+    }
+
+    private fun getImageDatasFromStep(datas: List<Photos>): MutableList<String> {
+        val imageUris = mutableListOf<String>()
+
+        for (item in datas) {
+            imageUris.add(item.imageUri)
+        }
+
+        return imageUris
+    }
+
+    private fun getVideoDatasFromStep(datas: List<Videos>): MutableList<String> {
+        val videoUris = mutableListOf<String>()
+
+        for (item in datas) {
+            videoUris.add(item.videoUri)
+        }
+
+        return videoUris
     }
 
     // Edittext가 아닌 화면을 터치했을 경우 포커스 해제 및 키보드 숨기기
@@ -516,6 +609,23 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
 
     private fun putToastMessage(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun initRecipeForm(recipeData: RecipeData, stepDatas: List<StepData>) {
+        getImageFromUrl(recipeData.mainImage)
+        thumbnailUploaded = true
+        binding.editRecipeName.setText(recipeData.title)
+        binding.editDescription.setText(recipeData.description)
+
+        // 필수재료, 추가재료 불러오기
+
+        this.stepDatas.addAll(stepDatas)
+        numberOfStep = this.stepDatas.size + 1
+
+        stepRecyclerviewAdapter.datas = this.stepDatas
+        stepRecyclerviewAdapter.notifyItemRangeInserted(0, this.stepDatas.size)
+
+        stepExist = true
     }
 }
 

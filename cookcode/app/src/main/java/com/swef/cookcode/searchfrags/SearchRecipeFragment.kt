@@ -58,7 +58,7 @@ class SearchRecipeFragment : Fragment() {
 
         // searchedRecipeAndStepDatas = getRecipeDatas(accessToken, currentPage, pageSize, cookable, sort, createdMonth)
 
-        API.getRecipes(accessToken, currentPage, pageSize).enqueue(object : Callback<RecipeResponse> {
+        API.getRecipes(accessToken, currentPage, pageSize, cookable).enqueue(object : Callback<RecipeResponse> {
             override fun onResponse(call: Call<RecipeResponse>, response: Response<RecipeResponse>) {
                 val datas = response.body()
                 if (datas != null && datas.status == 200) {
@@ -89,7 +89,7 @@ class SearchRecipeFragment : Fragment() {
         val recipeAndStepDatas = mutableListOf<RecipeAndStepData>()
 
         for (item in datas) {
-            val recipeData = RecipeData(item.recipeId, item.title, item.description, item.mainImage, item.likeCount, item.user)
+            val recipeData = RecipeData(item.recipeId, item.title, item.description, item.mainImage, item.likeCount, item.isCookable, item.user)
             val stepDatas = getStepDatasFromRecipeContent(item.steps)
             recipeAndStepDatas.add(RecipeAndStepData(recipeData, stepDatas))
         }

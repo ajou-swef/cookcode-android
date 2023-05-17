@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="170dp"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -50,7 +51,7 @@
             android:layout_height="wrap_content"
             app:layout_constraintTop_toBottomOf="@+id/made_user"
             app:layout_constraintStart_toEndOf="@+id/like_mark"
-            app:layout_constraintBottom_toTopOf="@+id/view"/>
+            app:layout_constraintBottom_toTopOf="@+id/is_cookable"/>
 
         <TextView
             android:id="@+id/like_number"
@@ -63,33 +64,14 @@
             app:layout_constraintStart_toEndOf="@+id/like"/>
 
         <ImageView
-            android:id="@+id/view_mark"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:background="@drawable/view_mark"
+            android:id="@+id/is_cookable"
+            android:layout_width="40dp"
+            android:layout_height="45dp"
+            android:background="@drawable/icon_is_cookable"
+            android:visibility="invisible"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/view"/>
-
-        <TextView
-            android:id="@+id/view"
-            android:text="@string/view"
-            android:textColor="@color/main_theme"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="3dp"
             app:layout_constraintTop_toBottomOf="@+id/like"
-            app:layout_constraintStart_toEndOf="@+id/view_mark"
             app:layout_constraintBottom_toBottomOf="parent"/>
-
-        <TextView
-            android:id="@+id/view_number"
-            android:text="26"
-            android:textColor="@color/main_theme"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="3dp"
-            app:layout_constraintTop_toTopOf="@+id/view"
-            app:layout_constraintStart_toEndOf="@+id/view"/>
 
         <View
             android:id="@+id/divider"

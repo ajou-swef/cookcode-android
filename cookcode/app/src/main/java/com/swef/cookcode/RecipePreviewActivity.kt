@@ -9,6 +9,7 @@ import androidx.viewpager2.widget.ViewPager2
 import com.swef.cookcode.adapter.StepPreviewRecyclerviewAdapter
 import com.swef.cookcode.api.RecipeAPI
 import com.swef.cookcode.data.StepData
+import com.swef.cookcode.data.response.RecipeResponse
 import com.swef.cookcode.data.response.RecipeStatusResponse
 import com.swef.cookcode.databinding.ActivityRecipePreviewBinding
 import retrofit2.Call
@@ -22,6 +23,8 @@ class RecipePreviewActivity : AppCompatActivity() {
     private lateinit var stepPreviewRecyclerviewAdapter: StepPreviewRecyclerviewAdapter
 
     private val API = RecipeAPI.create()
+
+    private val ERR_RECIPE_CODE = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,6 +46,8 @@ class RecipePreviewActivity : AppCompatActivity() {
 
         val accessToken = intent.getStringExtra("access_token")!!
         val refreshToken = intent.getStringExtra("refresh_token")!!
+
+        val recipeId = intent.getIntExtra("recipe_id", ERR_RECIPE_CODE)
 
         // 현재 보고있는 step
         var currentPosition = 0
@@ -111,7 +116,12 @@ class RecipePreviewActivity : AppCompatActivity() {
             stepDatas.add(stepData)
             postBody["steps"] = stepDatas
 
-            postRecipeData(accessToken, refreshToken, postBody)
+            if (recipeId != ERR_RECIPE_CODE) {
+                patchRecipeData(accessToken, refreshToken, postBody, recipeId)
+            }
+            else {
+                postRecipeData(accessToken, refreshToken, postBody)
+            }
         }
 
         // 미리보기 단계에서 수정
@@ -131,7 +141,6 @@ class RecipePreviewActivity : AppCompatActivity() {
                 response: Response<RecipeStatusResponse>
             ) {
                 if (response.isSuccessful) {
-                    Log.d("data_size", response.body()!!.toString())
                     putToastMessage("레시피가 업로드되었습니다.")
                     startHomeActivity(accessToken, refreshToken)
                 }
@@ -148,6 +157,26 @@ class RecipePreviewActivity : AppCompatActivity() {
                 putToastMessage("잠시 후 다시 시도해주세요.")
             }
 
+        })
+    }
+
+    private fun patchRecipeData(accessToken: String, refreshToken: String, postBody: HashMap<String, Any>, recipeId: Int) {
+        API.patchRecipe(accessToken, recipeId, postBody).enqueue(object: Callback<RecipeResponse>{
+            override fun onResponse(call: Call<RecipeResponse>, response: Response<RecipeResponse>) {
+                if (response.isSuccessful){
+                    putToastMessage("레시피가 수정되었습니다.")
+                    startHomeActivity(accessToken, refreshToken)
+                }
+                else {
+                    Log.d("data_size", response.errorBody()!!.string())
+                    Log.d("data_size", call.request().toString())
+                    putToastMessage("에러 발생! 관리자에게 문의해주세요.")
+                }
+            }
+
+            override fun onFailure(call: Call<RecipeResponse>, t: Throwable) {
+                putToastMessage("잠시 후 다시 시도해주세요.")
+            }
         })
     }
 

@@ -14,6 +14,7 @@ import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Multipart
+import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Part
 import retrofit2.http.Path
@@ -42,7 +43,7 @@ interface RecipeAPI {
         @Query("size") size: Int,
         // @Query("sort") sort: String = "createdAt",
         // @Query("month") month: Int,
-        // @Query("cookable") cookable: Int
+        @Query("cookable") cookable: Int
     ): Call<RecipeResponse>
 
     @GET("recipe/{recipeId}")
@@ -56,6 +57,13 @@ interface RecipeAPI {
         @Header("accessToken") accessToken: String,
         @Path("recipeId") recipeId: Int
     ): Call<StatusResponse>
+
+    @PATCH("recipe/{recipeId}")
+    fun patchRecipe(
+        @Header("accessToken") accessToken: String,
+        @Path("recipeId") recipeId: Int,
+        @Body body: HashMap<String, Any>
+    ): Call<RecipeResponse>
 
     companion object {
         private const val BASE_URL = "http://54.180.117.179:8080/api/v1/"

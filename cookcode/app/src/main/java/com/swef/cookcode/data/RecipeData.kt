@@ -7,7 +7,7 @@ data class RecipeData(
     val description: String,
     val mainImage: String,
     val likes: Int,
-    // val views: Int,
+    val cookable: Boolean,
     val madeUser: MadeUser
 )
 

@@ -26,6 +26,7 @@ data class RecipeContent(
     @SerializedName("recipeId") val recipeId: Int,
     @SerializedName("user") val user: MadeUser,
     @SerializedName("steps") val steps: List<Step>,
+    @SerializedName("ingredients") val ingredients: List<Ingredient>,
     @SerializedName("title") val title: String,
     @SerializedName("description") val description: String,
     @SerializedName("createdAt") val createdAt: String,
@@ -35,6 +36,11 @@ data class RecipeContent(
     @SerializedName("commentCount") val commentCount: Int,
     @SerializedName("isCookable") val isCookable: Boolean,
     @SerializedName("thumbnail") val mainImage: String
+)
+
+data class Ingredient(
+    @SerializedName("ingredientId") val ingredId: Int,
+    @SerializedName("name") val name: String
 )
 
 data class MadeUser(

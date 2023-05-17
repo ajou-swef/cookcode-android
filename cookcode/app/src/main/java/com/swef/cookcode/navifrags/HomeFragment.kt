@@ -23,12 +23,9 @@ import com.swef.cookcode.api.RecipeAPI
 import com.swef.cookcode.data.RecipeAndStepData
 import com.swef.cookcode.data.RecipeData
 import com.swef.cookcode.data.StepData
-import com.swef.cookcode.data.response.Photos
 import com.swef.cookcode.data.response.RecipeContent
 import com.swef.cookcode.data.response.RecipeResponse
-import com.swef.cookcode.data.response.Step
 import com.swef.cookcode.data.response.UserResponse
-import com.swef.cookcode.data.response.Videos
 import com.swef.cookcode.databinding.FragmentHomeBinding
 import retrofit2.Call
 import retrofit2.Callback
@@ -100,6 +97,7 @@ class HomeFragment : Fragment() {
         binding.btnSearch.setOnClickListener {
             val nextIntent = Intent(activity, SearchActivity::class.java)
             nextIntent.putExtra("access_token", accessToken)
+            nextIntent.putExtra("refresh_token", refreshToken)
             nextIntent.putExtra("user_id", userId)
             startActivity(nextIntent)
         }
@@ -111,6 +109,7 @@ class HomeFragment : Fragment() {
         recyclerViewAdapter = SearchRecipeRecyclerviewAdapter(requireContext())
 
         recyclerViewAdapter.accessToken = accessToken
+        recyclerViewAdapter.refreshToken = refreshToken
         recyclerViewAdapter.userId = userId
         binding.recyclerView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         binding.recyclerView.adapter = recyclerViewAdapter
@@ -190,12 +189,13 @@ class HomeFragment : Fragment() {
     }
 
     private fun getRecipeDatas() {
-        recipeAPI.getRecipes(accessToken, currentPage, pageSize).enqueue(object :
+        recipeAPI.getRecipes(accessToken, currentPage, pageSize, cookable).enqueue(object :
             Callback<RecipeResponse> {
             override fun onResponse(call: Call<RecipeResponse>, response: Response<RecipeResponse>) {
                 val datas = response.body()
                 if (datas != null && datas.status == 200) {
                     searchedRecipeAndStepDatas = getRecipeDatasFromResponseBody(datas.recipes.content)
+                    Log.d("data_size", searchedRecipeAndStepDatas.toString())
                     putDataForRecyclerview()
                 }
             }
@@ -209,51 +209,12 @@ class HomeFragment : Fragment() {
         val recipeAndStepDatas = mutableListOf<RecipeAndStepData>()
 
         for (item in datas) {
-            val recipeData = RecipeData(item.recipeId, item.title, item.description, item.mainImage, item.likeCount, item.user)
-            // val stepDatas = getStepDatasFromRecipeContent(item.steps)
-            val stepDatas = emptyList<StepData>() // 현재 step 불러오기에서 null 발생
+            val recipeData = RecipeData(item.recipeId, item.title, item.description, item.mainImage, item.likeCount, item.isCookable, item.user)
+            val stepDatas = emptyList<StepData>()
             recipeAndStepDatas.add(RecipeAndStepData(recipeData, stepDatas))
         }
 
         return recipeAndStepDatas
-    }
-
-    private fun getStepDatasFromRecipeContent(datas: List<Step>): MutableList<StepData> {
-        val stepDatas = mutableListOf<StepData>()
-
-        for (item in datas) {
-            stepDatas.apply {
-                val imageUris = getImageDatasFromStep(item.imageUris)
-                val videoUris = getVideoDatasFromStep(item.videoUris)
-                val title = item.title
-                val description = item.description
-                val numberOfStep = item.sequence
-
-                add(StepData(imageUris, videoUris, title, description, numberOfStep))
-            }
-        }
-
-        return stepDatas
-    }
-
-    private fun getImageDatasFromStep(datas: List<Photos>): MutableList<String> {
-        val imageUris = mutableListOf<String>()
-
-        for (item in datas) {
-            imageUris.add(item.imageUri)
-        }
-
-        return imageUris
-    }
-
-    private fun getVideoDatasFromStep(datas: List<Videos>): MutableList<String> {
-        val videoUris = mutableListOf<String>()
-
-        for (item in datas) {
-            videoUris.add(item.videoUri)
-        }
-
-        return videoUris
     }
 
     private fun putDataForRecyclerview() {
@@ -265,7 +226,7 @@ class HomeFragment : Fragment() {
             recyclerViewAdapter.notifyItemRangeInserted(0, recyclerViewAdapter.datas.size - 1)
         }
         else {
-            recyclerViewAdapter.notifyItemRangeChanged(0, recyclerViewAdapter.datas.size - 1)
+            recyclerViewAdapter.notifyDataSetChanged()
         }
     }
 

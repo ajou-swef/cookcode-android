@@ -1,5 +1,6 @@
 package com.swef.cookcode
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -33,6 +34,7 @@ class RecipeActivity : AppCompatActivity() {
     private lateinit var recipeViewpagerAdapter: RecipeViewpagerAdapter
 
     private lateinit var accessToken: String
+    private lateinit var refreshToken: String
     private var userId = ERR_USER_CODE
     private var recipeId = ERR_RECIPE_ID
 
@@ -42,6 +44,7 @@ class RecipeActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         accessToken = intent.getStringExtra("access_token")!!
+        refreshToken = intent.getStringExtra("refresh_token")!!
         userId = intent.getIntExtra("user_id", ERR_USER_CODE)
         recipeId = intent.getIntExtra("recipe_id", ERR_RECIPE_ID)
 
@@ -54,6 +57,7 @@ class RecipeActivity : AppCompatActivity() {
 
         binding.btnModify.setOnClickListener {
             // 레시피 수정 activity
+            startModifyRecipeActivity()
         }
 
         recipeViewpagerAdapter = RecipeViewpagerAdapter(this)
@@ -111,7 +115,7 @@ class RecipeActivity : AppCompatActivity() {
     private fun getRecipeDataFromResponseBody(data: RecipeContent): RecipeAndStepData {
         val recipeAndStepData: RecipeAndStepData
 
-        val recipeData = RecipeData(data.recipeId, data.title, data.description, data.mainImage, data.likeCount, data.user)
+        val recipeData = RecipeData(data.recipeId, data.title, data.description, data.mainImage, data.likeCount, data.isCookable, data.user)
         val stepDatas = getStepDatasFromRecipeContent(data.steps)
 
         recipeAndStepData = RecipeAndStepData(recipeData, stepDatas)
@@ -191,5 +195,14 @@ class RecipeActivity : AppCompatActivity() {
                 putToastMessage("잠시 후 다시 시도해주세요.")
             }
         })
+    }
+
+    private fun startModifyRecipeActivity() {
+        val nextIntent = Intent(this, RecipeFormActivity::class.java)
+        nextIntent.putExtra("access_token", accessToken)
+        nextIntent.putExtra("refresh_token", refreshToken)
+        nextIntent.putExtra("recipe_id", recipeId)
+        nextIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        startActivity(nextIntent)
     }
 }
