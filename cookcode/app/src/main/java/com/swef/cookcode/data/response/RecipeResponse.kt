@@ -27,6 +27,7 @@ data class RecipeContent(
     @SerializedName("user") val user: MadeUser,
     @SerializedName("steps") val steps: List<Step>,
     @SerializedName("ingredients") val ingredients: List<Ingredient>,
+    @SerializedName("optionalIngredients") val additionalIngredients: List<Ingredient>,
     @SerializedName("title") val title: String,
     @SerializedName("description") val description: String,
     @SerializedName("createdAt") val createdAt: String,

@@ -50,6 +50,7 @@ class SearchRecipeRecyclerviewAdapter(
             binding.recipeName.text = item.recipeData.title
             binding.likeNumber.text = item.recipeData.likes.toString()
             binding.madeUser.text = item.recipeData.madeUser.nickname
+            binding.createdAtTime.text = item.recipeData.createdAt
             getImageFromUrl(item.recipeData.mainImage, binding.mainImage)
 
             if (item.recipeData.cookable) {

@@ -148,6 +148,7 @@ class HomeFragment : Fragment() {
                     val nextIntent = Intent(activity, RecipeFormActivity::class.java)
                     nextIntent.putExtra("access_token", accessToken)
                     nextIntent.putExtra("refresh_token", refreshToken)
+                    nextIntent.putExtra("user_id", userId)
                     nextIntent.addFlags(FLAG_ACTIVITY_CLEAR_TOP)
                     startActivity(nextIntent)
                     true
@@ -209,7 +210,10 @@ class HomeFragment : Fragment() {
         val recipeAndStepDatas = mutableListOf<RecipeAndStepData>()
 
         for (item in datas) {
-            val recipeData = RecipeData(item.recipeId, item.title, item.description, item.mainImage, item.likeCount, item.isCookable, item.user)
+            val recipeData = RecipeData(
+                item.recipeId, item.title, item.description,
+                item.mainImage, item.likeCount, item.isCookable,
+                item.user, item.createdAt.substring(0, 10), item.ingredients, item.additionalIngredients)
             val stepDatas = emptyList<StepData>()
             recipeAndStepDatas.add(RecipeAndStepData(recipeData, stepDatas))
         }

@@ -333,7 +333,7 @@ class RecipeStepActivity : AppCompatActivity() {
         inputStream?.close()
         outputStream.close()
 
-        val requestBody = file.asRequestBody("image/*".toMediaTypeOrNull())
+        val requestBody = file.asRequestBody("application/json".toMediaTypeOrNull())
         return MultipartBody.Part.createFormData("stepFiles", file.name, requestBody)
     }
 
@@ -346,7 +346,7 @@ class RecipeStepActivity : AppCompatActivity() {
         inputStream?.close()
         outputStream.close()
 
-        val requestBody = file.asRequestBody("video/*".toMediaTypeOrNull())
+        val requestBody = file.asRequestBody("application/json".toMediaTypeOrNull())
         return MultipartBody.Part.createFormData("stepFiles", file.name, requestBody)
     }
 

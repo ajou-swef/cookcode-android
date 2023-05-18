@@ -25,6 +25,9 @@ class RecipePreviewActivity : AppCompatActivity() {
     private val API = RecipeAPI.create()
 
     private val ERR_RECIPE_CODE = -1
+    private val ERR_USER_CODE = -1
+
+    private var userId = ERR_USER_CODE
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,6 +51,7 @@ class RecipePreviewActivity : AppCompatActivity() {
         val refreshToken = intent.getStringExtra("refresh_token")!!
 
         val recipeId = intent.getIntExtra("recipe_id", ERR_RECIPE_CODE)
+        userId = intent.getIntExtra("user_id", ERR_USER_CODE)
 
         // 현재 보고있는 step
         var currentPosition = 0
@@ -100,9 +104,11 @@ class RecipePreviewActivity : AppCompatActivity() {
             postBody["thumbnail"] = mainImage
             postBody["deletedThumbnails"] = deleteImages
 
-            val stepData = HashMap<String, Any>()
+            val stepDatas = mutableListOf<HashMap<String, Any>>()
 
             for(item in datas){
+                val stepData = HashMap<String, Any>()
+
                 stepData["seq"] = item.numberOfStep
                 stepData["title"] = item.title
                 stepData["description"] = item.description
@@ -111,9 +117,10 @@ class RecipePreviewActivity : AppCompatActivity() {
                 stepData["deletedVideos"] = emptyList<String>()
                 if(item.videoData != null) stepData["videos"] = item.videoData
                 else stepData["videos"] = emptyList<String>()
+
+                stepDatas.add(stepData)
             }
-            val stepDatas = mutableListOf<HashMap<String, Any>>()
-            stepDatas.add(stepData)
+
             postBody["steps"] = stepDatas
 
             if (recipeId != ERR_RECIPE_CODE) {
@@ -184,6 +191,7 @@ class RecipePreviewActivity : AppCompatActivity() {
         val intent = Intent(this, HomeActivity::class.java)
         intent.putExtra("access_token", accessToken)
         intent.putExtra("refresh_token", refreshToken)
+        intent.putExtra("userId", userId)
         startActivity(intent)
     }
 

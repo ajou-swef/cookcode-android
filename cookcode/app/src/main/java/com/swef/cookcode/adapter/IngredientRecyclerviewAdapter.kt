@@ -95,6 +95,9 @@ class IngredientRecyclerviewAdapter(
                         binding.checked.visibility = item.visibility!!
                     }
                 }
+                "recipe_preview" -> {
+                binding.value.visibility = View.GONE
+                }
                 // 레시피에 등록된 식재료 수정용 어댑터
                 "recipe" -> {
                     binding.value.visibility = View.VISIBLE

@@ -115,7 +115,10 @@ class RecipeActivity : AppCompatActivity() {
     private fun getRecipeDataFromResponseBody(data: RecipeContent): RecipeAndStepData {
         val recipeAndStepData: RecipeAndStepData
 
-        val recipeData = RecipeData(data.recipeId, data.title, data.description, data.mainImage, data.likeCount, data.isCookable, data.user)
+        val recipeData = RecipeData(
+            data.recipeId, data.title, data.description,
+            data.mainImage, data.likeCount, data.isCookable,
+            data.user, data.createdAt, data.ingredients, data.additionalIngredients)
         val stepDatas = getStepDatasFromRecipeContent(data.steps)
 
         recipeAndStepData = RecipeAndStepData(recipeData, stepDatas)

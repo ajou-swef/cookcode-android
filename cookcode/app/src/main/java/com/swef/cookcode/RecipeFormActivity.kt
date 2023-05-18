@@ -84,11 +84,14 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
 
     private val stepOutOfBound = -1
     private val ERR_RECIPE_CODE = -1
+    private val ERR_USER_CODE = -1
 
     private val API = RecipeAPI.create()
 
     private lateinit var accessToken: String
     private lateinit var refreshToken: String
+
+    private var userId = ERR_USER_CODE
 
     // 미리보기 단계에서 해당 스텝 수정을 위한 스텝 단계 정보 불러오기
     private val getResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -111,6 +114,7 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
         refreshToken = intent.getStringExtra("refresh_token")!!
 
         val recipeId = intent.getIntExtra("recipe_id", ERR_RECIPE_CODE)
+        userId = intent.getIntExtra("user_id", ERR_USER_CODE)
 
         // 사진을 불러오기 위한 권한 요청
         val permission = Manifest.permission.READ_EXTERNAL_STORAGE
@@ -229,6 +233,7 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
                 intent.putExtra("main_image", mainImage)
                 intent.putExtra("access_token", accessToken)
                 intent.putExtra("refresh_token", refreshToken)
+                intent.putExtra("user_id", userId)
 
                 Log.d("data_size", mainImage!!)
 
@@ -395,7 +400,10 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
     private fun getRecipeDataFromResponseBody(data: RecipeContent): RecipeAndStepData {
         val recipeAndStepData: RecipeAndStepData
 
-        val recipeData = RecipeData(data.recipeId, data.title, data.description, data.mainImage, data.likeCount, data.isCookable, data.user)
+        val recipeData = RecipeData(
+            data.recipeId, data.title, data.description,
+            data.mainImage, data.likeCount, data.isCookable,
+            data.user, data.createdAt, data.ingredients, data.additionalIngredients)
         val stepDatas = getStepDatasFromRecipeContent(data.steps)
 
         recipeAndStepData = RecipeAndStepData(recipeData, stepDatas)
@@ -603,7 +611,7 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
         inputStream?.close()
         outputStream.close()
 
-        val requestBody = file.asRequestBody("image/*".toMediaTypeOrNull())
+        val requestBody = file.asRequestBody("application/json".toMediaTypeOrNull())
         return MultipartBody.Part.createFormData("stepFiles", file.name, requestBody)
     }
 

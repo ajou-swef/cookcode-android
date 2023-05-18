@@ -1,5 +1,6 @@
 package com.swef.cookcode.data
 
+import com.swef.cookcode.data.response.Ingredient
 import com.swef.cookcode.data.response.MadeUser
 data class RecipeData(
     val recipeId : Int,
@@ -8,7 +9,10 @@ data class RecipeData(
     val mainImage: String,
     val likes: Int,
     val cookable: Boolean,
-    val madeUser: MadeUser
+    val madeUser: MadeUser,
+    val createdAt: String?,
+    val ingredients: List<Ingredient>,
+    val additionalIngredients: List<Ingredient>
 )
 
 data class RecipeAndStepData(
