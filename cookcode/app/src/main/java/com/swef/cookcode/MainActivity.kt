@@ -5,6 +5,7 @@ import android.content.Intent
 import android.graphics.Rect
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.MotionEvent
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
@@ -78,6 +79,8 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 override fun onFailure(call: Call<TokenResponse>, t: Throwable) {
+                    Log.d("data_size", call.request().toString())
+                    Log.d("data_size", t.message.toString())
                     Toast.makeText(this@MainActivity, R.string.err_server, Toast.LENGTH_SHORT).show()
                 }
             })

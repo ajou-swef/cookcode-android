@@ -13,6 +13,7 @@ import android.widget.Toast
 import androidx.appcompat.widget.PopupMenu
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.swef.cookcode.MypageActivity
 import com.swef.cookcode.R
 import com.swef.cookcode.RecipeFormActivity
@@ -51,7 +52,7 @@ class HomeFragment : Fragment() {
 
     private var sort = "createdAt"
     private var createdMonth = 5
-    private val pageSize = 30
+    private val pageSize = 10
     private var currentPage = 0
 
     private val TRUE = 1
@@ -61,7 +62,6 @@ class HomeFragment : Fragment() {
 
     private val recipeAPI = RecipeAPI.create()
     private val accountAPI = AccountAPI.create()
-
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -87,10 +87,10 @@ class HomeFragment : Fragment() {
         binding.btnCookable.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
                 cookable = TRUE
-                getRecipeDatas()
+                getNewRecipeDatas()
             } else {
                 cookable = FALSE
-                getRecipeDatas()
+                getNewRecipeDatas()
             }
         }
 
@@ -107,14 +107,17 @@ class HomeFragment : Fragment() {
         }
 
         recyclerViewAdapter = SearchRecipeRecyclerviewAdapter(requireContext())
-
         recyclerViewAdapter.accessToken = accessToken
         recyclerViewAdapter.refreshToken = refreshToken
         recyclerViewAdapter.userId = userId
-        binding.recyclerView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+
+        val linearLayoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+        binding.recyclerView.layoutManager = linearLayoutManager
         binding.recyclerView.adapter = recyclerViewAdapter
 
-        getRecipeDatas()
+        initOnScrollListener(linearLayoutManager)
+
+        getNewRecipeDatas()
 
         return binding.root
     }
@@ -206,6 +209,26 @@ class HomeFragment : Fragment() {
             }
         })
     }
+
+    private fun getNewRecipeDatas() {
+        currentPage = 0
+        recipeAPI.getRecipes(accessToken, currentPage, pageSize, cookable).enqueue(object :
+            Callback<RecipeResponse> {
+            override fun onResponse(call: Call<RecipeResponse>, response: Response<RecipeResponse>) {
+                val datas = response.body()
+                if (datas != null && datas.status == 200) {
+                    searchedRecipeAndStepDatas = getRecipeDatasFromResponseBody(datas.recipes.content)
+                    Log.d("data_size", searchedRecipeAndStepDatas.toString())
+                    putNewDataForRecyclerview()
+                }
+            }
+
+            override fun onFailure(call: Call<RecipeResponse>, t: Throwable) {
+                putToastMessage("잠시 후 다시 시도해주세요.")
+            }
+        })
+    }
+
     private fun getRecipeDatasFromResponseBody(datas: List<RecipeContent>): MutableList<RecipeAndStepData> {
         val recipeAndStepDatas = mutableListOf<RecipeAndStepData>()
 
@@ -224,14 +247,20 @@ class HomeFragment : Fragment() {
     private fun putDataForRecyclerview() {
         val isEmpty = recyclerViewAdapter.datas.isEmpty()
 
-        recyclerViewAdapter.datas = searchedRecipeAndStepDatas
-
         if (isEmpty) {
-            recyclerViewAdapter.notifyItemRangeInserted(0, recyclerViewAdapter.datas.size - 1)
+            recyclerViewAdapter.datas = searchedRecipeAndStepDatas
+            recyclerViewAdapter.notifyItemRangeInserted(0, recyclerViewAdapter.datas.size)
         }
         else {
-            recyclerViewAdapter.notifyDataSetChanged()
+            val beforeSize = recyclerViewAdapter.datas.size
+            recyclerViewAdapter.datas.addAll(searchedRecipeAndStepDatas)
+            recyclerViewAdapter.notifyItemRangeInserted(beforeSize, recyclerViewAdapter.datas.size)
         }
+    }
+
+    private fun putNewDataForRecyclerview() {
+        recyclerViewAdapter.datas = searchedRecipeAndStepDatas
+        recyclerViewAdapter.notifyDataSetChanged()
     }
 
     private fun getUserData(accessToken: String, userId: Int) {
@@ -261,5 +290,29 @@ class HomeFragment : Fragment() {
         nextIntent.putExtra("user_id", userId)
         nextIntent.flags = FLAG_ACTIVITY_CLEAR_TOP
         startActivity(nextIntent)
+    }
+
+    private fun initOnScrollListener(linearLayoutManager: LinearLayoutManager) {
+        binding.recyclerView.addOnScrollListener(object: RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, differentX: Int, differentY: Int) {
+                super.onScrolled(recyclerView, differentX, differentY)
+
+                if(differentY > 0) {
+                    val visibleItemCount = linearLayoutManager.childCount
+                    val totalItemCount = linearLayoutManager.itemCount
+                    val pastVisibleItems = linearLayoutManager.findFirstVisibleItemPosition()
+
+                    if (visibleItemCount + pastVisibleItems >= totalItemCount) {
+                        currentPage++
+                        getRecipeDatas()
+                    }
+                }
+
+                if(!recyclerView.canScrollVertically(-1)){
+                    putToastMessage("데이터를 불러오는 중입니다.")
+                    getNewRecipeDatas()
+                }
+            }
+        })
     }
 }

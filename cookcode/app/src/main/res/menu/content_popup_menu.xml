@@ -10,5 +10,5 @@
         app:showAsAction="ifRoom"
         android:id="@+id/recipe"
         android:title="@string/recipe"
-        android:icon="@drawable/unselected_cookie"/>
+        android:icon="@drawable/unselected_recipe"/>
 </menu>
