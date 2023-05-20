@@ -66,7 +66,7 @@ interface RecipeAPI {
     ): Call<RecipeResponse>
 
     companion object {
-        private const val BASE_URL = "http://54.180.117.179:8080/api/v1/"
+        private const val BASE_URL = "http://43.201.10.7:8080/api/v1/"
 
         fun create(): RecipeAPI {
             return Retrofit.Builder()
