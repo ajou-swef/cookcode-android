@@ -23,19 +23,41 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Glide
 import com.swef.cookcode.adapter.IngredientRecyclerviewAdapter
 import com.swef.cookcode.adapter.StepRecyclerviewAdapter
+import com.swef.cookcode.api.RecipeAPI
 import com.swef.cookcode.data.MyIngredientData
+import com.swef.cookcode.data.RecipeAndStepData
+import com.swef.cookcode.data.RecipeData
 import com.swef.cookcode.data.StepData
 import com.swef.cookcode.data.host.IngredientDataHost
+import com.swef.cookcode.data.response.FileResponse
+import com.swef.cookcode.data.response.Photos
+import com.swef.cookcode.data.response.RecipeContent
+import com.swef.cookcode.data.response.RecipeContentResponse
+import com.swef.cookcode.data.response.Step
+import com.swef.cookcode.data.response.Videos
 import com.swef.cookcode.databinding.ActivityRecipeFormBinding
 import com.swef.cookcode.databinding.RecipeIngredientSelectDialogBinding
 import com.swef.cookcode.`interface`.StepOnClickListener
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import java.io.File
+import java.io.FileOutputStream
+import java.io.InputStream
+import java.io.OutputStream
 
 class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
     private lateinit var binding : ActivityRecipeFormBinding
 
     private val stepDatas = mutableListOf<StepData>()
+    private var mainImage: String? = null
+    private val deleteFiles = mutableListOf<String>()
 
     private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
 
@@ -57,15 +79,27 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
     private var descriptionTyped = false
     private var essentialIngredientSelected = false
     private var allIngredientValueTyped = false
+    private var thumbnailUploaded = false
     private var stepExist = false
+
+    private val stepOutOfBound = -1
+    private val ERR_RECIPE_CODE = -1
+    private val ERR_USER_CODE = -1
+
+    private val API = RecipeAPI.create()
+
+    private lateinit var accessToken: String
+    private lateinit var refreshToken: String
+
+    private var userId = ERR_USER_CODE
 
     // 미리보기 단계에서 해당 스텝 수정을 위한 스텝 단계 정보 불러오기
     private val getResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == RESULT_OK) {
             val data: Intent? = result.data
-            val stepNumber = data?.getIntExtra("step_number", -1)
+            val stepNumber = data?.getIntExtra("step_number", stepOutOfBound)
 
-            if (stepNumber != -1) {
+            if (stepNumber != stepOutOfBound) {
                 stepOnClick(stepNumber!!)
             }
         }
@@ -76,21 +110,23 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
         binding = ActivityRecipeFormBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        accessToken = intent.getStringExtra("access_token")!!
+        refreshToken = intent.getStringExtra("refresh_token")!!
+
+        val recipeId = intent.getIntExtra("recipe_id", ERR_RECIPE_CODE)
+        userId = intent.getIntExtra("user_id", ERR_USER_CODE)
+
         // 사진을 불러오기 위한 권한 요청
         val permission = Manifest.permission.READ_EXTERNAL_STORAGE
         if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, arrayOf(permission), 1)
         }
 
-        // 레시피 업로드시 이미지 등록을 위한 변수
-        lateinit var recipeImage: Uri
-
         // 갤러리에서 image를 불러왔을 때 선택한 image로 수행하는 코드
         val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-            // 이미지 추가하는 버튼 안보이게 하기
-            recipeImage = uri!!
-            binding.uploadImageBtn.visibility = View.INVISIBLE
-            binding.uploadImageBox.setImageURI(recipeImage)
+            val imageFile = makeImageMultipartBody(uri!!)
+            postMainImage(accessToken, imageFile)
+            thumbnailUploaded = true
         }
 
         // 뒤로가기 버튼 클릭시 activity 종료
@@ -104,30 +140,20 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
             pickImage.launch("image/*")
         }
 
-        val addTextChangedListener = object : TextWatcher {
-            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
-
-            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-                searchIngredientRecyclerviewAdapter.filteredDatas = IngredientDataHost().getIngredientFromNameOrType(
-                    searchIngredientRecyclerviewAdapter.beforeSearchData, p0.toString()) as MutableList<MyIngredientData>
-                searchIngredientRecyclerviewAdapter.notifyDataSetChanged()
-            }
-
-            override fun afterTextChanged(p0: Editable?) {}
-        }
-
         // 식재료 선택 다이얼로그
         val dialogView = RecipeIngredientSelectDialogBinding.inflate(layoutInflater)
-
-        dialogView.ingredientName.addTextChangedListener(addTextChangedListener)
+        dialogView.ingredientName.addTextChangedListener(filteringForKeyword())
 
         val selectDialog = AlertDialog.Builder(this)
             .setView(dialogView.root)
             .create()
 
         searchIngredientRecyclerviewAdapter = IngredientRecyclerviewAdapter("recipe_search")
-        dialogView.recyclerView.layoutManager = GridLayoutManager(this, 3)
+
+        val spanCount = 3
+        dialogView.recyclerView.layoutManager = GridLayoutManager(this, spanCount)
         dialogView.recyclerView.adapter = searchIngredientRecyclerviewAdapter
+
         searchIngredientRecyclerviewAdapter.datas = IngredientDataHost().showAllIngredientData() as MutableList<MyIngredientData>
         searchIngredientRecyclerviewAdapter.notifyDataSetChanged()
 
@@ -135,12 +161,8 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
             selectDialog.dismiss()
         }
 
-        dialogView.root.setOnClickListener { v ->
-            if (v !is EditText) { // v가 EditText 클래스의 인스턴스가 아닐 경우
-                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.hideSoftInputFromWindow(v.windowToken, 0) // 키보드를 숨김
-            }
-            v.clearFocus()
+        dialogView.ingredientName.setOnFocusChangeListener {
+            view, hasFocus -> hideKeyboardFromEditText(view, hasFocus, this)
         }
 
         // 필수 재료 어댑터
@@ -151,22 +173,12 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
         // 필수 재료 추가 버튼 클릭시 재료 추가
         binding.addEssentialIngredient.setOnClickListener {
             dialogView.btnDone.setOnClickListener {
-                essentialIngredientData = IngredientDataHost().removeElement(
-                    searchIngredientRecyclerviewAdapter.selectedItems, searchIngredientRecyclerviewAdapter.additionalData)
-
-                essentialIngredientRecyclerviewAdapter.filteredDatas = essentialIngredientData
-                searchIngredientRecyclerviewAdapter.essentialData = essentialIngredientData
-
-                essentialIngredientRecyclerviewAdapter.notifyDataSetChanged()
+                insertDataForEssentialIngredient()
                 selectDialog.dismiss()
             }
 
             // 필수재료와 추가재료는 중복되면 안됨
-            searchIngredientRecyclerviewAdapter.beforeSearchData.clear()
-            searchIngredientRecyclerviewAdapter.beforeSearchData = IngredientDataHost().removeElement(
-                searchIngredientRecyclerviewAdapter.datas, searchIngredientRecyclerviewAdapter.additionalData)
-            searchIngredientRecyclerviewAdapter.filteredDatas = searchIngredientRecyclerviewAdapter.beforeSearchData
-            searchIngredientRecyclerviewAdapter.notifyDataSetChanged()
+            removeDupDataInAdditionalIngredient()
             selectDialog.show()
         }
 
@@ -178,21 +190,11 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
         // 추가 재료 추가 버튼 클릭시 재료 추가
         binding.addAdditionalIngredient.setOnClickListener {
             dialogView.btnDone.setOnClickListener {
-                addtionalIngredientData = IngredientDataHost().removeElement(
-                    searchIngredientRecyclerviewAdapter.selectedItems, searchIngredientRecyclerviewAdapter.essentialData)
-
-                additionalIngredientRecyclerviewAdapter.filteredDatas = addtionalIngredientData
-                searchIngredientRecyclerviewAdapter.additionalData = addtionalIngredientData
-
-                additionalIngredientRecyclerviewAdapter.notifyDataSetChanged()
+                insertDataForAdditionalIngredient()
                 selectDialog.dismiss()
             }
 
-            searchIngredientRecyclerviewAdapter.beforeSearchData.clear()
-            searchIngredientRecyclerviewAdapter.beforeSearchData = IngredientDataHost().removeElement(
-                searchIngredientRecyclerviewAdapter.datas, searchIngredientRecyclerviewAdapter.essentialData)
-            searchIngredientRecyclerviewAdapter.filteredDatas = searchIngredientRecyclerviewAdapter.beforeSearchData
-            searchIngredientRecyclerviewAdapter.notifyDataSetChanged()
+            removeDupDataInEssentialIngredient()
             selectDialog.show()
         }
 
@@ -200,7 +202,8 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
         binding.addStep.setOnClickListener {
             val intent = Intent(this, RecipeStepActivity::class.java)
             intent.putExtra("step_number", numberOfStep)
-
+            intent.putExtra("access_token", accessToken)
+            intent.putExtra("refresh_token", refreshToken)
             activityResultLauncher.launch(intent)
         }
 
@@ -227,7 +230,12 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
                 // 레시피 정보 전달
                 intent.putExtra("recipe_title", binding.editRecipeName.text.toString())
                 intent.putExtra("recipe_description", binding.editDescription.text.toString())
-                intent.putExtra("main_image", recipeImage.toString())
+                intent.putExtra("main_image", mainImage)
+                intent.putExtra("access_token", accessToken)
+                intent.putExtra("refresh_token", refreshToken)
+                intent.putExtra("user_id", userId)
+
+                Log.d("data_size", mainImage!!)
 
                 // 필수재료, 추가재료 정보 전달
                 val essentialIngreds = mutableListOf<String>()
@@ -272,12 +280,16 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
                 intent.putExtra("index", steps)
 
                 // 스텝 별 정보 전달, tag에 각 번호를 달아서 해당 스텝인 것을 알려줌
-                for (i: Int in 0 until steps) {
-                    intent.putExtra("images$i", stepDatas[i].imageData.toTypedArray())
-                    intent.putExtra("videos$i", stepDatas[i].videoData?.toTypedArray())
-                    intent.putExtra("title$i", stepDatas[i].title)
-                    intent.putExtra("description$i", stepDatas[i].description)
-                    intent.putExtra("step_number$i", stepDatas[i].numberOfStep)
+                for (index: Int in 0 until steps) {
+                    intent.putExtra("images$index", stepDatas[index].imageData.toTypedArray())
+                    intent.putExtra("videos$index", stepDatas[index].videoData?.toTypedArray())
+                    intent.putExtra("title$index", stepDatas[index].title)
+                    intent.putExtra("description$index", stepDatas[index].description)
+                    intent.putExtra("step_number$index", stepDatas[index].numberOfStep)
+                }
+
+                if (recipeId != ERR_RECIPE_CODE) {
+                    intent.putExtra("recipe_id", recipeId)
                 }
 
                 // 미리보기 종료 시 home activity를 제외한 액티비티는 모두 종료
@@ -285,23 +297,46 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
                 getResult.launch(intent)
             }
             else {
-                Toast.makeText(this, "추가 재료를 제외한 항목을 입력해주세요.", Toast.LENGTH_SHORT)
-                    .show()
+                putToastMessage("추가 재료를 제외한 항목을 입력해주세요.")
             }
+        }
+
+        if (recipeId != ERR_RECIPE_CODE) {
+            // recipeId가 존재할 경우 수정하는 경우이므로 정보를 불러옴
+            getRecipeDataFromRecipeID(recipeId, accessToken)
         }
     }
 
     override fun onStart() {
         super.onStart()
         activityResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == RESULT_OK) {
-                // 받은 데이터 처리
+            if (result.resultCode == RESULT_CANCELED) {
+                if (result.data != null) {
+                    val stepDeleteImages = result.data!!.getStringArrayExtra("step_delete_images")
+                    val stepDeleteVideos = result.data!!.getStringArrayExtra("step_delete_videos")
+                    if (stepDeleteImages != null) {
+                        deleteFiles.addAll(stepDeleteImages.toList())
+                    }
+                    if (stepDeleteVideos != null){
+                        deleteFiles.addAll(stepDeleteVideos.toList())
+                    }
+                }
+            }
+            else if (result.resultCode == RESULT_OK) {
                 if (result.data != null && !result.data?.getStringExtra("type").equals("delete")) {
-                    val stepNumber = result.data?.getIntExtra("step_number", -1)!!
+                    val stepNumber = result.data?.getIntExtra("step_number", stepOutOfBound)!!
                     val stepImages = result.data?.getStringArrayExtra("images")!!.toList()
                     val stepVideos = result.data?.getStringArrayExtra("videos")!!.toList()
                     val stepTitle = result.data?.getStringExtra("title")!!
                     val stepDescription = result.data?.getStringExtra("description")!!
+
+                    val deleteImages = if (result.data?.getStringArrayExtra("delete_images") != null)
+                        result.data?.getStringArrayExtra("delete_images")!!.toList()
+                    else emptyList<String>()
+
+                    val deleteVideos = if (result.data?.getStringArrayExtra("delete_videos") != null)
+                        result.data?.getStringArrayExtra("delete_videos")!!.toList()
+                    else emptyList<String>()
 
                     val stepData = StepData(
                         stepImages, stepVideos, stepTitle, stepDescription, stepNumber)
@@ -315,6 +350,9 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
                     else if (result.data?.getStringExtra("type").equals("modify")) {
                         stepDatas[stepNumber - 1] = stepData
                     }
+
+                    if (deleteImages.isNotEmpty()) deleteFiles.addAll(deleteImages)
+                    if (deleteVideos.isNotEmpty()) deleteFiles.addAll(deleteVideos)
 
                     stepRecyclerviewAdapter.datas = stepDatas
                     stepRecyclerviewAdapter.notifyItemChanged(stepData.numberOfStep)
@@ -334,18 +372,96 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
         }
     }
 
+    private fun getRecipeDataFromRecipeID(recipeId: Int, accessToken: String) {
+        API.getRecipe(accessToken, recipeId).enqueue(object : Callback<RecipeContentResponse> {
+            override fun onResponse(
+                call: Call<RecipeContentResponse>,
+                response: Response<RecipeContentResponse>
+            ) {
+                if (response.body() != null) {
+                    val recipeAndStepData = getRecipeDataFromResponseBody(response.body()!!.recipeData)
+                    val recipeData = recipeAndStepData.recipeData
+                    val stepDatas = recipeAndStepData.stepData
+
+                    initRecipeForm(recipeData, stepDatas)
+                }
+                else {
+                    putToastMessage("데이터를 불러오는데 실패했습니다.")
+                    Log.d("data_size", response.errorBody()!!.string())
+                }
+            }
+
+            override fun onFailure(call: Call<RecipeContentResponse>, t: Throwable) {
+                putToastMessage("잠시 후 다시 시도해주세요.")
+            }
+        })
+    }
+
+    private fun getRecipeDataFromResponseBody(data: RecipeContent): RecipeAndStepData {
+        val recipeAndStepData: RecipeAndStepData
+
+        val recipeData = RecipeData(
+            data.recipeId, data.title, data.description,
+            data.mainImage, data.likeCount, data.isCookable,
+            data.user, data.createdAt, data.ingredients, data.additionalIngredients)
+        val stepDatas = getStepDatasFromRecipeContent(data.steps)
+
+        recipeAndStepData = RecipeAndStepData(recipeData, stepDatas)
+
+        return recipeAndStepData
+    }
+
+    private fun getStepDatasFromRecipeContent(datas: List<Step>): MutableList<StepData> {
+        val stepDatas = mutableListOf<StepData>()
+
+        for (item in datas) {
+            stepDatas.apply {
+                val imageUris = getImageDatasFromStep(item.imageUris)
+                val videoUris = getVideoDatasFromStep(item.videoUris)
+                val title = item.title
+                val description = item.description
+                val numberOfStep = item.sequence
+
+                add(StepData(imageUris, videoUris, title, description, numberOfStep))
+            }
+        }
+
+        return stepDatas
+    }
+
+    private fun getImageDatasFromStep(datas: List<Photos>): MutableList<String> {
+        val imageUris = mutableListOf<String>()
+
+        for (item in datas) {
+            imageUris.add(item.imageUri)
+        }
+
+        return imageUris
+    }
+
+    private fun getVideoDatasFromStep(datas: List<Videos>): MutableList<String> {
+        val videoUris = mutableListOf<String>()
+
+        for (item in datas) {
+            videoUris.add(item.videoUri)
+        }
+
+        return videoUris
+    }
+
     // Edittext가 아닌 화면을 터치했을 경우 포커스 해제 및 키보드 숨기기
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        val hideFlags = 0
         if (event.action == MotionEvent.ACTION_DOWN) {
-            val v = currentFocus
-            if (v is EditText) {
+            val view = currentFocus
+            if (view is EditText) {
                 val outRect = Rect()
-                v.getGlobalVisibleRect(outRect)
+                view.getGlobalVisibleRect(outRect)
 
                 if (!outRect.contains(event.rawX.toInt(), event.rawY.toInt())) {
-                    v.clearFocus()
-                    val imm: InputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                    imm.hideSoftInputFromWindow(v.getWindowToken(), 0)
+                    view.clearFocus()
+                    val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), hideFlags)
                 }
             }
         }
@@ -362,12 +478,14 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
         intent.putExtra("step_description", stepData.description)
         intent.putExtra("step_number", stepData.numberOfStep)
 
+        intent.putExtra("access_token", accessToken)
+        intent.putExtra("refresh_token", refreshToken)
+
         activityResultLauncher.launch(intent)
     }
 
     // 스텝 삭제하는 함수
     private fun deleteStep(position: Int){
-        Log.d("data_size", position.toString())
         // 삭제 해야할 image, video 정보 저장
 
         // 단계 삭제
@@ -375,9 +493,9 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
 
         // 삭제한 단계 이후 단계가 존재한다면 단계 넘버링 수정
         if(stepDatas.indices.last > 0 && position in stepDatas.indices){
-            for(i: Int in position..stepDatas.size){
-                stepDatas[i].numberOfStep -= 1
-                stepRecyclerviewAdapter.notifyItemChanged(i)
+            for(index: Int in position..stepDatas.size){
+                stepDatas[index].numberOfStep -= 1
+                stepRecyclerviewAdapter.notifyItemChanged(index)
             }
         }
         numberOfStep -= 1
@@ -386,13 +504,136 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
     // 필수 정보 입력 여부 판단
     private fun testInfoTyped(): Boolean {
         // 모든 식재료에 양이 입력 되었는지 판단
+        allIngredientValueTyped = true
         for (item in searchIngredientRecyclerviewAdapter.selectedItems) {
             if (item.value == null) {
                 allIngredientValueTyped = false
                 break
             }
         }
-        return titleTyped && descriptionTyped && essentialIngredientSelected && stepExist && allIngredientValueTyped
+        return titleTyped && descriptionTyped && essentialIngredientSelected && stepExist && allIngredientValueTyped && thumbnailUploaded
+    }
+
+    private fun filteringForKeyword(): TextWatcher {
+        return object: TextWatcher {
+            override fun beforeTextChanged(currentText: CharSequence?, start: Int, editCount: Int, after: Int) {}
+
+            override fun onTextChanged(currentText: CharSequence?, start: Int, before: Int, editCount: Int) {
+                searchIngredientRecyclerviewAdapter.filteredDatas = IngredientDataHost().getIngredientFromNameOrType(
+                    searchIngredientRecyclerviewAdapter.beforeSearchData, currentText.toString()) as MutableList<MyIngredientData>
+                searchIngredientRecyclerviewAdapter.notifyDataSetChanged()
+            }
+
+            override fun afterTextChanged(currentText: Editable?) {}
+        }
+    }
+
+    private fun removeDupDataInEssentialIngredient() {
+        searchIngredientRecyclerviewAdapter.beforeSearchData.clear()
+        searchIngredientRecyclerviewAdapter.beforeSearchData = IngredientDataHost().removeElement(
+            searchIngredientRecyclerviewAdapter.datas, searchIngredientRecyclerviewAdapter.essentialData)
+        searchIngredientRecyclerviewAdapter.filteredDatas = searchIngredientRecyclerviewAdapter.beforeSearchData
+        searchIngredientRecyclerviewAdapter.notifyDataSetChanged()
+    }
+
+    private fun removeDupDataInAdditionalIngredient() {
+        searchIngredientRecyclerviewAdapter.beforeSearchData.clear()
+        searchIngredientRecyclerviewAdapter.beforeSearchData = IngredientDataHost().removeElement(
+            searchIngredientRecyclerviewAdapter.datas, searchIngredientRecyclerviewAdapter.additionalData)
+        searchIngredientRecyclerviewAdapter.filteredDatas = searchIngredientRecyclerviewAdapter.beforeSearchData
+        searchIngredientRecyclerviewAdapter.notifyDataSetChanged()
+    }
+
+    private fun insertDataForEssentialIngredient() {
+        essentialIngredientData = IngredientDataHost().removeElement(
+            searchIngredientRecyclerviewAdapter.selectedItems, searchIngredientRecyclerviewAdapter.additionalData)
+
+        essentialIngredientRecyclerviewAdapter.filteredDatas = essentialIngredientData
+        searchIngredientRecyclerviewAdapter.essentialData = essentialIngredientData
+        essentialIngredientRecyclerviewAdapter.notifyDataSetChanged()
+    }
+
+    private fun insertDataForAdditionalIngredient() {
+        addtionalIngredientData = IngredientDataHost().removeElement(
+            searchIngredientRecyclerviewAdapter.selectedItems, searchIngredientRecyclerviewAdapter.essentialData)
+
+        additionalIngredientRecyclerviewAdapter.filteredDatas = addtionalIngredientData
+        searchIngredientRecyclerviewAdapter.additionalData = addtionalIngredientData
+        additionalIngredientRecyclerviewAdapter.notifyDataSetChanged()
+    }
+
+    private fun hideKeyboardFromEditText(view: View, hasFocus: Boolean, context: Context) {
+        val hideFlags = 0
+        if (!hasFocus) {
+            val inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            inputMethodManager.hideSoftInputFromWindow(view.windowToken, hideFlags)
+        }
+    }
+
+    private fun postMainImage(accessToken: String, imageFile: MultipartBody.Part) {
+        API.postImage(accessToken, imageFile).enqueue(object: Callback<FileResponse>{
+            override fun onResponse(call: Call<FileResponse>, response: Response<FileResponse>) {
+                if(response.isSuccessful){
+                    if (mainImage != null) deleteFiles.add(mainImage!!)
+                    val data = response.body()!!.fileUrls.listUrl
+                    getImageFromUrl(data[0])
+                }
+                else {
+                    Log.d("data_size", call.request().toString())
+                    Log.d("data_size", response.errorBody()!!.string())
+                }
+            }
+
+            override fun onFailure(call: Call<FileResponse>, t: Throwable) {
+                Log.d("data_size", call.request().toString())
+                Log.d("data_size", t.toString())
+                Log.d("data_size", t.message.toString())
+                putToastMessage("잠시 후 다시 시도해주세요.")
+            }
+        })
+    }
+
+    private fun getImageFromUrl(imageUrl: String) {
+        Glide.with(this)
+            .load(imageUrl)
+            .into(binding.uploadImageBox)
+
+        mainImage = imageUrl
+        binding.uploadImageBtn.visibility = View.GONE
+    }
+
+    private fun makeImageMultipartBody(uri: Uri): MultipartBody.Part {
+        val inputStream: InputStream? = contentResolver.openInputStream(uri)
+        val file = File(cacheDir, "image.png") // 임시 파일 생성
+
+        val outputStream: OutputStream = FileOutputStream(file)
+        inputStream?.copyTo(outputStream) // 이미지를 임시 파일로 복사
+        inputStream?.close()
+        outputStream.close()
+
+        val requestBody = file.asRequestBody("application/json".toMediaTypeOrNull())
+        return MultipartBody.Part.createFormData("stepFiles", file.name, requestBody)
+    }
+
+    private fun putToastMessage(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun initRecipeForm(recipeData: RecipeData, stepDatas: List<StepData>) {
+        getImageFromUrl(recipeData.mainImage)
+        thumbnailUploaded = true
+        binding.editRecipeName.setText(recipeData.title)
+        binding.editDescription.setText(recipeData.description)
+
+        // 필수재료, 추가재료 불러오기
+
+        this.stepDatas.addAll(stepDatas)
+        numberOfStep = this.stepDatas.size + 1
+
+        stepRecyclerviewAdapter.datas = this.stepDatas
+        stepRecyclerviewAdapter.notifyItemRangeInserted(0, this.stepDatas.size)
+
+        stepExist = true
     }
 }
 

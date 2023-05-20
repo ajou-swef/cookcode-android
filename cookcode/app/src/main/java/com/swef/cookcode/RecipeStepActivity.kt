@@ -7,6 +7,7 @@ import android.graphics.Rect
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -20,9 +21,21 @@ import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.swef.cookcode.adapter.StepImageRecyclerviewAdapter
 import com.swef.cookcode.adapter.StepVideoRecyclerviewAdapter
+import com.swef.cookcode.api.RecipeAPI
 import com.swef.cookcode.data.StepImageData
 import com.swef.cookcode.data.StepVideoData
+import com.swef.cookcode.data.response.FileResponse
 import com.swef.cookcode.databinding.ActivityRecipeStepBinding
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import java.io.File
+import java.io.FileOutputStream
+import java.io.InputStream
+import java.io.OutputStream
 
 
 class RecipeStepActivity : AppCompatActivity() {
@@ -42,15 +55,23 @@ class RecipeStepActivity : AppCompatActivity() {
     private var descriptionTyped = false
     private var imageUploaded = false
 
+    private val API = RecipeAPI.create()
+
+    private lateinit var accessToken: String
+    private lateinit var refreshToken: String
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityRecipeStepBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        accessToken = intent.getStringExtra("access_token")!!
+        refreshToken = intent.getStringExtra("refresh_token")!!
+
         // 스텝 단계 넘버링
         val stepNumber = intent.getIntExtra("step_number", -1)
-        binding.numberOfStep.text = stepNumber.toString() + "단계"
-        binding.addBtn.text = stepNumber.toString() + "단계 스텝 추가하기"
+        binding.numberOfStep.text = getString(R.string.step_number, stepNumber)
+        binding.addBtn.text = getString(R.string.step_add, stepNumber)
 
         // recyclerview init
         initImageRecycler()
@@ -61,6 +82,12 @@ class RecipeStepActivity : AppCompatActivity() {
 
         // 뒤로가기 버튼 클릭 시 activity 종료
         binding.beforeArrow.setOnClickListener {
+            val intent = Intent()
+            if (stepImageRecyclerviewAdapter.deleteImages.isNotEmpty()) {
+                intent.putExtra("step_delete_images", stepImageRecyclerviewAdapter.deleteImages.toTypedArray())
+                intent.putExtra("step_delete_videos", stepVideoRecyclerviewAdapter.deleteVideos.toTypedArray())
+                setResult(RESULT_CANCELED, intent)
+            }
             finish()
         }
 
@@ -95,36 +122,10 @@ class RecipeStepActivity : AppCompatActivity() {
                 // 스텝의 정보들 불러오기
                 val imageData = stepImageRecyclerviewAdapter.getData()
                 val videoData = stepVideoRecyclerviewAdapter.getData()
+                val deleteImageData = stepImageRecyclerviewAdapter.deleteImages.toTypedArray()
+                val deleteVideoData = stepVideoRecyclerviewAdapter.deleteVideos.toTypedArray()
                 val title = binding.editTitle.text.toString()
                 val description = binding.editDescription.text.toString()
-
-                /*
-                val imageFiles = mutableListOf<MultipartBody.Part>()
-                val videoFiles = mutableListOf<MultipartBody.Part>()
-
-                for (item in imageData) {
-                    if(item.imageUri != null) {
-                        val file = File(item.imageUri.toString())
-                        val mediaType = "multipart/form-data".toMediaTypeOrNull()
-                        val requestFile = file.asRequestBody(mediaType)
-                        val part = MultipartBody.Part.createFormData("photo", file.name, requestFile)
-
-                        imageFiles.add(part)
-                    }
-                }
-
-                for (item in videoData) {
-                    if(item.uri != null) {
-                        val file = File(item.uri.toString())
-                        val mediaType = "multipart/form-data".toMediaTypeOrNull()
-                        val requestFile = file.asRequestBody(mediaType)
-                        val part = MultipartBody.Part.createFormData("photo", file.name, requestFile)
-
-                        imageFiles.add(part)
-                    }
-                }
-
-                 */
 
                 // recipe form activity로 돌아갈때 intent로 정보 넘겨줌
                 val intent = Intent()
@@ -134,17 +135,17 @@ class RecipeStepActivity : AppCompatActivity() {
                 intent.putExtra("description", description)
                 intent.putExtra("step_number", stepNumber)
                 intent.putExtra("type", "add")
+                intent.putExtra("delete_images", deleteImageData)
+                intent.putExtra("delete_videos", deleteVideoData)
 
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
 
-                Toast.makeText(this, stepNumber.toString() + "단계 스텝 작성 완료", Toast.LENGTH_SHORT)
-                    .show()
+                putToastMessage(stepNumber.toString() + "단계 스텝 작성 완료")
                 setResult(RESULT_OK, intent)
                 finish()
             }
             else {
-                Toast.makeText(this, "이미지 한장, 제목, 설명은 필수입니다.", Toast.LENGTH_SHORT)
-                    .show()
+                putToastMessage("이미지 한장, 제목, 설명은 필수입니다.")
             }
         }
     }
@@ -152,15 +153,16 @@ class RecipeStepActivity : AppCompatActivity() {
     // Edittext가 아닌 화면을 터치했을 경우 포커스 해제 및 키보드 숨기기
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
         if (event.action == MotionEvent.ACTION_DOWN) {
-            val v = currentFocus
-            if (v is EditText) {
+            val view = currentFocus
+            val hideFlags = 0
+            if (view is EditText) {
                 val outRect = Rect()
-                v.getGlobalVisibleRect(outRect)
+                view.getGlobalVisibleRect(outRect)
 
                 if (!outRect.contains(event.rawX.toInt(), event.rawY.toInt())) {
-                    v.clearFocus()
-                    val imm: InputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                    imm.hideSoftInputFromWindow(v.getWindowToken(), 0)
+                    view.clearFocus()
+                    val inputMethodManager: InputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), hideFlags)
                 }
             }
         }
@@ -169,20 +171,24 @@ class RecipeStepActivity : AppCompatActivity() {
 
     // 스텝 설명 edittext 클릭 시 키보드에 잘림 현상 방지
     private fun initDescriptionTextBox(){
-        binding.editDescription.setOnFocusChangeListener { v, hasFocus ->
+        binding.editDescription.setOnFocusChangeListener { view, hasFocus ->
+            val defaultX = 0
+            val defaultY = 0
+            val hideFlags = 0
+
             if (hasFocus) {
                 // EditText가 가려지는 것을 방지하기 위해 ScrollView를 이동
                 binding.layout.postDelayed({
-                    binding.layout.scrollTo(0, binding.stepDescription.bottom)
+                    binding.layout.scrollTo(defaultX, binding.stepDescription.bottom)
                 }, 100)
             } else {
                 // 포커스 아웃 시 키보드 숨기기
-                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.hideSoftInputFromWindow(v.windowToken, 0)
+                val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                inputMethodManager.hideSoftInputFromWindow(view.windowToken, hideFlags)
 
                 // ScrollView 원상태로 돌림
                 binding.layout.postDelayed({
-                    binding.layout.scrollTo(0, 0)
+                    binding.layout.scrollTo(defaultX, defaultY)
                 }, 100)
             }
         }
@@ -198,7 +204,7 @@ class RecipeStepActivity : AppCompatActivity() {
         }
 
         // Recyclerview 초기화
-        stepImageRecyclerviewAdapter = StepImageRecyclerviewAdapter(pickImageLauncher)
+        stepImageRecyclerviewAdapter = StepImageRecyclerviewAdapter(pickImageLauncher, this)
         binding.imageRecyclerview.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         binding.imageRecyclerview.adapter = stepImageRecyclerviewAdapter
 
@@ -216,14 +222,13 @@ class RecipeStepActivity : AppCompatActivity() {
 
     // Image 선택 시 recyclerview 업데이트
     private fun updateRecyclerImage(imageUri: Uri) {
-        for(i: Int in 0..2) {
-            if(imageDatas[i].imageUri == null) {
+        for(index: Int in 0..2) {
+            if(imageDatas[index].imageUri == null) {
                 // 현재 이미지가 추가되어있지 않은 position에 이미지 추가
-                imageDatas.removeAt(i)
-                imageDatas.add(i, StepImageData(imageUri))
+                imageDatas.removeAt(index)
 
-                // recyclerview adapter에 해당 위치 알림
-                stepImageRecyclerviewAdapter.notifyItemChanged(i)
+                val imageFile = makeImageMultipartBody(imageUri)
+                putAndGetImageUrl(accessToken, imageFile, index)
                 return
             }
         }
@@ -231,8 +236,9 @@ class RecipeStepActivity : AppCompatActivity() {
 
     private fun initVideoRecycler(){
         // 동영상을 불러오는 launcher를 구현하여 adapter에 넘겨줌
-        val pickVideoLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) {
-            uri: Uri? -> getVideoInfoAndThumbnail(uri!!)
+        val pickVideoLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri?
+            -> val videoFile = makeVideoMultipartBody(uri!!)
+            putAndGetVideoUrl(accessToken, videoFile)
         }
 
         stepVideoRecyclerviewAdapter = StepVideoRecyclerviewAdapter(pickVideoLauncher)
@@ -249,11 +255,11 @@ class RecipeStepActivity : AppCompatActivity() {
     }
 
     // 동영상을 가져왔을 때 썸네일을 뽑아주는 함수
-    private fun getVideoInfoAndThumbnail(uri: Uri) {
+    private fun getVideoInfoAndThumbnail(videoUrl: String) {
         // Glide를 사용해서 thumbnail을 가져온다.
         Glide.with(this)
             .asBitmap()
-            .load(uri)
+            .load(videoUrl)
             .into(object: CustomTarget<Bitmap>() {
                 override fun onLoadCleared(placeholder: Drawable?) {
                     // 아래 resource가 들어간 뷰가 사라지는 등의 경우의 처리
@@ -262,21 +268,90 @@ class RecipeStepActivity : AppCompatActivity() {
                 override fun onResourceReady(thumbnail: Bitmap, transition: Transition<in Bitmap>?) {
                     // 얻어낸 Bitmap 자원을 resource를 통하여 접근
                     // videodata로 return해준다
-                    val video = StepVideoData(thumbnail, uri)
+                    val video = StepVideoData(thumbnail, videoUrl)
 
-                    for(i: Int in 0..2) {
-                        if(videoDatas[i].uri == null) {
+                    for(index: Int in 0..2) {
+                        if(videoDatas[index].uri == null) {
                             // 현재 비디오가 추가되어있지 않은 position에 비디오 추가
-                            videoDatas.removeAt(i)
-                            videoDatas.add(i, video)
+                            videoDatas.removeAt(index)
+                            videoDatas.add(index, video)
 
                             // recyclerview adapter에 해당 위치 알림
-                            stepVideoRecyclerviewAdapter.notifyItemChanged(i)
+                            stepVideoRecyclerviewAdapter.notifyItemChanged(index)
                             return
                         }
                     }
                 }
             })
+    }
+
+    private fun putAndGetImageUrl(accessToken: String, imageFile: MultipartBody.Part, index: Int) {
+        API.postImage(accessToken, imageFile).enqueue(object: Callback<FileResponse> {
+            override fun onResponse(call: Call<FileResponse>, response: Response<FileResponse>) {
+                if(response.isSuccessful){
+                    val data = response.body()!!.fileUrls.listUrl[0]
+                    imageDatas.add(index, StepImageData(data))
+                    stepImageRecyclerviewAdapter.notifyItemChanged(index)
+                    Log.d("data_size", response.body().toString())
+                }
+                else {
+                    Log.d("data_size", response.errorBody()!!.string())
+                }
+            }
+
+            override fun onFailure(call: Call<FileResponse>, t: Throwable) {
+                putToastMessage("다시 시도해주세요.")
+            }
+        })
+    }
+
+    private fun putAndGetVideoUrl(accessToken: String, videoFile: MultipartBody.Part) {
+        API.postImage(accessToken, videoFile).enqueue(object: Callback<FileResponse> {
+            override fun onResponse(call: Call<FileResponse>, response: Response<FileResponse>) {
+                if(response.isSuccessful){
+                    val data = response.body()!!.fileUrls.listUrl[0]
+                    getVideoInfoAndThumbnail(data)
+                    Log.d("data_size", response.body().toString())
+                }
+                else {
+                    Log.d("data_size", response.errorBody()!!.string())
+                }
+            }
+
+            override fun onFailure(call: Call<FileResponse>, t: Throwable) {
+                putToastMessage("다시 시도해주세요.")
+            }
+        })
+    }
+
+    private fun makeImageMultipartBody(uri: Uri): MultipartBody.Part {
+        val inputStream: InputStream? = contentResolver.openInputStream(uri)
+        val file = File(cacheDir, "image.png") // 임시 파일 생성
+
+        val outputStream: OutputStream = FileOutputStream(file)
+        inputStream?.copyTo(outputStream) // 이미지를 임시 파일로 복사
+        inputStream?.close()
+        outputStream.close()
+
+        val requestBody = file.asRequestBody("application/json".toMediaTypeOrNull())
+        return MultipartBody.Part.createFormData("stepFiles", file.name, requestBody)
+    }
+
+    private fun makeVideoMultipartBody(uri: Uri): MultipartBody.Part {
+        val inputStream: InputStream? = contentResolver.openInputStream(uri)
+        val file = File(cacheDir, "video.mp4") // 임시 파일 생성
+
+        val outputStream: OutputStream = FileOutputStream(file)
+        inputStream?.copyTo(outputStream) // 이미지를 임시 파일로 복사
+        inputStream?.close()
+        outputStream.close()
+
+        val requestBody = file.asRequestBody("application/json".toMediaTypeOrNull())
+        return MultipartBody.Part.createFormData("stepFiles", file.name, requestBody)
+    }
+
+    private fun putToastMessage(message: String){
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
     private fun testInfoTyped(): Boolean {

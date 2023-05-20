@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="170dp"
+    android:layout_height="300dp"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:padding="15dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@drawable/round_component_clicked">
+        android:layout_height="match_parent">
 
         <ImageView
             android:id="@+id/blue_check"
@@ -22,15 +22,13 @@
 
         <TextView
             android:id="@+id/made_user"
-            android:text="haeiny"
-            android:textColor="@color/main_theme"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:ems="6"
             android:layout_marginStart="3dp"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/blue_check"
-            app:layout_constraintEnd_toStartOf="@+id/divider"
+            android:ems="6"
+            android:text="haeiny"
+            android:textColor="@color/black"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintBottom_toTopOf="@+id/like"/>
 
         <ImageView
@@ -48,14 +46,13 @@
             android:layout_marginStart="3dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@+id/made_user"
             app:layout_constraintStart_toEndOf="@+id/like_mark"
-            app:layout_constraintBottom_toTopOf="@+id/view"/>
+            app:layout_constraintBottom_toBottomOf="parent"/>
 
         <TextView
             android:id="@+id/like_number"
             android:text="26"
-            android:textColor="@color/main_theme"
+            android:textColor="@color/black"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="3dp"
@@ -63,74 +60,74 @@
             app:layout_constraintStart_toEndOf="@+id/like"/>
 
         <ImageView
-            android:id="@+id/view_mark"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:background="@drawable/view_mark"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/view"/>
-
-        <TextView
-            android:id="@+id/view"
-            android:text="@string/view"
-            android:textColor="@color/main_theme"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="3dp"
-            app:layout_constraintTop_toBottomOf="@+id/like"
-            app:layout_constraintStart_toEndOf="@+id/view_mark"
+            android:id="@+id/is_cookable"
+            android:layout_width="40dp"
+            android:layout_height="45dp"
+            android:background="@drawable/icon_is_cookable"
+            android:visibility="invisible"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"/>
-
-        <TextView
-            android:id="@+id/view_number"
-            android:text="26"
-            android:textColor="@color/main_theme"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="3dp"
-            app:layout_constraintTop_toTopOf="@+id/view"
-            app:layout_constraintStart_toEndOf="@+id/view"/>
-
-        <View
-            android:id="@+id/divider"
-            android:layout_width="1dp"
-            android:layout_height="120dp"
-            android:layout_marginStart="10dp"
-            android:background="@color/black"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/made_user"
-            app:layout_constraintEnd_toStartOf="@+id/main_image"/>
 
         <ImageView
             android:id="@+id/main_image"
             android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_marginStart="10dp"
-            android:layout_marginTop="2dp"
+            android:layout_height="0dp"
             android:layout_marginEnd="2dp"
-            android:layout_marginBottom="2dp"
             android:background="@drawable/rounded_recipe_main_image"
             android:src="@drawable/food_example"
-            app:layout_constraintStart_toEndOf="@+id/divider"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/made_user"/>
 
         <TextView
             android:id="@+id/recipe_name"
             android:text="@string/recipe_name"
             android:textColor="@color/white"
-            android:textSize="25sp"
+            android:textSize="22sp"
             android:textStyle="bold"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginBottom="30dp"
-            android:layout_marginEnd="10dp"
+            android:layout_marginEnd="20dp"
+            android:gravity="end"
             android:shadowRadius="7.0"
             android:shadowDx="7.0"
             android:shadowDy="7.0"
             android:shadowColor="#000000"
+            app:layout_constraintStart_toStartOf="@+id/main_image"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="@+id/main_image"/>
+
+        <TextView
+            android:id="@+id/slash"
+            android:text="/"
+            android:textColor="@color/main_theme"
+            android:layout_marginStart="5dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toEndOf="@+id/like_number"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <TextView
+            android:id="@+id/created_at"
+            android:text="@string/created_at"
+            android:textColor="@color/main_theme"
+            android:layout_marginStart="5dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toEndOf="@+id/slash"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <TextView
+            android:id="@+id/created_at_time"
+            android:text="2023-05-25"
+            android:textColor="@color/black"
+            android:layout_marginStart="5dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toEndOf="@+id/created_at"
+            app:layout_constraintBottom_toBottomOf="parent"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

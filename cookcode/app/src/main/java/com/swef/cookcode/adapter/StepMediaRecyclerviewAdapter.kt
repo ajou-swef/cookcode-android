@@ -1,17 +1,22 @@
 package com.swef.cookcode.adapter
 
+import android.content.Context
+import android.net.Uri
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.MediaController
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.swef.cookcode.data.StepMediaData
 import com.swef.cookcode.databinding.PreviewImageItemBinding
 import com.swef.cookcode.databinding.PreviewVideoItemBinding
 
 class StepMediaRecyclerviewAdapter(
-    mediaUris: List<StepMediaData>
+    mediaUris: List<StepMediaData>,
+    private val context: Context
 ): RecyclerView.Adapter<StepMediaRecyclerviewAdapter.MediaViewHolder>() {
 
     // Image인지 Video인지에 따라 불러오는 viewbinding layout이 다르기 때문에 타입 연산자 지정
@@ -43,7 +48,7 @@ class StepMediaRecyclerviewAdapter(
     override fun onBindViewHolder(holder: MediaViewHolder, position: Int) {
         val data = datas[position]
         if (holder is ImageViewHolder) {
-            holder.binding.imageView.setImageURI(data.mediaData)
+            getImageFromUrl(data.mediaData, holder.binding.imageView)
             // stopCurrentVideo()
         }
         else if (holder is VideoViewHolder) {
@@ -51,7 +56,7 @@ class StepMediaRecyclerviewAdapter(
             val uri = data.mediaData
 
             // 현재 재생 중인 videoView의 tag(uri)가 다르다면 비디오 중지
-            if(uri != holder.binding.videoView.tag) {
+            if (uri != holder.binding.videoView.tag) {
                 // 재생, 일시정지 등 버튼 붙이기
                 val mediaController = MediaController(holder.binding.videoView.context, false)
                 mediaController.setAnchorView(holder.binding.videoView)
@@ -60,7 +65,7 @@ class StepMediaRecyclerviewAdapter(
                 // 뷰 생성시 이전에 재생 중이던 비디오 중지
                 holder.binding.videoView.stopPlayback()
 
-                holder.binding.videoView.setVideoURI(data.mediaData)
+                holder.binding.videoView.setVideoURI(Uri.parse(uri))
                 // tag에 현재 videoView의 uri를 저장해두어 무한 로딩을 방지함
                 holder.binding.videoView.tag = uri
 
@@ -78,4 +83,9 @@ class StepMediaRecyclerviewAdapter(
     class ImageViewHolder(val binding: PreviewImageItemBinding) : MediaViewHolder(binding.root)
     class VideoViewHolder(val binding: PreviewVideoItemBinding) : MediaViewHolder(binding.root)
 
+    private fun getImageFromUrl(imageUrl: String, view: ImageView) {
+        Glide.with(context)
+            .load(imageUrl)
+            .into(view)
+    }
 }

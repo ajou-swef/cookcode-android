@@ -5,6 +5,7 @@ import android.content.Intent
 import android.graphics.Rect
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.MotionEvent
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
@@ -53,18 +54,19 @@ class MainActivity : AppCompatActivity() {
 
             API.postSignin(userDataMap).enqueue(object: Callback<TokenResponse> {
                 override fun onResponse(call: Call<TokenResponse>, response: Response<TokenResponse>) {
-
                     if(response.body() != null) {
                         // status 200 = 로그인 성공
                         if (response.body()!!.status == 200) {
                             // 만족시 HomeActivity로 이동
                             // 메인 페이지에서 활동 시 Token이 필요하므로 token 정보를 다음 activity로 넘겨준다
+                            val userId = response.body()!!.tokenData.userId
                             val accessToken = response.body()!!.tokenData.accessToken
                             val refreshToken = response.body()!!.tokenData.refreshToken
 
                             // 데이터는 key, value 쌍으로 넘어간다
                             homeActivityIntent.putExtra("access_token", accessToken)
                             homeActivityIntent.putExtra("refresh_token", refreshToken)
+                            homeActivityIntent.putExtra("user_id", userId)
                             homeActivityIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
                             startActivity(homeActivityIntent)
                             Toast.makeText(this@MainActivity, "정상적으로 로그인 되었습니다.", Toast.LENGTH_SHORT).show()
@@ -77,6 +79,8 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 override fun onFailure(call: Call<TokenResponse>, t: Throwable) {
+                    Log.d("data_size", call.request().toString())
+                    Log.d("data_size", t.message.toString())
                     Toast.makeText(this@MainActivity, R.string.err_server, Toast.LENGTH_SHORT).show()
                 }
             })
@@ -88,17 +92,17 @@ class MainActivity : AppCompatActivity() {
         // 화면이 터치 되었을 때
         if (event.action == MotionEvent.ACTION_DOWN) {
             // 현재 focus된 view가 Edittext일 경우
-            val v = currentFocus
-            if (v is EditText) {
+            val view = currentFocus
+            if (view is EditText) {
                 val outRect = Rect()
                 // view의 절대 좌표를 구한다
-                v.getGlobalVisibleRect(outRect)
+                view.getGlobalVisibleRect(outRect)
 
                 // 절대 좌표 이외의 좌표를 클릭했을 경우 포커스 해제 및 키보드 숨기기
                 if (!outRect.contains(event.rawX.toInt(), event.rawY.toInt())) {
-                    v.clearFocus()
-                    val imm: InputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                    imm.hideSoftInputFromWindow(v.getWindowToken(), 0)
+                    view.clearFocus()
+                    val inputMethodManager: InputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0)
                 }
             }
         }

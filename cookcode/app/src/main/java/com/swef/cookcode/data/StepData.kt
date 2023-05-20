@@ -5,5 +5,5 @@ data class StepData(
     val videoData: List<String>?,
     val title: String,
     val description: String,
-    var numberOfStep: Int
+    var numberOfStep: Int,
 )

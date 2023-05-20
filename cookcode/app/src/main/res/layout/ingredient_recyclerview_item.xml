@@ -48,4 +48,13 @@
         app:layout_constraintStart_toStartOf="@+id/ingredient_icon"
         app:layout_constraintEnd_toEndOf="@+id/ingredient_icon"/>
 
+    <ImageView
+        android:id="@+id/expired_soon"
+        android:background="@drawable/expired_soon"
+        android:visibility="gone"
+        android:layout_width="10dp"
+        android:layout_height="10dp"
+        app:layout_constraintBottom_toBottomOf="@+id/ingredient_icon"
+        app:layout_constraintEnd_toEndOf="@+id/ingredient_icon"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

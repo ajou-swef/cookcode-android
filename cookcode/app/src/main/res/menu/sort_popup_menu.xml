@@ -3,12 +3,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         app:showAsAction="ifRoom"
-        android:id="@+id/cookie"
-        android:title="@string/cookie"
-        android:icon="@drawable/unselected_cookie"/>
+        android:id="@+id/createdAt"
+        android:title="@string/sort_createdAt" />
     <item
         app:showAsAction="ifRoom"
-        android:id="@+id/recipe"
-        android:title="@string/recipe"
-        android:icon="@drawable/unselected_recipe"/>
+        android:id="@+id/popular"
+        android:title="@string/sort_popular" />
 </menu>

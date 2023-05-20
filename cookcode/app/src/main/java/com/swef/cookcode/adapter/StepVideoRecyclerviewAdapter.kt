@@ -15,6 +15,7 @@ class StepVideoRecyclerviewAdapter(
     ): RecyclerView.Adapter<StepVideoRecyclerviewAdapter.ViewHolder>() {
 
     var datas = mutableListOf<StepVideoData>()
+    val deleteVideos = mutableListOf<String>()
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -30,9 +31,9 @@ class StepVideoRecyclerviewAdapter(
 
     fun getData(): Array<String> {
         val uriData = mutableListOf<String>()
-        for(i: Int in 0..1){
-            if(datas[i].uri != null)
-                uriData.add(datas[i].uri.toString())
+        for(index: Int in 0..1){
+            if(datas[index].uri != null)
+                uriData.add(datas[index].uri.toString())
         }
         return uriData.toTypedArray()
     }
@@ -50,7 +51,7 @@ class StepVideoRecyclerviewAdapter(
                     showPopupMenu(binding.video, item)
                 }
                 else {
-                    pickVideoLauncher.launch("*/video")
+                    pickVideoLauncher.launch("video/*")
                 }
             }
 
@@ -73,11 +74,13 @@ class StepVideoRecyclerviewAdapter(
                 when (menuItem.itemId) {
                     // 동영상 추가 버튼 클릭 시 동영상 불러오기
                     R.id.update_video -> {
-                        pickVideoLauncher.launch("*/video")
+                        pickVideoLauncher.launch("video/*")
+                        deleteVideos.add(item.uri!!)
                         true
                     }
                     // 동영상 삭제 버튼 클릭 시 영상 정보 삭제 및 기본 이미지로 변경
                     R.id.delete_video -> {
+                        deleteVideos.add(item.uri!!)
                         item.thumbnail = null
                         item.uri = null
                         binding.video.setImageBitmap(null)

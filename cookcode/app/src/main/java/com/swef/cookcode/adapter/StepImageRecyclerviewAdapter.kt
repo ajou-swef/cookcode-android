@@ -1,11 +1,13 @@
 package com.swef.cookcode.adapter
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
 import androidx.activity.result.ActivityResultLauncher
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.swef.cookcode.R
 import com.swef.cookcode.data.StepImageData
 import com.swef.cookcode.databinding.StepImageRecyclerviewItemBinding
@@ -13,11 +15,13 @@ import com.swef.cookcode.databinding.StepImageRecyclerviewItemBinding
 // Step에 들어갈 Image를 보여줄 RecyclerView를 위한 adapter
 class StepImageRecyclerviewAdapter(
     // 갤러리에서 이미지를 선택할 수 있는 launcher는 activity에서 구현하여 어댑터에 넘겨준다
-    private val pickImageLauncher: ActivityResultLauncher<String>
+    private val pickImageLauncher: ActivityResultLauncher<String>,
+    private val context: Context
     ): RecyclerView.Adapter<StepImageRecyclerviewAdapter.ViewHolder>() {
 
     // data는 StepImageData class에 정의되어있다
     var datas = mutableListOf<StepImageData>()
+    val deleteImages = mutableListOf<String>()
 
     // view 접근에 용이하게 하기 위해 Viewbinding 사용
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -32,9 +36,9 @@ class StepImageRecyclerviewAdapter(
     // step 생성시 recyclerview에 담긴 이미지 정보들 반환
     fun getData(): Array<String> {
         val uriData = mutableListOf<String>()
-        for(i: Int in 0..2){
-            if(datas[i].imageUri != null)
-                uriData.add(datas[i].imageUri.toString())
+        for(index: Int in 0..2){
+            if(datas[index].imageUri != null)
+                uriData.add(datas[index].imageUri!!)
             }
         return uriData.toTypedArray()
     }
@@ -56,19 +60,17 @@ class StepImageRecyclerviewAdapter(
                     showPopupMenu(binding.image, item, position)
                 }
                 else {
-                    pickImageLauncher.launch("*/image")
+                    pickImageLauncher.launch("image/*")
                 }
             }
 
             // image가 있으면 등록
             if (item.imageUri != null) {
-                binding.image.setBackgroundResource(0)
-                binding.image.setImageURI(item.imageUri)
+                getImageFromUrl(item.imageUri!!)
             }
             // 없으면 기본 이미지 등록
             else {
-                binding.image.setImageURI(null)
-                binding.image.setBackgroundResource(item.basicImage)
+                setBasicImageForGlide(item.basicImage)
             }
         }
 
@@ -81,18 +83,20 @@ class StepImageRecyclerviewAdapter(
                 when (menuItem.itemId) {
                     // 이미지 수정 버튼 클릭 시 이미지 불러오기
                     R.id.update_image -> {
+                        deleteImages.add(item.imageUri!!)
                         item.imageUri = null
                         pickImageLauncher.launch("*/image")
                         true
                     }
                     // 이미지 삭제 버튼 클릭 시 해당 이미지 삭제 및 순서 당기기
                     R.id.delete_image -> {
+                        deleteImages.add(item.imageUri!!)
                         item.imageUri = null
-                        for(i :Int in position until datas.size - 1) {
+                        for(index: Int in position until datas.size - 1) {
                             // 해당 위치보다 뒤에 image가 있다면 앞으로 당겨오기
-                            if (datas[i + 1].imageUri != null) {
-                                datas[i].imageUri = datas[i + 1].imageUri
-                                datas[i + 1].imageUri = null
+                            if (datas[index + 1].imageUri != null) {
+                                datas[index].imageUri = datas[index + 1].imageUri
+                                datas[index + 1].imageUri = null
                             }
                         }
 
@@ -103,6 +107,21 @@ class StepImageRecyclerviewAdapter(
                 }
             }
             popupMenu.show()
+        }
+
+        private fun getImageFromUrl(imageUrl: String) {
+            Glide.with(context)
+                .load(imageUrl)
+                .into(binding.image)
+
+            binding.image.setBackgroundResource(0)
+        }
+
+        private fun setBasicImageForGlide(basicImage: Int) {
+            Glide.with(context)
+                .clear(binding.image)
+
+            binding.image.setBackgroundResource(basicImage)
         }
     }
 }

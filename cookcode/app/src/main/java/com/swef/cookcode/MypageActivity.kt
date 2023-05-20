@@ -28,35 +28,35 @@ class MypageActivity : AppCompatActivity() {
         }
 
         // 로그아웃
-        binding.logout.setOnClickListener {
-            AlertDialog.Builder(this)
-                .setMessage("정말 로그아웃 하시겠습니까?")
-                .setPositiveButton("확인"
-                ) { _, _ ->
-                    Toast.makeText(this@MypageActivity, "정상적으로 로그아웃 되었습니다.", Toast.LENGTH_SHORT)
-                        .show()
-                    val intent = Intent(this, MainActivity::class.java)
-                    startActivity(intent)
-                }
-                .setNegativeButton("취소") { _, _ -> }
-                .create()
-                .show()
-        }
+        binding.logout.setOnClickListener { buildAlertDialog("logout") }
 
         // 계정 삭제
-        binding.btnDeleteUser.setOnClickListener {
-            AlertDialog.Builder(this)
-                .setMessage("정말 계정을 삭제 하시겠습니까?")
-                .setPositiveButton("확인"
-                ) { _, _ ->
-                    Toast.makeText(this@MypageActivity, "정상적으로 삭제 되었습니다.", Toast.LENGTH_SHORT)
-                        .show()
-                    val intent = Intent(this, MainActivity::class.java)
-                    startActivity(intent)
-                }
-                .setNegativeButton("취소") { _, _ -> }
-                .create()
-                .show()
+        binding.btnDeleteUser.setOnClickListener { buildAlertDialog("delete") }
+    }
+
+    private fun buildAlertDialog(type: String) {
+        val message: String
+        val toastMessage: String
+
+        if (type == "logout") {
+            message = "정말 로그아웃 하시겠습니까?"
+            toastMessage = "정상적으로 로그아웃 되었습니다."
         }
+        else {
+            message = "정말 계정을 삭제 하시겠습니까?"
+            toastMessage = "정상적으로 삭제 되었습니다."
+        }
+
+        return AlertDialog.Builder(this)
+            .setMessage(message)
+            .setPositiveButton("확인"
+            ) { _, _ ->
+                Toast.makeText(this@MypageActivity, toastMessage, Toast.LENGTH_SHORT).show()
+                val intent = Intent(this, MainActivity::class.java)
+                startActivity(intent)
+            }
+            .setNegativeButton("취소") { _, _ -> }
+            .create()
+            .show()
     }
 }
