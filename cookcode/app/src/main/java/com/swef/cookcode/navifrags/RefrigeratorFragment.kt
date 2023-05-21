@@ -4,7 +4,6 @@ import android.app.AlertDialog
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -242,20 +241,22 @@ class RefrigeratorFragment : Fragment() {
         val searchIngredientRecyclerviewAdapter = IngredientRecyclerviewAdapter("refrigerator_search", onDialogRecyclerViewItemClickListener)
 
         searchIngredientRecyclerviewAdapter.filteredDatas = ingredientData as MutableList<MyIngredientData>
+        searchIngredientRecyclerviewAdapter.beforeSearchData = ingredientData
         refrigeratorDialogView.recyclerView.adapter = searchIngredientRecyclerviewAdapter
         refrigeratorDialogView.recyclerView.layoutManager = GridLayoutManager(context, 3)
 
         val addTextChangedListener = object : TextWatcher {
-            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+            override fun beforeTextChanged(beforeText: CharSequence?, start: Int, count: Int, after: Int) {}
 
-            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+            override fun onTextChanged(currentText: CharSequence?, start: Int, before: Int, count: Int) {
                 searchIngredientRecyclerviewAdapter.filteredDatas = IngredientDataHost().getIngredientFromNameOrType(
-                    searchIngredientRecyclerviewAdapter.beforeSearchData, p0.toString()) as MutableList<MyIngredientData>
+                    searchIngredientRecyclerviewAdapter.beforeSearchData, currentText.toString()) as MutableList<MyIngredientData>
                 searchIngredientRecyclerviewAdapter.notifyDataSetChanged()
             }
 
-            override fun afterTextChanged(p0: Editable?) {}
+            override fun afterTextChanged(afterText: Editable?) {}
         }
+
         refrigeratorDialogView.ingredientName.addTextChangedListener(addTextChangedListener)
 
         refrigeratorDialogView.btnCancel.setOnClickListener {
