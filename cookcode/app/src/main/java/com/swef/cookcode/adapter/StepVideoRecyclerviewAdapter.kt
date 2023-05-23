@@ -7,14 +7,14 @@ import android.widget.PopupMenu
 import androidx.activity.result.ActivityResultLauncher
 import androidx.recyclerview.widget.RecyclerView
 import com.swef.cookcode.R
-import com.swef.cookcode.data.StepVideoData
+import com.swef.cookcode.data.VideoData
 import com.swef.cookcode.databinding.StepVideoRecyclerviewItemBinding
 
 class StepVideoRecyclerviewAdapter(
     private val pickVideoLauncher: ActivityResultLauncher<String>
     ): RecyclerView.Adapter<StepVideoRecyclerviewAdapter.ViewHolder>() {
 
-    var datas = mutableListOf<StepVideoData>()
+    var datas = mutableListOf<VideoData>()
     val deleteVideos = mutableListOf<String>()
 
     override fun onCreateViewHolder(
@@ -45,7 +45,7 @@ class StepVideoRecyclerviewAdapter(
     inner class ViewHolder(
         private val binding: StepVideoRecyclerviewItemBinding
     ): RecyclerView.ViewHolder(binding.root) {
-        fun bind(item: StepVideoData) {
+        fun bind(item: VideoData) {
             binding.video.setOnClickListener {
                 if(item.uri != null) {
                     showPopupMenu(binding.video, item)
@@ -66,7 +66,7 @@ class StepVideoRecyclerviewAdapter(
             }
         }
 
-        private fun showPopupMenu(view: View, item: StepVideoData) {
+        private fun showPopupMenu(view: View, item: VideoData) {
             val popupMenu = PopupMenu(view.context, view)
             popupMenu.menuInflater.inflate(R.menu.video_popup_menu, popupMenu.menu)
 

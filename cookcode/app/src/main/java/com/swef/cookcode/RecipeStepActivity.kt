@@ -23,7 +23,7 @@ import com.swef.cookcode.adapter.StepImageRecyclerviewAdapter
 import com.swef.cookcode.adapter.StepVideoRecyclerviewAdapter
 import com.swef.cookcode.api.RecipeAPI
 import com.swef.cookcode.data.StepImageData
-import com.swef.cookcode.data.StepVideoData
+import com.swef.cookcode.data.VideoData
 import com.swef.cookcode.data.response.FileResponse
 import com.swef.cookcode.databinding.ActivityRecipeStepBinding
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -44,7 +44,7 @@ class RecipeStepActivity : AppCompatActivity() {
 
     // Recyclerview에 넘겨줄 data
     private val imageDatas = mutableListOf<StepImageData>()
-    private val videoDatas = mutableListOf<StepVideoData>()
+    private val videoDatas = mutableListOf<VideoData>()
 
     // RecyclerView Adapter 전역 변수
     private lateinit var stepImageRecyclerviewAdapter: StepImageRecyclerviewAdapter
@@ -246,8 +246,8 @@ class RecipeStepActivity : AppCompatActivity() {
         binding.videoRecyclerview.adapter = stepVideoRecyclerviewAdapter
 
         videoDatas.apply {
-            add(StepVideoData(null, null))
-            add(StepVideoData(null, null))
+            add(VideoData(null, null))
+            add(VideoData(null, null))
         }
 
         stepVideoRecyclerviewAdapter.datas = videoDatas
@@ -268,7 +268,7 @@ class RecipeStepActivity : AppCompatActivity() {
                 override fun onResourceReady(thumbnail: Bitmap, transition: Transition<in Bitmap>?) {
                     // 얻어낸 Bitmap 자원을 resource를 통하여 접근
                     // videodata로 return해준다
-                    val video = StepVideoData(thumbnail, videoUrl)
+                    val video = VideoData(thumbnail, videoUrl)
 
                     for(index: Int in 0..2) {
                         if(videoDatas[index].uri == null) {
