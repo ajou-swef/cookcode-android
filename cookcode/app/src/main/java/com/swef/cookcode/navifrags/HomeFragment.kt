@@ -225,6 +225,7 @@ class HomeFragment : Fragment() {
             override fun onResponse(call: Call<RecipeResponse>, response: Response<RecipeResponse>) {
                 val datas = response.body()
                 if (datas != null && datas.status == 200) {
+                    Log.d("data_size", datas.toString())
                     searchedRecipeAndStepDatas = getRecipeDatasFromResponseBody(datas.recipes.content)
                     putNewDataForRecyclerview()
                 }
