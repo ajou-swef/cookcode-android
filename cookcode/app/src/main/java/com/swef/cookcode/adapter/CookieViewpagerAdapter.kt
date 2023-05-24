@@ -1,7 +1,10 @@
 package com.swef.cookcode.adapter
 
+import android.net.Uri
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import android.widget.MediaController
 import androidx.recyclerview.widget.RecyclerView
 import com.swef.cookcode.R
 import com.swef.cookcode.data.CookieData
@@ -29,6 +32,23 @@ class CookieViewpagerAdapter() : RecyclerView.Adapter<CookieViewpagerAdapter.Vie
         private val binding: CookiePreviewItemBinding
     ): RecyclerView.ViewHolder(binding.root) {
         fun bind(item: CookieData) {
+            binding.cookie.setBackgroundResource(R.drawable.loading_video_page)
+            binding.progressBar.visibility = View.VISIBLE
+            binding.cookie.setVideoURI(Uri.parse(item.videoUrl))
+            val mediaController = MediaController(binding.cookie.context, false)
+            mediaController.setAnchorView(binding.cookie)
+            binding.cookie.setMediaController(mediaController)
+
+            binding.cookie.setOnPreparedListener { mediaPlayer ->
+                binding.cookie.setBackgroundResource(0)
+                binding.progressBar.visibility = View.GONE
+                mediaPlayer.start()
+            }
+
+            binding.cookie.setOnClickListener{
+                binding.cookie.start()
+            }
+
             binding.createdAt.text = item.createdAt
             binding.madeUser.text = item.madeUser.nickname
 
