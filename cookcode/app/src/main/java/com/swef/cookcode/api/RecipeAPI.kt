@@ -24,7 +24,7 @@ interface RecipeAPI {
 
     @Multipart
     @JvmSuppressWildcards
-    @POST("recipe/files")
+    @POST("recipe/files/recipe")
     fun postImage(
         @Header("accessToken") accessToken: String,
         @Part file: MultipartBody.Part
