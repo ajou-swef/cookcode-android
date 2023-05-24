@@ -11,6 +11,7 @@ import androidx.viewpager2.widget.ViewPager2
 import com.swef.cookcode.adapter.CookieViewpagerAdapter
 import com.swef.cookcode.api.CookieAPI
 import com.swef.cookcode.data.CookieData
+import com.swef.cookcode.data.response.CookieContent
 import com.swef.cookcode.data.response.CookieResponse
 import com.swef.cookcode.data.response.MadeUser
 import com.swef.cookcode.databinding.FragmentCookieBinding
@@ -31,7 +32,7 @@ class CookieFragment : Fragment() {
     private lateinit var refreshToken: String
     private var userId = USER_ERR_CODE
 
-    private val cookieDatas = mutableListOf<CookieData>()
+    private var cookieDatas = mutableListOf<CookieData>()
 
     private val API = CookieAPI.create()
     private var page = 0
@@ -69,13 +70,12 @@ class CookieFragment : Fragment() {
                 , MadeUser(1, "null", "99page"), "2023-05-30", false))
         }
 
-        cookieViewpagerAdapter.datas = tempDatas
-        cookieViewpagerAdapter.notifyDataSetChanged()
+        getRandomCookies()
+        initOnScrollListener()
 
         return binding.root
     }
 
-    /*
     private fun getRandomCookies() {
         API.getCookies(accessToken, page).enqueue(object: Callback<CookieResponse>{
             override fun onResponse(
@@ -83,11 +83,24 @@ class CookieFragment : Fragment() {
                 response: Response<CookieResponse>
             ) {
                 if(response.isSuccessful){
+                    Log.d("data_size", response.body().toString())
 
+                    if(cookieViewpagerAdapter.datas.isEmpty()) {
+                        cookieViewpagerAdapter.datas = getCookieDatasFromResponseData(response.body()!!.data.cookies) as MutableList<CookieData>
+                        cookieViewpagerAdapter.notifyDataSetChanged()
+                    }
+                    else {
+                        val beforeSize = cookieViewpagerAdapter.itemCount
+                        cookieViewpagerAdapter.datas.addAll(getCookieDatasFromResponseData(response.body()!!.data.cookies))
+                        cookieViewpagerAdapter.notifyItemRangeInserted(beforeSize, cookieViewpagerAdapter.itemCount)
+                    }
+
+                    cookieViewpagerAdapter.hasNext = response.body()!!.data.hasNext
                 }
                 else {
                     putToastMessage("에러 발생! 관리자에게 문의해주세요.")
-                    Log.d("data_size", )
+                    Log.d("data_size", response.errorBody()!!.string())
+                    Log.d("data_size", call.request().toString())
                 }
             }
 
@@ -97,10 +110,55 @@ class CookieFragment : Fragment() {
         })
     }
 
-     */
+    private fun getCookieDatasFromResponseData(datas: List<CookieContent>): List<CookieData>{
+        val cookieDatas = mutableListOf<CookieData>()
+
+        for(data in datas){
+            val videoUrl = data.videoUrl
+            val title = data.title
+            val description = data.description
+            val cookieId = data.cookieId
+
+            val tempUser = MadeUser(1, "null", "쿡코드짱")
+            val tempCreatedAt = "2023-06-07"
+
+            cookieDatas.add(
+                CookieData(cookieId, videoUrl, tempUser, tempCreatedAt, false)
+            )
+        }
+
+        return cookieDatas
+    }
 
     private fun putToastMessage(message: String){
         Toast.makeText(this.context, message, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun initOnScrollListener() {
+        binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                val currentPositionInPage = position % 5
+                val currentPage = position / 5
+
+                if (testCanGetNextPageOnData(currentPositionInPage, currentPage)) {
+                    page++
+                    getRandomCookies()
+                }
+            }
+        })
+    }
+
+    private fun testCanGetNextPageOnData(currentPositionInPage: Int, currentPage: Int): Boolean {
+        if (currentPositionInPage != 4) {
+            return false
+        }
+        else if (currentPage != page){
+            return false
+        }
+        else if (!cookieViewpagerAdapter.hasNext){
+            return false
+        }
+        return true
     }
 
     override fun onDestroyView() {

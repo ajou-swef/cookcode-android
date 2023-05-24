@@ -13,7 +13,7 @@ import com.swef.cookcode.databinding.CookiePreviewItemBinding
 class CookieViewpagerAdapter() : RecyclerView.Adapter<CookieViewpagerAdapter.ViewHolder>() {
 
     var datas = mutableListOf<CookieData>()
-
+    var hasNext = true
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = CookiePreviewItemBinding.inflate(
         LayoutInflater.from(parent.context), parent, false
