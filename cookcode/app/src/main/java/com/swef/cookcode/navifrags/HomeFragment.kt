@@ -208,7 +208,6 @@ class HomeFragment : Fragment() {
                 val datas = response.body()
                 if (datas != null && datas.status == 200) {
                     searchedRecipeAndStepDatas = getRecipeDatasFromResponseBody(datas.recipes.content)
-                    Log.d("data_size", searchedRecipeAndStepDatas.toString())
                     putDataForRecyclerview()
                 }
             }
@@ -227,7 +226,6 @@ class HomeFragment : Fragment() {
                 val datas = response.body()
                 if (datas != null && datas.status == 200) {
                     searchedRecipeAndStepDatas = getRecipeDatasFromResponseBody(datas.recipes.content)
-                    Log.d("data_size", searchedRecipeAndStepDatas.toString())
                     putNewDataForRecyclerview()
                 }
             }

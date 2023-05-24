@@ -1,6 +1,7 @@
 package com.swef.cookcode
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
@@ -8,10 +9,13 @@ import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
-import android.util.Log
+import android.view.View
+import android.view.inputmethod.InputMethodManager
+import android.widget.MediaController
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.arthenica.mobileffmpeg.Config
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
@@ -19,14 +23,15 @@ import com.bumptech.glide.request.transition.Transition
 import com.swef.cookcode.data.VideoData
 import com.swef.cookcode.databinding.ActivityCookieFormBinding
 import com.arthenica.mobileffmpeg.FFmpeg
+import com.swef.cookcode.adapter.CookieIndividualVideoRecyclerviewAdapter
+import com.swef.cookcode.`interface`.VideoOnClickListener
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class CookieFormActivity : AppCompatActivity() {
-
+class CookieFormActivity : AppCompatActivity(), VideoOnClickListener {
     companion object{
         const val ERR_USER_CODE = -1
         const val ERR_COOKIE_CODE = -1
@@ -40,13 +45,16 @@ class CookieFormActivity : AppCompatActivity() {
     private lateinit var accessToken: String
     private lateinit var refreshToken: String
 
-    private val videos = mutableListOf<VideoData>()
     private val videoUrls = mutableListOf<String>()
+    private lateinit var tempVideoData: VideoData
 
     private var userId = ERR_USER_CODE
+    private var merged = false
 
     private lateinit var mergedVideoFile: String
     private lateinit var videoListTextFile: File
+
+    private lateinit var cookieIndividualVideoRecyclerviewAdapter: CookieIndividualVideoRecyclerviewAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,28 +66,54 @@ class CookieFormActivity : AppCompatActivity() {
         userId = intent.getIntExtra("user_id", ERR_USER_CODE)
 
         binding.beforeArrow.setOnClickListener{
-            // 서버에 업로드한 동영상 삭제
             finish()
         }
 
         initGalleryLauncher()
         initGalleryStartIntent()
+        initEditTextViewToKeyboardHide()
 
         binding.cookieUpload.setOnClickListener{
-            galleryLauncher.launch(galleryStartIntent)
+            // 서버에 업로드
+
+            putToastMessage("정상적으로 업로드 되었습니다.")
+            finish()
         }
 
         val cacheDir = this.externalCacheDir
         videoListTextFile = File(cacheDir, "videoList.txt")
 
+        val mediaController = MediaController(this)
+        mediaController.setAnchorView(binding.combinedVideo)
+        binding.combinedVideo.setMediaController(mediaController)
+
         binding.combinedVideo.setOnClickListener{
+            if (!merged) {
+                clickToMerge()
+            }
             binding.combinedVideo.start()
         }
+        binding.waitingUploadVideos.setOnClickListener {
+            if (!merged) {
+                clickToMerge()
+            }
+            binding.combinedVideo.start()
+        }
+
+        cookieIndividualVideoRecyclerviewAdapter = CookieIndividualVideoRecyclerviewAdapter(galleryLauncher, galleryStartIntent, this)
+        binding.shortVideos.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        binding.shortVideos.adapter = cookieIndividualVideoRecyclerviewAdapter
+
+        cookieIndividualVideoRecyclerviewAdapter.datas.add(VideoData(null, null))
+        cookieIndividualVideoRecyclerviewAdapter.notifyItemInserted(0)
     }
 
     private fun initGalleryLauncher() {
         galleryLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
+                merged = false
+                binding.waitingUploadVideos.text = "이곳을 더블 클릭하시면 영상을 확인할 수 있습니다."
+
                 val data = result.data
                 if (data != null) {
                     if (data.clipData != null) {
@@ -97,21 +131,37 @@ class CookieFormActivity : AppCompatActivity() {
                         handleVideo(tempVideoFile)
                     }
                 }
+            }
+        }
+    }
 
-                if(videoUrls.count() == 1) {
-                    binding.combinedVideo.setVideoURI(Uri.parse(videoUrls[0]))
-                    binding.combinedVideo.start()
-                } else if(videoUrls.count() > 1) {
-                    if (mergeVideos(videoUrls) != Config.RETURN_CODE_SUCCESS) {
-                        putToastMessage("에러 발생! 관리자에게 문의해주세요.")
-                    } else {
-                        val videoUri = Uri.parse(mergedVideoFile)
-                        binding.combinedVideo.setVideoURI(videoUri)
-                        binding.combinedVideo.start()
-                    }
+    private fun clickToMerge() {
+        if(videoUrls.count() == 1) {
+            binding.waitingUploadVideos.visibility = View.GONE
+            binding.combinedVideo.visibility = View.VISIBLE
+            binding.combinedVideo.setVideoURI(Uri.parse(videoUrls[0]))
+
+            binding.combinedVideo.setOnPreparedListener{ mediaPlayer ->
+                mediaPlayer.start()
+            }
+        } else if(videoUrls.count() > 1) {
+            if (mergeVideos(videoUrls) != Config.RETURN_CODE_SUCCESS) {
+                binding.waitingUploadVideos.visibility = View.VISIBLE
+                binding.combinedVideo.visibility = View.INVISIBLE
+                putToastMessage("에러 발생! 관리자에게 문의해주세요.")
+            } else {
+                val videoUri = Uri.parse(mergedVideoFile)
+                binding.waitingUploadVideos.visibility = View.GONE
+                binding.combinedVideo.visibility = View.VISIBLE
+                binding.combinedVideo.setVideoURI(videoUri)
+
+                binding.combinedVideo.setOnPreparedListener{ mediaPlayer ->
+                    mediaPlayer.start()
                 }
             }
         }
+
+        merged = true
     }
 
     private fun initGalleryStartIntent() {
@@ -121,23 +171,8 @@ class CookieFormActivity : AppCompatActivity() {
     }
 
     fun handleVideo(file: File) {
-        getVideoInfoAndThumbnail(file.absolutePath)
         videoUrls.add(file.absolutePath)
-    }
-
-    private fun getVideoInfoAndThumbnail(videoUrl: String) {
-        // Glide를 사용해서 thumbnail을 가져온다.
-        Glide.with(this)
-            .asBitmap()
-            .load(videoUrl)
-            .into(object: CustomTarget<Bitmap>() {
-                override fun onLoadCleared(placeholder: Drawable?) {/* Do nothing */}
-                override fun onResourceReady(thumbnail: Bitmap, transition: Transition<in Bitmap>?) {
-                    // 얻어낸 Bitmap 자원을 resource를 통하여 접근
-                    videos.add(VideoData(thumbnail, videoUrl))
-                    videoUrls.add(videoUrl)
-                }
-            })
+        getVideoInfoAndThumbnail(file.absolutePath)
     }
 
     fun mergeVideos(videoPaths: List<String>): Int {
@@ -159,8 +194,6 @@ class CookieFormActivity : AppCompatActivity() {
         }
         command.append("concat=n=").append(videoPaths.size).append(":v=1:a=1[v][a]").append("\"")
         command.append(" -map \"[v]\" -map \"[a]\" ").append("-vsync 0 ").append(mergedVideoFile)
-
-        Log.d("data_size", command.toString())
 
         return FFmpeg.execute(command.toString())
     }
@@ -187,5 +220,56 @@ class CookieFormActivity : AppCompatActivity() {
         val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
         val storageDir = getExternalFilesDir(Environment.DIRECTORY_MOVIES)
         return File.createTempFile("VIDEO_$timeStamp", ".mp4", storageDir)
+    }
+
+    override fun onItemDelete(position: Int) {
+        val removeData = cookieIndividualVideoRecyclerviewAdapter.datas[position]
+
+        cookieIndividualVideoRecyclerviewAdapter.datas.removeAt(position)
+        cookieIndividualVideoRecyclerviewAdapter.notifyItemRemoved(position)
+        cookieIndividualVideoRecyclerviewAdapter.notifyItemRangeChanged(position, cookieIndividualVideoRecyclerviewAdapter.itemCount)
+
+        for (videoUrl in videoUrls){
+            if(videoUrl == removeData.uri){
+                videoUrls.remove(videoUrl)
+                break
+            }
+        }
+
+        merged = false
+
+        if (videoUrls.isEmpty()){
+            binding.waitingUploadVideos.setText(R.string.annotation_cookie_preview)
+        }
+    }
+
+    private fun getVideoInfoAndThumbnail(videoUrl: String) {
+        Glide.with(this)
+            .asBitmap()
+            .load(videoUrl)
+            .into(object: CustomTarget<Bitmap>() {
+                override fun onLoadCleared(placeholder: Drawable?) {}
+
+                override fun onResourceReady(thumbnail: Bitmap, transition: Transition<in Bitmap>?) {
+                    cookieIndividualVideoRecyclerviewAdapter.setData(VideoData(thumbnail, videoUrl))
+                }
+            })
+    }
+
+    private fun initEditTextViewToKeyboardHide(){
+        binding.editCookieName.setOnFocusChangeListener {
+                view, hasFocus -> hideKeyboardFromEditText(view, hasFocus, this)
+        }
+        binding.editDescription.setOnFocusChangeListener {
+            view, hasFocus -> hideKeyboardFromEditText(view, hasFocus, this)
+        }
+    }
+
+    private fun hideKeyboardFromEditText(view: View, hasFocus: Boolean, context: Context) {
+        val hideFlags = 0
+        if (!hasFocus) {
+            val inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            inputMethodManager.hideSoftInputFromWindow(view.windowToken, hideFlags)
+        }
     }
 }
