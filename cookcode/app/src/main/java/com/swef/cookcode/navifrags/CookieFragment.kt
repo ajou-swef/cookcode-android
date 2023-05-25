@@ -32,8 +32,6 @@ class CookieFragment : Fragment() {
     private lateinit var refreshToken: String
     private var userId = USER_ERR_CODE
 
-    private var cookieDatas = mutableListOf<CookieData>()
-
     private val API = CookieAPI.create()
     private var page = 0
 
@@ -51,23 +49,6 @@ class CookieFragment : Fragment() {
         binding.viewPager.apply {
             adapter = cookieViewpagerAdapter
             orientation = ViewPager2.ORIENTATION_VERTICAL
-        }
-
-        val tempDatas = mutableListOf<CookieData>()
-
-        tempDatas.apply {
-            add(CookieData(
-                1, "https://cookcode-swef-s3.s3.ap-northeast-2.amazonaws.com/cookie/2023052416592543964d9b296-6ecf-4c00-a5e0-f018ae84018c"
-            , MadeUser(1, "null", "쿡코듲장"), "2023-05-25", false))
-            add(CookieData(
-                1, "https://cookcode-swef-s3.s3.ap-northeast-2.amazonaws.com/cookie/2023052416592543964d9b296-6ecf-4c00-a5e0-f018ae84018c"
-                , MadeUser(1, "null", "빈푸"), "2023-05-25", true))
-            add(CookieData(
-                1, "https://cookcode-swef-s3.s3.ap-northeast-2.amazonaws.com/cookie/2023052416592543964d9b296-6ecf-4c00-a5e0-f018ae84018c"
-                , MadeUser(1, "null", "빈푸"), "2023-05-30", true))
-            add(CookieData(
-                1, "https://cookcode-swef-s3.s3.ap-northeast-2.amazonaws.com/cookie/2023052416592543964d9b296-6ecf-4c00-a5e0-f018ae84018c"
-                , MadeUser(1, "null", "99page"), "2023-05-30", false))
         }
 
         getRandomCookies()
@@ -144,6 +125,10 @@ class CookieFragment : Fragment() {
                     page++
                     getRandomCookies()
                 }
+
+                if (testIsLastData(position)){
+                    putToastMessage("마지막 영상입니다.")
+                }
             }
         })
     }
@@ -159,6 +144,12 @@ class CookieFragment : Fragment() {
             return false
         }
         return true
+    }
+
+    private fun testIsLastData(currentPosition: Int): Boolean {
+        if (currentPosition == cookieViewpagerAdapter.itemCount - 1 && !cookieViewpagerAdapter.hasNext)
+            return true
+        return false
     }
 
     override fun onDestroyView() {

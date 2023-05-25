@@ -225,7 +225,6 @@ class HomeFragment : Fragment() {
             override fun onResponse(call: Call<RecipeResponse>, response: Response<RecipeResponse>) {
                 val datas = response.body()
                 if (datas != null && datas.status == 200) {
-                    Log.d("data_size", datas.toString())
                     searchedRecipeAndStepDatas = getRecipeDatasFromResponseBody(datas.recipes.content)
                     putNewDataForRecyclerview()
                 }
@@ -295,6 +294,7 @@ class HomeFragment : Fragment() {
         val nextIntent = Intent(activity, MypageActivity::class.java)
         nextIntent.putExtra("user_name", nickname)
         nextIntent.putExtra("access_token", accessToken)
+        nextIntent.putExtra("refresh_token", refreshToken)
         nextIntent.putExtra("user_id", userId)
         nextIntent.flags = FLAG_ACTIVITY_CLEAR_TOP
         startActivity(nextIntent)
