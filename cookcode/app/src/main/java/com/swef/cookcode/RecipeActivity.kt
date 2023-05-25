@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.swef.cookcode.adapter.RecipeViewpagerAdapter
 import com.swef.cookcode.api.RecipeAPI
 import com.swef.cookcode.data.RecipeAndStepData
@@ -32,11 +33,13 @@ class RecipeActivity : AppCompatActivity() {
     private val API = RecipeAPI.create()
 
     private lateinit var recipeViewpagerAdapter: RecipeViewpagerAdapter
-
     private lateinit var accessToken: String
     private lateinit var refreshToken: String
+
     private var userId = ERR_USER_CODE
     private var recipeId = ERR_RECIPE_ID
+
+    private lateinit var bottomSheetCallback : BottomSheetBehavior.BottomSheetCallback
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,6 +70,16 @@ class RecipeActivity : AppCompatActivity() {
 
         binding.beforeArrow.setOnClickListener {
             finish()
+        }
+
+        initBottomSheetCallback()
+
+        val persistentBottomSheet = BottomSheetBehavior.from(binding.bottomSheet)
+        persistentBottomSheet.addBottomSheetCallback(bottomSheetCallback)
+
+        binding.btnConfirm.setOnClickListener {
+            putToastMessage("정상적으로 등록 되었습니다.")
+            binding.editComment.text = null
         }
     }
 
@@ -207,5 +220,19 @@ class RecipeActivity : AppCompatActivity() {
         nextIntent.putExtra("recipe_id", recipeId)
         nextIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         startActivity(nextIntent)
+    }
+
+    private fun initBottomSheetCallback() {
+        bottomSheetCallback = object : BottomSheetBehavior.BottomSheetCallback() {
+            // bottom sheet의 상태값 변경
+            override fun onStateChanged(bottomSheet: View, newState: Int) { /* Do Nothing */ }
+
+            // botton sheet가 스크롤될 때 호출
+            override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                if (slideOffset >= 0) {
+                    binding.guideArrow.rotation = (1 - slideOffset) * 180F - 90F
+                }
+            }
+        }
     }
 }

@@ -63,6 +63,7 @@ class RecipePreviewAdapter(
             )
 
             if (item.additionalIngredients.isEmpty()) {
+                binding.additionalIngredient.visibility = View.GONE
                 binding.additionalIngredients.visibility = View.GONE
                 binding.divider.visibility = View.GONE
             }
