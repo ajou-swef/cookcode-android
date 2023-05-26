@@ -52,7 +52,7 @@ interface CookieAPI {
     ): Call<StatusResponse>
 
     companion object {
-        private const val BASE_URL = "http://43.201.10.7:8080/api/v1/"
+        private const val BASE_URL = "http://43.201.28.241:8080/api/v1/"
 
         fun create(): CookieAPI {
             return Retrofit.Builder()
