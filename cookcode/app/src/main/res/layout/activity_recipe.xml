@@ -86,7 +86,7 @@
 
             <TextView
                 android:id="@+id/comment"
-                android:text="댓글"
+                android:text="@string/comment"
                 android:textStyle="bold"
                 android:textColor="@color/black"
                 android:textSize="20sp"
@@ -100,7 +100,7 @@
 
             <EditText
                 android:id="@+id/edit_comment"
-                android:hint="여기를 클릭해 입력하세요.."
+                android:hint="@string/type_hint"
                 android:textSize="14sp"
                 android:layout_margin="10dp"
                 android:background="@drawable/filled_round_component"
@@ -112,7 +112,7 @@
 
             <TextView
                 android:id="@+id/btn_confirm"
-                android:text="등록"
+                android:text="@string/confirm"
                 android:textStyle="bold"
                 android:textColor="@color/white"
                 android:textSize="14sp"

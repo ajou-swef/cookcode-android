@@ -79,4 +79,6 @@
     <string name="upload">업로드</string>
     <string name="preview">미리보기</string>
     <string name="annotation_cookie_preview">영상들을 업로드 하시면\n제작될 영상을 미리 볼 수 있습니다.</string>
+    <string name="comment">댓글</string>
+    <string name="type_hint">여기를 클릭해 입력하세요..</string>
 </resources>
