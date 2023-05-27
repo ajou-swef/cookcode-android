@@ -81,4 +81,9 @@
     <string name="annotation_cookie_preview">영상들을 업로드 하시면\n제작될 영상을 미리 볼 수 있습니다.</string>
     <string name="comment">댓글</string>
     <string name="type_hint">여기를 클릭해 입력하세요..</string>
+    <string name="report">신고</string>
+    <string name="no_exist_comment">아직 댓글이 없습니다.</string>
+    <string name="cookie_info">쿠키 정보</string>
+    <string name="title_is">제목 : </string>
+    <string name="string_shadow_convert">%s </string>
 </resources>

@@ -4,14 +4,17 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Rect
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
 import android.util.Log
+import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import android.widget.MediaController
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
@@ -58,7 +61,6 @@ class CookieFormActivity : AppCompatActivity(), VideoOnClickListener, ItemTouchH
     private lateinit var refreshToken: String
 
     private val videoUrls = mutableListOf<String>()
-    private lateinit var tempVideoData: VideoData
 
     private var userId = ERR_USER_CODE
     private var merged = false
@@ -282,7 +284,7 @@ class CookieFormActivity : AppCompatActivity(), VideoOnClickListener, ItemTouchH
 
     private fun initEditTextViewToKeyboardHide(){
         binding.editCookieName.setOnFocusChangeListener {
-                view, hasFocus -> hideKeyboardFromEditText(view, hasFocus, this)
+            view, hasFocus -> hideKeyboardFromEditText(view, hasFocus, this)
         }
         binding.editDescription.setOnFocusChangeListener {
             view, hasFocus -> hideKeyboardFromEditText(view, hasFocus, this)
@@ -295,6 +297,24 @@ class CookieFormActivity : AppCompatActivity(), VideoOnClickListener, ItemTouchH
             val inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             inputMethodManager.hideSoftInputFromWindow(view.windowToken, hideFlags)
         }
+    }
+
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        val hideFlags = 0
+        if (event.action == MotionEvent.ACTION_DOWN) {
+            val view = currentFocus
+            if (view is EditText) {
+                val outRect = Rect()
+                view.getGlobalVisibleRect(outRect)
+
+                if (!outRect.contains(event.rawX.toInt(), event.rawY.toInt())) {
+                    view.clearFocus()
+                    val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), hideFlags)
+                }
+            }
+        }
+        return super.dispatchTouchEvent(event)
     }
 
     private fun makeCookieFormData(): List<MultipartBody.Part> {

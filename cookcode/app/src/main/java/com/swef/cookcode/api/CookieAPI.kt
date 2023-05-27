@@ -21,7 +21,7 @@ interface CookieAPI {
 
     @Multipart
     @JvmSuppressWildcards
-    @POST("recipe/files/recipe")
+    @POST("cookie")
     fun postCookie(
         @Header("accessToken") accessToken: String,
         @Part partList: List<MultipartBody.Part>

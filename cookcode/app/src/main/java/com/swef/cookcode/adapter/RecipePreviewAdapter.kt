@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.swef.cookcode.R
 import com.swef.cookcode.data.MyIngredientData
 import com.swef.cookcode.data.RecipeData
 import com.swef.cookcode.data.host.IngredientDataHost
@@ -40,7 +41,8 @@ class RecipePreviewAdapter(
     ): RecyclerView.ViewHolder(binding.root) {
         fun bind(item: RecipeData){
             getImageFromUrl(item.mainImage)
-            binding.recipeName.text = item.title
+            binding.recipeName.text = context.getString(
+                R.string.string_shadow_convert, item.title)
             binding.madeUser.text = item.madeUser.nickname
             binding.likeNumber.text = item.likes.toString()
             binding.descriptionText.text = item.description

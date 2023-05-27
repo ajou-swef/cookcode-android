@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.viewpager2.widget.ViewPager2
 import com.swef.cookcode.adapter.CookieViewpagerAdapter
 import com.swef.cookcode.api.CookieAPI
+import com.swef.cookcode.data.CommentData
 import com.swef.cookcode.data.CookieData
 import com.swef.cookcode.data.response.CookieContent
 import com.swef.cookcode.data.response.CookieResponse
@@ -45,11 +46,14 @@ class CookieFragment : Fragment() {
         refreshToken = arguments?.getString("refresh_token")!!
         userId = arguments?.getInt("user_id")!!
 
-        cookieViewpagerAdapter = CookieViewpagerAdapter()
+        cookieViewpagerAdapter = CookieViewpagerAdapter(requireContext())
         binding.viewPager.apply {
             adapter = cookieViewpagerAdapter
             orientation = ViewPager2.ORIENTATION_VERTICAL
         }
+
+        cookieViewpagerAdapter.userId = userId
+        cookieViewpagerAdapter.accessToken = accessToken
 
         getRandomCookies()
         initOnScrollListener()
@@ -99,12 +103,21 @@ class CookieFragment : Fragment() {
             val title = data.title
             val description = data.description
             val cookieId = data.cookieId
+            val likeNumber = 100
+            val isLiked = false
 
             val tempUser = MadeUser(1, "null", "쿡코드짱")
             val tempCreatedAt = "2023-06-07"
 
+            val tempDatas = mutableListOf<CommentData>()
+
+            tempDatas.apply {
+                add(CommentData(MadeUser(16, "null", "빈푸"), "2023-05-30", "너무 맛있네요", null))
+                add(CommentData(MadeUser(13, "null", "쿡코듲장"), "2023-06-20", "이건 좀,, 별로 인듯 너무 짜고 매워잉 이건 좀,, 별로 인듯 너무 짜고 매워잉 이건 좀,, 별로 인듯 너무 짜고 매워잉", null))
+            }
+
             cookieDatas.add(
-                CookieData(cookieId, videoUrl, tempUser, tempCreatedAt, false)
+                CookieData(cookieId, videoUrl, title, description, tempUser, tempCreatedAt, isLiked, likeNumber, tempDatas)
             )
         }
 

@@ -1,18 +1,27 @@
 package com.swef.cookcode
 
+import android.content.Context
 import android.content.Intent
+import android.graphics.Rect
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.MotionEvent
 import android.view.View
+import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.swef.cookcode.adapter.CommentRecyclerviewAdapter
 import com.swef.cookcode.adapter.RecipeViewpagerAdapter
 import com.swef.cookcode.api.RecipeAPI
+import com.swef.cookcode.data.CommentData
 import com.swef.cookcode.data.RecipeAndStepData
 import com.swef.cookcode.data.RecipeData
 import com.swef.cookcode.data.StepData
+import com.swef.cookcode.data.response.MadeUser
 import com.swef.cookcode.data.response.Photos
 import com.swef.cookcode.data.response.RecipeContent
 import com.swef.cookcode.data.response.RecipeContentResponse
@@ -39,7 +48,9 @@ class RecipeActivity : AppCompatActivity() {
     private var userId = ERR_USER_CODE
     private var recipeId = ERR_RECIPE_ID
 
-    private lateinit var bottomSheetCallback : BottomSheetBehavior.BottomSheetCallback
+    private lateinit var bottomSheetCallback: BottomSheetBehavior.BottomSheetCallback
+
+    private lateinit var commentRecyclerviewAdapter: CommentRecyclerviewAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -81,8 +92,48 @@ class RecipeActivity : AppCompatActivity() {
             putToastMessage("정상적으로 등록 되었습니다.")
             binding.editComment.text = null
         }
+
+        binding.bottomSheet.setOnClickListener{
+            if (persistentBottomSheet.state == BottomSheetBehavior.STATE_EXPANDED)
+                persistentBottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
+            else
+                persistentBottomSheet.state = BottomSheetBehavior.STATE_EXPANDED
+
+        }
+
+        binding.bottomSheet.setOnFocusChangeListener { view, hasFocus ->
+            hideKeyboardFromEditText(view, hasFocus, this)
+            persistentBottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
+        }
+
+        initCommentRecyclerview()
     }
 
+    private fun hideKeyboardFromEditText(view: View, hasFocus: Boolean, context: Context) {
+        val hideFlags = 0
+        if (!hasFocus) {
+            val inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            inputMethodManager.hideSoftInputFromWindow(view.windowToken, hideFlags)
+        }
+    }
+
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        val hideFlags = 0
+        if (event.action == MotionEvent.ACTION_DOWN) {
+            val view = currentFocus
+            if (view is EditText) {
+                val outRect = Rect()
+                view.getGlobalVisibleRect(outRect)
+
+                if (!outRect.contains(event.rawX.toInt(), event.rawY.toInt())) {
+                    view.clearFocus()
+                    val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), hideFlags)
+                }
+            }
+        }
+        return super.dispatchTouchEvent(event)
+    }
 
     private fun getRecipeDataFromRecipeID(recipeId: Int, accessToken: String) {
         API.getRecipe(accessToken, recipeId).enqueue(object : Callback<RecipeContentResponse> {
@@ -234,5 +285,34 @@ class RecipeActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    private fun initCommentRecyclerview(){
+        commentRecyclerviewAdapter = CommentRecyclerviewAdapter(this)
+        binding.commentRecyclerview.apply {
+            adapter = commentRecyclerviewAdapter
+            layoutManager = LinearLayoutManagerWrapper(context, LinearLayoutManager.VERTICAL, false)
+        }
+        val tempDatas = mutableListOf<CommentData>()
+
+        tempDatas.apply {
+            add(CommentData(MadeUser(16, "null", "빈푸"), "2023-05-30", "너무 맛있네요", null))
+            add(CommentData(MadeUser(13, "null", "쿡코듲장"), "2023-06-20", "이건 좀,, 별로 인듯 너무 짜고 매워잉 이건 좀,, 별로 인듯 너무 짜고 매워잉 이건 좀,, 별로 인듯 너무 짜고 매워잉", null))
+        }
+
+        commentRecyclerviewAdapter.datas = tempDatas
+        if (commentRecyclerviewAdapter.datas.isEmpty()) {
+            binding.commentRecyclerview.visibility = View.GONE
+            binding.noExistComments.visibility = View.VISIBLE
+        }
+        else {
+            binding.commentRecyclerview.visibility = View.VISIBLE
+            binding.noExistComments.visibility = View.GONE
+        }
+
+        commentRecyclerviewAdapter.userId = userId
+        commentRecyclerviewAdapter.accessToken = accessToken
+
+        Log.d("data_size", userId.toString())
     }
 }

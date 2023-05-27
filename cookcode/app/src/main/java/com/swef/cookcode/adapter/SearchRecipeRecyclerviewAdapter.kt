@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.swef.cookcode.R
 import com.swef.cookcode.RecipeActivity
 import com.swef.cookcode.data.RecipeAndStepData
 import com.swef.cookcode.databinding.SearchRecipeRecyclerviewItemBinding
@@ -47,7 +48,8 @@ class SearchRecipeRecyclerviewAdapter(
         private val binding: SearchRecipeRecyclerviewItemBinding
     ): RecyclerView.ViewHolder(binding.root) {
         fun bind(item: RecipeAndStepData){
-            binding.recipeName.text = item.recipeData.title
+            binding.recipeName.text = context.getString(
+                R.string.string_shadow_convert, item.recipeData.title)
             binding.likeNumber.text = item.recipeData.likes.toString()
             binding.madeUser.text = item.recipeData.madeUser.nickname
             binding.createdAtTime.text = item.recipeData.createdAt
