@@ -20,6 +20,7 @@
     <string name="err_userdata">아이디/비밀번호를 확인해주세요.</string>
     <string name="err_server">잠시 후 다시 시도해주세요.</string>
     <string name="cookie">쿠키</string>
+    <string name="cookie_name">쿠키 제목</string>
     <string name="home">홈</string>
     <string name="refrigerator">냉장고</string>
     <string name="recipe">레시피</string>
@@ -38,9 +39,9 @@
     <string name="video">동영상</string>
     <string name="step_title">스텝 제목</string>
     <string name="step_description">스텝 설명</string>
-    <string name="update_image">이미지 수정</string>
+    <string name="update_image">이미지 변경</string>
     <string name="delete_image">이미지 삭제</string>
-    <string name="update_video">동영상 수정</string>
+    <string name="update_video">동영상 변경</string>
     <string name="delete_video">동영상 삭제</string>
     <string name="recipe_upload">레시피 업로드</string>
     <string name="user">사용자</string>
@@ -75,4 +76,7 @@
     <string name="sort_createdAt">최신순 정렬</string>
     <string name="sort_popular">인기순 정렬</string>
     <string name="created_at">작성시간</string>
+    <string name="upload">업로드</string>
+    <string name="preview">미리보기</string>
+    <string name="annotation_cookie_preview">영상들을 업로드 하시면\n제작될 영상을 미리 볼 수 있습니다.</string>
 </resources>

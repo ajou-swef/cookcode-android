@@ -2,7 +2,6 @@ package com.swef.cookcode.adapter
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -70,9 +69,8 @@ class StepMediaRecyclerviewAdapter(
                 holder.binding.videoView.tag = uri
 
                 // video가 준비되면 실행
-                holder.binding.videoView.setOnPreparedListener { mp ->
-                    Log.d("data_size", "success")
-                    mp.start()
+                holder.binding.videoView.setOnPreparedListener { mediaPlayer ->
+                    mediaPlayer.start()
                 }
             }
         }

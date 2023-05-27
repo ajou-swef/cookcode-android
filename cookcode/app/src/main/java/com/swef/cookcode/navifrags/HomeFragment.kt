@@ -14,6 +14,7 @@ import androidx.appcompat.widget.PopupMenu
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.swef.cookcode.CookieFormActivity
 import com.swef.cookcode.MypageActivity
 import com.swef.cookcode.R
 import com.swef.cookcode.RecipeFormActivity
@@ -146,7 +147,15 @@ class HomeFragment : Fragment() {
         // 팝업 메뉴 아이템 클릭 리스너
         popupMenu.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
-                R.id.cookie -> true
+                R.id.cookie -> {
+                    val nextIntent = Intent(activity, CookieFormActivity::class.java)
+                    nextIntent.putExtra("access_token", accessToken)
+                    nextIntent.putExtra("refresh_token", refreshToken)
+                    nextIntent.putExtra("user_id", userId)
+                    nextIntent.addFlags(FLAG_ACTIVITY_CLEAR_TOP)
+                    startActivity(nextIntent)
+                    true
+                }
                 R.id.recipe -> {
                     val nextIntent = Intent(activity, RecipeFormActivity::class.java)
                     nextIntent.putExtra("access_token", accessToken)
@@ -199,7 +208,6 @@ class HomeFragment : Fragment() {
                 val datas = response.body()
                 if (datas != null && datas.status == 200) {
                     searchedRecipeAndStepDatas = getRecipeDatasFromResponseBody(datas.recipes.content)
-                    Log.d("data_size", searchedRecipeAndStepDatas.toString())
                     putDataForRecyclerview()
                 }
             }
@@ -218,7 +226,6 @@ class HomeFragment : Fragment() {
                 val datas = response.body()
                 if (datas != null && datas.status == 200) {
                     searchedRecipeAndStepDatas = getRecipeDatasFromResponseBody(datas.recipes.content)
-                    Log.d("data_size", searchedRecipeAndStepDatas.toString())
                     putNewDataForRecyclerview()
                 }
             }
