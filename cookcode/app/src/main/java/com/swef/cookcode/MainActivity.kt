@@ -12,6 +12,7 @@ import android.widget.EditText
 import android.widget.Toast
 import com.swef.cookcode.api.AccountAPI
 import com.swef.cookcode.data.response.TokenResponse
+import com.swef.cookcode.data.response.UserResponse
 import com.swef.cookcode.databinding.ActivityMainBinding
 import retrofit2.Call
 import retrofit2.Callback
@@ -22,6 +23,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     // AccountAPI
     private val API = AccountAPI.create()
+
+    private val ERR_USER_CODE = -1
+
+    private lateinit var accessToken: String
+    private lateinit var refreshToken: String
+    private var userId = ERR_USER_CODE
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,33 +62,23 @@ class MainActivity : AppCompatActivity() {
             API.postSignin(userDataMap).enqueue(object: Callback<TokenResponse> {
                 override fun onResponse(call: Call<TokenResponse>, response: Response<TokenResponse>) {
                     if(response.body() != null) {
-                        // status 200 = 로그인 성공
                         if (response.body()!!.status == 200) {
-                            // 만족시 HomeActivity로 이동
-                            // 메인 페이지에서 활동 시 Token이 필요하므로 token 정보를 다음 activity로 넘겨준다
-                            val userId = response.body()!!.tokenData.userId
-                            val accessToken = response.body()!!.tokenData.accessToken
-                            val refreshToken = response.body()!!.tokenData.refreshToken
+                            userId = response.body()!!.tokenData.userId
+                            accessToken = response.body()!!.tokenData.accessToken
+                            refreshToken = response.body()!!.tokenData.refreshToken
 
-                            // 데이터는 key, value 쌍으로 넘어간다
-                            homeActivityIntent.putExtra("access_token", accessToken)
-                            homeActivityIntent.putExtra("refresh_token", refreshToken)
-                            homeActivityIntent.putExtra("user_id", userId)
-                            homeActivityIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-                            startActivity(homeActivityIntent)
-                            Toast.makeText(this@MainActivity, "정상적으로 로그인 되었습니다.", Toast.LENGTH_SHORT).show()
+                            getAuthorityFromUserId(homeActivityIntent)
                         }
                     }
-                    // null일 경우 일치하는 데이터가 없음
                     else {
-                        Toast.makeText(this@MainActivity, R.string.err_userdata, Toast.LENGTH_SHORT).show()
+                        putToastMessage(getString(R.string.err_userdata))
                     }
                 }
 
                 override fun onFailure(call: Call<TokenResponse>, t: Throwable) {
                     Log.d("data_size", call.request().toString())
                     Log.d("data_size", t.message.toString())
-                    Toast.makeText(this@MainActivity, R.string.err_server, Toast.LENGTH_SHORT).show()
+                    putToastMessage(getString(R.string.err_server))
                 }
             })
         }
@@ -107,5 +104,44 @@ class MainActivity : AppCompatActivity() {
             }
         }
         return super.dispatchTouchEvent(event)
+    }
+
+    private fun getAuthorityFromUserId(intent: Intent) {
+        API.getUserInfo(accessToken, userId).enqueue(object: Callback<UserResponse>{
+            override fun onResponse(call: Call<UserResponse>, response: Response<UserResponse>) {
+                if (response.isSuccessful){
+
+                    when (val authority = response.body()!!.userData.authority) {
+                        "ADMIN" -> {
+                            // start admin page
+                        }
+                        else -> {
+                            intent.putExtra("access_token", accessToken)
+                            intent.putExtra("refresh_token", refreshToken)
+                            intent.putExtra("user_id", userId)
+                            intent.putExtra("authority", authority)
+                            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                            startActivity(intent)
+                            putToastMessage("정상적으로 로그인 되었습니다.")
+                        }
+                    }
+                }
+                else {
+                    Log.d("data_size", call.request().toString())
+                    Log.d("data_size", response.errorBody()!!.string())
+                    putToastMessage("에러 발생! 관리자에게 문의해주세요.")
+                }
+            }
+
+            override fun onFailure(call: Call<UserResponse>, t: Throwable) {
+                Log.d("data_size", call.request().toString())
+                Log.d("data_size", t.message.toString())
+                putToastMessage("잠시 후 다시 시도해주세요.")
+            }
+        })
+    }
+
+    private fun putToastMessage(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }

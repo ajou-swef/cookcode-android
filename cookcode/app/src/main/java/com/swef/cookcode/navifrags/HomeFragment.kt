@@ -46,6 +46,7 @@ class HomeFragment : Fragment() {
     private lateinit var accessToken: String
     private lateinit var refreshToken: String
     private var userId = USER_ERR_CODE
+    private lateinit var authority: String
 
     private var searchedRecipeAndStepDatas = mutableListOf<RecipeAndStepData>()
 
@@ -73,6 +74,7 @@ class HomeFragment : Fragment() {
         accessToken = arguments?.getString("access_token")!!
         refreshToken = arguments?.getString("refresh_token")!!
         userId = arguments?.getInt("user_id")!!
+        authority = arguments?.getString("authority")!!
 
         // 컨텐츠 추가 버튼 click listener
         binding.btnAddContents.setOnClickListener{
