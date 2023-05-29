@@ -51,6 +51,11 @@ interface CookieAPI {
         @Path("cookieId") cookieId: Int,
     ): Call<StatusResponse>
 
+    @POST("cookie/{cookieId}/likes")
+    fun putLikeCookie(
+        @Header("accessToken") accessToken: String,
+        @Path("cookieId") cookieId: Int,
+    ): Call<StatusResponse>
     companion object {
         private const val BASE_URL = "http://43.201.28.241:8080/api/v1/"
 

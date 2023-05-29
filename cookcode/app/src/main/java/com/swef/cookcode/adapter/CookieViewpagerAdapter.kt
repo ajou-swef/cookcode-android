@@ -10,12 +10,15 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.MediaController
+import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.swef.cookcode.R
+import com.swef.cookcode.api.CookieAPI
 import com.swef.cookcode.data.CommentData
 import com.swef.cookcode.data.CookieData
+import com.swef.cookcode.data.response.StatusResponse
 import com.swef.cookcode.databinding.CookiePreviewItemBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -24,6 +27,9 @@ import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.ResponseBody
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -42,6 +48,8 @@ class CookieViewpagerAdapter(
 
     lateinit var accessToken: String
 
+    private val API = CookieAPI.create()
+
     private lateinit var commentBottomSheetCallback: BottomSheetBehavior.BottomSheetCallback
     private lateinit var infoBottomSheetBehavior: BottomSheetBehavior.BottomSheetCallback
 
@@ -56,13 +64,13 @@ class CookieViewpagerAdapter(
     override fun getItemCount(): Int = datas.size
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(datas[position])
+        holder.bind(datas[position], position)
     }
 
     inner class ViewHolder(
         private val binding: CookiePreviewItemBinding
     ): RecyclerView.ViewHolder(binding.root) {
-        fun bind(item: CookieData) {
+        fun bind(item: CookieData, position: Int) {
             binding.cookie.setBackgroundResource(R.drawable.loading_video_page)
             binding.progressBar.visibility = View.VISIBLE
 
@@ -106,7 +114,7 @@ class CookieViewpagerAdapter(
             initLikeButton(item.isLiked)
 
             binding.btnLike.setOnClickListener {
-                initLikeButtonOnClick(item)
+                putLikeStateCookie(item, position)
             }
 
             initCommentBottomSheetCallback()
@@ -159,15 +167,39 @@ class CookieViewpagerAdapter(
             }
         }
 
-        private fun initLikeButtonOnClick(item: CookieData) {
-            if(item.isLiked) {
-                binding.btnLike.setBackgroundResource(R.drawable.icon_unliked)
-                item.isLiked = false
-            }
-            else {
-                binding.btnLike.setBackgroundResource(R.drawable.icon_liked)
-                item.isLiked = true
-            }
+        private fun putLikeStateCookie(item: CookieData, position: Int) {
+            API.putLikeCookie(accessToken, item.cookieId).enqueue(object: Callback<StatusResponse> {
+                override fun onResponse(
+                    call: Call<StatusResponse>,
+                    response: Response<StatusResponse>
+                ) {
+                    if (response.isSuccessful){
+                        if(item.isLiked) {
+                            binding.btnLike.setBackgroundResource(R.drawable.icon_unliked)
+                            item.isLiked = false
+                            item.likeNumber--
+                        }
+                        else {
+                            binding.btnLike.setBackgroundResource(R.drawable.icon_liked)
+                            item.isLiked = true
+                            item.likeNumber++
+                        }
+
+                        notifyItemChanged(position)
+                    }
+                    else {
+                        Log.d("data_size", call.request().toString())
+                        Log.d("data_size", response.errorBody()!!.string())
+                        putToastMessage("에러 발생!")
+                    }
+                }
+
+                override fun onFailure(call: Call<StatusResponse>, t: Throwable) {
+                    Log.d("data_size", call.request().toString())
+                    Log.d("data_size", t.message.toString())
+                    putToastMessage("잠시 후 다시 시도해주세요.")
+                }
+            })
         }
 
         private fun initCommentBottomSheetCallback() {
@@ -247,4 +279,7 @@ class CookieViewpagerAdapter(
         }
     }
 
+    fun putToastMessage(message: String) {
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+    }
 }
