@@ -205,6 +205,7 @@ class HomeFragment : Fragment() {
         recipeAPI.getRecipes(accessToken, currentPage, pageSize, cookable).enqueue(object :
             Callback<RecipeResponse> {
             override fun onResponse(call: Call<RecipeResponse>, response: Response<RecipeResponse>) {
+                Log.d("data_size", response.body()!!.hasNext.toString())
                 val datas = response.body()
                 if (datas != null && datas.status == 200) {
                     searchedRecipeAndStepDatas = getRecipeDatasFromResponseBody(datas.recipes.content)
@@ -223,6 +224,7 @@ class HomeFragment : Fragment() {
         recipeAPI.getRecipes(accessToken, currentPage, pageSize, cookable).enqueue(object :
             Callback<RecipeResponse> {
             override fun onResponse(call: Call<RecipeResponse>, response: Response<RecipeResponse>) {
+                Log.d("data_size", response.body()!!.hasNext.toString())
                 val datas = response.body()
                 if (datas != null && datas.status == 200) {
                     searchedRecipeAndStepDatas = getRecipeDatasFromResponseBody(datas.recipes.content)
