@@ -1,7 +1,6 @@
 package com.swef.cookcode.adapter
 
 import android.content.Context
-import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Environment
 import android.util.Log
@@ -11,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.MediaController
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -18,8 +18,11 @@ import com.swef.cookcode.R
 import com.swef.cookcode.api.CookieAPI
 import com.swef.cookcode.data.CommentData
 import com.swef.cookcode.data.CookieData
+import com.swef.cookcode.data.response.Comment
+import com.swef.cookcode.data.response.CommentResponse
 import com.swef.cookcode.data.response.StatusResponse
 import com.swef.cookcode.databinding.CookiePreviewItemBinding
+import com.swef.cookcode.`interface`.CommentOnClickListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -69,10 +72,13 @@ class CookieViewpagerAdapter(
 
     inner class ViewHolder(
         private val binding: CookiePreviewItemBinding
-    ): RecyclerView.ViewHolder(binding.root) {
+    ): RecyclerView.ViewHolder(binding.root), CommentOnClickListener {
+        private lateinit var commentRecyclerviewAdapter: CommentRecyclerviewAdapter
         fun bind(item: CookieData, position: Int) {
             binding.cookie.setBackgroundResource(R.drawable.loading_video_page)
             binding.progressBar.visibility = View.VISIBLE
+
+            initModifyDeleteButton(item.cookieId)
 
             CoroutineScope(Dispatchers.Main).launch {
                 val videoUri = withContext(Dispatchers.IO) {
@@ -83,9 +89,6 @@ class CookieViewpagerAdapter(
                     binding.cookie.setBackgroundResource(0)
                     binding.cookie.setVideoURI(videoUri)
                     binding.progressBar.visibility = View.GONE
-
-                    val mediaMetadataRetriever = MediaMetadataRetriever()
-                    mediaMetadataRetriever.setDataSource(context, videoUri)
 
                     val mediaController = MediaController(binding.cookie.context, false)
                     mediaController.setAnchorView(binding.cookie)
@@ -101,7 +104,7 @@ class CookieViewpagerAdapter(
                 }
             }
 
-            binding.createdAt.text = item.createdAt
+            binding.createdAt.text = item.createdAt.substring(0 until 10)
             binding.madeUser.text = item.madeUser.nickname
             binding.madeUserInBottomSheet.text = item.madeUser.nickname
 
@@ -116,6 +119,9 @@ class CookieViewpagerAdapter(
             binding.btnLike.setOnClickListener {
                 putLikeStateCookie(item, position)
             }
+
+            binding.commentNumber.text = item.commentCount.toString()
+            binding.likeNumber.text = item.likeNumber.toString()
 
             initCommentBottomSheetCallback()
             initInfoBottomSheetCallback()
@@ -139,32 +145,150 @@ class CookieViewpagerAdapter(
                 infoBottomSheet.state = BottomSheetBehavior.STATE_EXPANDED
             }
 
-            val commentRecyclerviewAdapter = CommentRecyclerviewAdapter(context)
-            initCommentRecyclerview(commentRecyclerviewAdapter, item.comments)
+            commentRecyclerviewAdapter = CommentRecyclerviewAdapter(context, this)
+            initCommentRecyclerview(item.cookieId)
 
-            if (item.comments.isNotEmpty())
-                binding.noExistComments.visibility = View.GONE
+            binding.btnConfirm.setOnClickListener {
+                val comment = binding.editComment.text.toString()
+                putCommentCookie(item.cookieId, comment)
+            }
+
         }
 
-        private fun initCommentRecyclerview(recyclerViewAdapter: CommentRecyclerviewAdapter, commentDatas: List<CommentData>) {
+        private fun initCommentRecyclerview(cookieId: Int) {
             binding.commentRecyclerview.apply {
-                adapter = recyclerViewAdapter
+                adapter = commentRecyclerviewAdapter
                 layoutManager = LinearLayoutManagerWrapper(context, LinearLayout.VERTICAL, false)
             }
 
-            recyclerViewAdapter.userId = userId
-            recyclerViewAdapter.accessToken = accessToken
-            recyclerViewAdapter.datas = commentDatas as MutableList<CommentData>
-            recyclerViewAdapter.notifyItemRangeChanged(0, commentDatas.size - 1)
+            getCookieComments(cookieId)
         }
 
-        private fun initLikeButton(like: Boolean) {
-            if (like){
+        private fun getCookieComments(cookieId: Int){
+            API.getCookieComments(accessToken, cookieId).enqueue(object: Callback<CommentResponse>{
+                override fun onResponse(
+                    call: Call<CommentResponse>,
+                    response: Response<CommentResponse>
+                ) {
+                    if (response.isSuccessful) {
+                        val comments = getCommentFromResponse(response.body()!!.commentData)
+
+                        commentRecyclerviewAdapter.userId = userId
+                        commentRecyclerviewAdapter.accessToken = accessToken
+                        commentRecyclerviewAdapter.cookieId = cookieId
+
+                        if (comments.isEmpty()) {
+                            binding.noExistComments.visibility = View.VISIBLE
+                        }
+                        else {
+                            commentRecyclerviewAdapter.datas = comments as MutableList<CommentData>
+                            commentRecyclerviewAdapter.notifyItemRangeChanged(0, comments.size)
+                            binding.noExistComments.visibility = View.GONE
+                        }
+                    }
+                    else {
+                        putToastMessage("에러 발생! 관리자에게 문의해주세요.")
+                        Log.d("data_size", response.errorBody()!!.string())
+                        Log.d("data_size", call.request().toString())
+                    }
+                }
+
+                override fun onFailure(call: Call<CommentResponse>, t: Throwable) {
+                    Log.d("data_size", t.message.toString())
+                    Log.d("data_size", call.request().toString())
+                    putToastMessage("잠시 후 다시 시도해주세요.")
+                }
+            })
+        }
+
+        private fun getCommentFromResponse(response: List<Comment>): List<CommentData>{
+            val comments = mutableListOf<CommentData>()
+
+            for (item in response){
+                comments.apply {
+                    add(CommentData(item.madeUser, item.comment, item.commentId))
+                }
+            }
+
+            return comments
+        }
+
+        private fun initLikeButton(like: Int) {
+            if (like == 1){
                 binding.btnLike.setBackgroundResource(R.drawable.icon_liked)
             }
             else {
                 binding.btnLike.setBackgroundResource(R.drawable.icon_unliked)
             }
+        }
+
+        private fun initModifyDeleteButton(cookieId: Int) {
+            binding.btnModify.setOnClickListener {
+
+            }
+
+            binding.btnDelete.setOnClickListener {
+                AlertDialog.Builder(context).apply {
+                    setTitle("쿠키 삭제")
+                    setMessage("정말 삭제 하시겠습니까?")
+                    setPositiveButton("삭제") { _, _ ->
+                        deleteCookie(cookieId)
+                    }
+                    setNegativeButton("취소") { _, _ -> /* Do nothing */ }
+                    show()
+                }
+            }
+        }
+
+        private fun deleteCookie(cookieId: Int){
+            API.deleteCookie(accessToken, cookieId).enqueue(object : Callback<StatusResponse>{
+                override fun onResponse(
+                    call: Call<StatusResponse>,
+                    response: Response<StatusResponse>
+                ) {
+                    if (response.isSuccessful){
+                        notifyDataSetChanged()
+                    }
+                    else {
+                        Log.d("data_size", call.request().toString())
+                        Log.d("data_size", response.errorBody()!!.string())
+                        putToastMessage("에러 발생!")
+                    }
+                }
+
+                override fun onFailure(call: Call<StatusResponse>, t: Throwable) {
+                    Log.d("data_size", call.request().toString())
+                    Log.d("data_size", t.message.toString())
+                    putToastMessage("잠시 후 다시 시도해주세요.")
+                }
+
+            })
+        }
+
+        private fun putCommentCookie(cookieId: Int, comment: String) {
+            API.putCookieComment(accessToken, cookieId, comment).enqueue(object : Callback<StatusResponse>{
+                override fun onResponse(
+                    call: Call<StatusResponse>,
+                    response: Response<StatusResponse>
+                ) {
+                    if (response.isSuccessful) {
+                        putToastMessage("댓글이 정상적으로 등록되었습니다.")
+                        getCookieComments(cookieId)
+                    }
+                    else {
+                        Log.d("data_size", call.request().toString())
+                        Log.d("data_size", response.errorBody()!!.string())
+                        putToastMessage("에러 발생!")
+                    }
+                }
+
+                override fun onFailure(call: Call<StatusResponse>, t: Throwable) {
+                    Log.d("data_size", call.request().toString())
+                    Log.d("data_size", t.message.toString())
+                    putToastMessage("잠시 후 다시 시도해주세요.")
+                }
+
+            })
         }
 
         private fun putLikeStateCookie(item: CookieData, position: Int) {
@@ -174,14 +298,14 @@ class CookieViewpagerAdapter(
                     response: Response<StatusResponse>
                 ) {
                     if (response.isSuccessful){
-                        if(item.isLiked) {
+                        if(item.isLiked == 1) {
                             binding.btnLike.setBackgroundResource(R.drawable.icon_unliked)
-                            item.isLiked = false
+                            item.isLiked = 0
                             item.likeNumber--
                         }
                         else {
                             binding.btnLike.setBackgroundResource(R.drawable.icon_liked)
-                            item.isLiked = true
+                            item.isLiked = 1
                             item.likeNumber++
                         }
 
@@ -276,6 +400,10 @@ class CookieViewpagerAdapter(
             }
 
             return@withContext null
+        }
+
+        override fun itemOnClick(cookieId: Int) {
+            getCookieComments(cookieId)
         }
     }
 

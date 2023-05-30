@@ -1,5 +1,6 @@
 package com.swef.cookcode.api
 
+import com.swef.cookcode.data.response.CommentResponse
 import com.swef.cookcode.data.response.CookieResponse
 import com.swef.cookcode.data.response.StatusResponse
 import okhttp3.MultipartBody
@@ -56,6 +57,26 @@ interface CookieAPI {
         @Header("accessToken") accessToken: String,
         @Path("cookieId") cookieId: Int,
     ): Call<StatusResponse>
+
+    @GET("cookie/{cookieId}/comments")
+    fun getCookieComments(
+        @Header("accessToken") accessToken: String,
+        @Path("cookieId") cookieId: Int
+    ): Call<CommentResponse>
+
+    @POST("cookie/{cookieId}/comments")
+    fun putCookieComment(
+        @Header("accessToken") accessToken: String,
+        @Path("cookieId") cookieId: Int,
+        @Body body: String
+    ): Call<StatusResponse>
+
+    @DELETE("cookie/comments/{commentId}")
+    fun deleteCookieComment(
+        @Header("accessToken") accessToken: String,
+        @Path("commentId") commentId: Int,
+    ): Call<StatusResponse>
+
     companion object {
         private const val BASE_URL = "http://43.201.28.241:8080/api/v1/"
 

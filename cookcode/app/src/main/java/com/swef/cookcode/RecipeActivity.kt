@@ -17,11 +17,9 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.swef.cookcode.adapter.CommentRecyclerviewAdapter
 import com.swef.cookcode.adapter.RecipeViewpagerAdapter
 import com.swef.cookcode.api.RecipeAPI
-import com.swef.cookcode.data.CommentData
 import com.swef.cookcode.data.RecipeAndStepData
 import com.swef.cookcode.data.RecipeData
 import com.swef.cookcode.data.StepData
-import com.swef.cookcode.data.response.MadeUser
 import com.swef.cookcode.data.response.Photos
 import com.swef.cookcode.data.response.RecipeContent
 import com.swef.cookcode.data.response.RecipeContentResponse
@@ -293,14 +291,8 @@ class RecipeActivity : AppCompatActivity() {
             adapter = commentRecyclerviewAdapter
             layoutManager = LinearLayoutManagerWrapper(context, LinearLayoutManager.VERTICAL, false)
         }
-        val tempDatas = mutableListOf<CommentData>()
 
-        tempDatas.apply {
-            add(CommentData(MadeUser(16, "null", "빈푸"), "2023-05-30", "너무 맛있네요", null))
-            add(CommentData(MadeUser(13, "null", "쿡코듲장"), "2023-06-20", "이건 좀,, 별로 인듯 너무 짜고 매워잉 이건 좀,, 별로 인듯 너무 짜고 매워잉 이건 좀,, 별로 인듯 너무 짜고 매워잉", null))
-        }
-
-        commentRecyclerviewAdapter.datas = tempDatas
+        // commentRecyclerviewAdapter.datas = tempDatas
         if (commentRecyclerviewAdapter.datas.isEmpty()) {
             binding.commentRecyclerview.visibility = View.GONE
             binding.noExistComments.visibility = View.VISIBLE

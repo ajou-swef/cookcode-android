@@ -9,7 +9,7 @@ data class CookieData(
     val description: String,
     val madeUser: MadeUser,
     val createdAt: String,
-    var isLiked: Boolean,
+    var isLiked: Int,
     var likeNumber: Int,
-    var comments: List<CommentData>
+    var commentCount: Int
 )
