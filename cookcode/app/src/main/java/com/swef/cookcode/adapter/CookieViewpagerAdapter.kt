@@ -1,6 +1,7 @@
 package com.swef.cookcode.adapter
 
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.os.Environment
 import android.util.Log
@@ -14,6 +15,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.swef.cookcode.CookieModifyActivity
 import com.swef.cookcode.R
 import com.swef.cookcode.api.CookieAPI
 import com.swef.cookcode.data.CommentData
@@ -44,6 +46,7 @@ class CookieViewpagerAdapter(
 ) : RecyclerView.Adapter<CookieViewpagerAdapter.ViewHolder>() {
 
     private val ERR_USER_CODE = -1
+    private val REQUEST_CODE = 1
 
     var datas = mutableListOf<CookieData>()
     var hasNext = true
@@ -78,7 +81,7 @@ class CookieViewpagerAdapter(
             binding.cookie.setBackgroundResource(R.drawable.loading_video_page)
             binding.progressBar.visibility = View.VISIBLE
 
-            initModifyDeleteButton(item.cookieId)
+            initModifyDeleteButton(item.cookieId, position)
 
             CoroutineScope(Dispatchers.Main).launch {
                 val videoUri = withContext(Dispatchers.IO) {
@@ -222,9 +225,13 @@ class CookieViewpagerAdapter(
             }
         }
 
-        private fun initModifyDeleteButton(cookieId: Int) {
+        private fun initModifyDeleteButton(cookieId: Int, position: Int) {
             binding.btnModify.setOnClickListener {
-
+                val intent = Intent(context, CookieModifyActivity::class.java)
+                intent.putExtra("access_token", accessToken)
+                intent.putExtra("cookie_id", cookieId)
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                context.startActivity(intent)
             }
 
             binding.btnDelete.setOnClickListener {

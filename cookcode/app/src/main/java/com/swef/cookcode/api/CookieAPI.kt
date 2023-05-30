@@ -2,6 +2,7 @@ package com.swef.cookcode.api
 
 import com.swef.cookcode.data.response.CommentResponse
 import com.swef.cookcode.data.response.CookieResponse
+import com.swef.cookcode.data.response.OneCookieResponse
 import com.swef.cookcode.data.response.StatusResponse
 import okhttp3.MultipartBody
 import retrofit2.Call
@@ -36,8 +37,9 @@ interface CookieAPI {
 
     @GET("cookie/{cookieId}")
     fun getCookie(
-        @Header("accessToken") accessToken: String
-    ): Call<CookieResponse>
+        @Header("accessToken") accessToken: String,
+        @Path("cookieId") cookieId: Int
+    ): Call<OneCookieResponse>
 
     @PATCH("cookie/{cookieId}")
     fun patchCookie(
