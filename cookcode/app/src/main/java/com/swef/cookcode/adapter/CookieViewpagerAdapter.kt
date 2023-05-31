@@ -14,6 +14,7 @@ import android.widget.Toast
 import android.widget.VideoView
 import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.swef.cookcode.CookieModifyActivity
@@ -26,6 +27,7 @@ import com.swef.cookcode.data.response.CommentResponse
 import com.swef.cookcode.data.response.StatusResponse
 import com.swef.cookcode.databinding.CookiePreviewItemBinding
 import com.swef.cookcode.`interface`.CommentOnClickListener
+import com.swef.cookcode.`interface`.CookieDeleteListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -43,7 +45,8 @@ import java.util.Date
 import java.util.Locale
 
 class CookieViewpagerAdapter(
-    private val context: Context
+    private val context: Context,
+    private val listener: CookieDeleteListener
 ) : RecyclerView.Adapter<CookieViewpagerAdapter.ViewHolder>() {
 
     private val ERR_USER_CODE = -1
@@ -54,8 +57,11 @@ class CookieViewpagerAdapter(
     var userId = ERR_USER_CODE
 
     lateinit var accessToken: String
+    lateinit var refreshToken: String
 
     private val API = CookieAPI.create()
+
+    lateinit var fragmentManager: FragmentManager
 
     private lateinit var commentBottomSheetCallback: BottomSheetBehavior.BottomSheetCallback
     private lateinit var infoBottomSheetBehavior: BottomSheetBehavior.BottomSheetCallback
@@ -64,25 +70,24 @@ class CookieViewpagerAdapter(
         val binding = CookiePreviewItemBinding.inflate(
         LayoutInflater.from(parent.context), parent, false
         )
-
         return ViewHolder(binding)
     }
 
     override fun getItemCount(): Int = datas.size
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(datas[position], position)
+        holder.bind(datas[position])
     }
 
     inner class ViewHolder(
         private val binding: CookiePreviewItemBinding
     ): RecyclerView.ViewHolder(binding.root), CommentOnClickListener {
         private lateinit var commentRecyclerviewAdapter: CommentRecyclerviewAdapter
-        fun bind(item: CookieData, position: Int) {
+        fun bind(item: CookieData) {
             binding.cookie.setBackgroundResource(R.drawable.loading_video_page)
             binding.progressBar.visibility = View.VISIBLE
 
-            initModifyDeleteButton(item.cookieId, position)
+            initModifyDeleteButton(item.cookieId)
 
             CoroutineScope(Dispatchers.Main).launch {
                 val videoUri = withContext(Dispatchers.IO) {
@@ -237,10 +242,12 @@ class CookieViewpagerAdapter(
             }
         }
 
-        private fun initModifyDeleteButton(cookieId: Int, position: Int) {
+        private fun initModifyDeleteButton(cookieId: Int) {
             binding.btnModify.setOnClickListener {
                 val intent = Intent(context, CookieModifyActivity::class.java)
                 intent.putExtra("access_token", accessToken)
+                intent.putExtra("refresh_token", refreshToken)
+                intent.putExtra("user_id", userId)
                 intent.putExtra("cookie_id", cookieId)
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 context.startActivity(intent)
@@ -252,6 +259,7 @@ class CookieViewpagerAdapter(
                     setMessage("정말 삭제 하시겠습니까?")
                     setPositiveButton("삭제") { _, _ ->
                         deleteCookie(cookieId)
+                        listener.itemDeleted()
                     }
                     setNegativeButton("취소") { _, _ -> /* Do nothing */ }
                     show()
@@ -323,14 +331,14 @@ class CookieViewpagerAdapter(
                             binding.btnLike.setBackgroundResource(R.drawable.icon_unliked)
                             item.isLiked = 0
                             item.likeNumber--
+
                         }
                         else {
                             binding.btnLike.setBackgroundResource(R.drawable.icon_liked)
                             item.isLiked = 1
                             item.likeNumber++
                         }
-
-                        notifyItemChanged(position)
+                        binding.likeNumber.text = item.likeNumber.toString()
                     }
                     else {
                         Log.d("data_size", call.request().toString())
