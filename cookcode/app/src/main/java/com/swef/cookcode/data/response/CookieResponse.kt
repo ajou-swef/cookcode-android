@@ -18,7 +18,7 @@ data class CookieContent(
     @SerializedName("videoUrl") val videoUrl: String,
     @SerializedName("desc") val description: String,
     @SerializedName("title") val title: String,
-    @SerializedName("id") val cookieId: Int,
+    @SerializedName("cookieId") val cookieId: Int,
     @SerializedName("createdAt") val createdAt: String,
     @SerializedName("user") val madeUser: MadeUser,
     @SerializedName("isLiked") val isLiked: Int,

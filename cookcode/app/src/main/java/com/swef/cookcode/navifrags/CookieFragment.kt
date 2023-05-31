@@ -66,6 +66,7 @@ class CookieFragment : Fragment() {
                 response: Response<CookieResponse>
             ) {
                 if(response.isSuccessful){
+                    Log.d("data_size", response.body().toString())
                     if(cookieViewpagerAdapter.datas.isEmpty()) {
                         cookieViewpagerAdapter.datas = getCookieDatasFromResponseData(response.body()!!.data) as MutableList<CookieData>
                         cookieViewpagerAdapter.notifyDataSetChanged()

@@ -70,7 +70,7 @@ interface CookieAPI {
     fun putCookieComment(
         @Header("accessToken") accessToken: String,
         @Path("cookieId") cookieId: Int,
-        @Body body: String
+        @Body body: Map<String, String>
     ): Call<StatusResponse>
 
     @DELETE("cookie/comments/{commentId}")

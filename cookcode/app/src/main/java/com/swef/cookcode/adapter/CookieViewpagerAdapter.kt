@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.MediaController
 import android.widget.Toast
+import android.widget.VideoView
 import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
@@ -98,6 +99,9 @@ class CookieViewpagerAdapter(
                     binding.cookie.setMediaController(mediaController)
 
                     binding.cookie.setOnPreparedListener { mediaPlayer ->
+                        val videoWidth = mediaPlayer.videoWidth
+                        val videoHeight = mediaPlayer.videoHeight
+                        resizeVideoView(binding.cookie, videoWidth, videoHeight)
                         mediaPlayer.start()
                     }
 
@@ -148,7 +152,7 @@ class CookieViewpagerAdapter(
                 infoBottomSheet.state = BottomSheetBehavior.STATE_EXPANDED
             }
 
-            commentRecyclerviewAdapter = CommentRecyclerviewAdapter(context, this)
+            commentRecyclerviewAdapter = CommentRecyclerviewAdapter(context, "cookie", this)
             initCommentRecyclerview(item.cookieId)
 
             binding.btnConfirm.setOnClickListener {
@@ -174,7 +178,7 @@ class CookieViewpagerAdapter(
                     response: Response<CommentResponse>
                 ) {
                     if (response.isSuccessful) {
-                        val comments = getCommentFromResponse(response.body()!!.commentData)
+                        val comments = getCommentFromResponse(response.body()!!.content.comments)
 
                         commentRecyclerviewAdapter.userId = userId
                         commentRecyclerviewAdapter.accessToken = accessToken
@@ -182,10 +186,18 @@ class CookieViewpagerAdapter(
 
                         if (comments.isEmpty()) {
                             binding.noExistComments.visibility = View.VISIBLE
+                            commentRecyclerviewAdapter.notifyDataSetChanged()
                         }
                         else {
-                            commentRecyclerviewAdapter.datas = comments as MutableList<CommentData>
-                            commentRecyclerviewAdapter.notifyItemRangeChanged(0, comments.size)
+                            if (commentRecyclerviewAdapter.datas.isEmpty()) {
+                                commentRecyclerviewAdapter.datas = comments as MutableList<CommentData>
+                                commentRecyclerviewAdapter.notifyItemRangeChanged(0, comments.size)
+                            }
+                            else {
+                                val beforeSize = commentRecyclerviewAdapter.itemCount
+                                commentRecyclerviewAdapter.datas.addAll(comments)
+                                commentRecyclerviewAdapter.notifyItemRangeChanged(beforeSize, beforeSize + comments.size)
+                            }
                             binding.noExistComments.visibility = View.GONE
                         }
                     }
@@ -273,7 +285,9 @@ class CookieViewpagerAdapter(
         }
 
         private fun putCommentCookie(cookieId: Int, comment: String) {
-            API.putCookieComment(accessToken, cookieId, comment).enqueue(object : Callback<StatusResponse>{
+            val body = HashMap<String, String>()
+            body["comment"] = comment
+            API.putCookieComment(accessToken, cookieId, body).enqueue(object : Callback<StatusResponse>{
                 override fun onResponse(
                     call: Call<StatusResponse>,
                     response: Response<StatusResponse>
@@ -409,8 +423,27 @@ class CookieViewpagerAdapter(
             return@withContext null
         }
 
-        override fun itemOnClick(cookieId: Int) {
-            getCookieComments(cookieId)
+        override fun itemOnClick(id: Int) {
+            commentRecyclerviewAdapter.datas.clear()
+            getCookieComments(id)
+        }
+
+        private fun resizeVideoView(videoView: VideoView, videoWidth: Int, videoHeight: Int) {
+            val viewWidth = videoView.width
+            val viewHeight = videoView.height
+            val widthRatio = viewWidth.toFloat() / videoWidth.toFloat()
+            val heightRatio = viewHeight.toFloat() / videoHeight.toFloat()
+
+            val scaleRatio = if (widthRatio < heightRatio) widthRatio else heightRatio
+
+            val finalWidth = (videoWidth * scaleRatio).toInt()
+            val finalHeight = (videoHeight * scaleRatio).toInt()
+
+            // VideoView의 크기를 조정하여 비율을 유지합니다.
+            val layoutParams = videoView.layoutParams
+            layoutParams.width = finalWidth
+            layoutParams.height = finalHeight
+            videoView.layoutParams = layoutParams
         }
     }
 

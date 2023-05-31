@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.RecyclerView
 import com.swef.cookcode.api.CookieAPI
+import com.swef.cookcode.api.RecipeAPI
 import com.swef.cookcode.data.CommentData
 import com.swef.cookcode.data.response.StatusResponse
 import com.swef.cookcode.databinding.CommentModifyDialogBinding
@@ -19,23 +20,23 @@ import retrofit2.Callback
 import retrofit2.Response
 
 class CommentRecyclerviewAdapter(
-    private val context: Context
+    private val context: Context,
+    private val type: String,
+    private val listener: CommentOnClickListener
 ):RecyclerView.Adapter<CommentRecyclerviewAdapter.ViewHolder>() {
-    constructor(context: Context, listener: CommentOnClickListener) : this(context){
-        this.listener = listener
-    }
 
     private val ERR_USER_CODE = -1
     private val ERR_COOKIE_CODE = -1
+    private val ERR_RECIPE_CODE = -1
 
     var datas = mutableListOf<CommentData>()
     var userId = ERR_USER_CODE
     var cookieId = ERR_COOKIE_CODE
+    var recipeId = ERR_RECIPE_CODE
     lateinit var accessToken: String
 
-    private lateinit var listener: CommentOnClickListener
-
-    private val API = CookieAPI.create()
+    private val cookieAPI = CookieAPI.create()
+    private val recipeAPI = RecipeAPI.create()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = CommentRecyclerviewItemBinding.inflate(
@@ -98,7 +99,12 @@ class CommentRecyclerviewAdapter(
                 .setMessage("정말 삭제하시겠습니까?")
                 .setPositiveButton("확인"){ _, _ ->
                     // 댓글 삭제 API
-                    deleteCookieComment(commentId)
+                    if (type == "cookie") {
+                        deleteCookieComment(commentId)
+                    }
+                    else {
+                        deleteRecipeComment(commentId)
+                    }
                 }
                 .setNegativeButton("취소"){ _, _ -> }
                 .create()
@@ -106,8 +112,8 @@ class CommentRecyclerviewAdapter(
             commentDeleteDialog.show()
         }
 
-        fun deleteCookieComment(commentId: Int){
-            API.deleteCookieComment(accessToken, commentId).enqueue(object :
+        private fun deleteCookieComment(commentId: Int){
+            cookieAPI.deleteCookieComment(accessToken, commentId).enqueue(object :
                 Callback<StatusResponse> {
                 override fun onResponse(
                     call: Call<StatusResponse>,
@@ -116,6 +122,32 @@ class CommentRecyclerviewAdapter(
                     if (response.isSuccessful){
                         putToastMessage("댓글이 삭제되었습니다.")
                         listener.itemOnClick(cookieId)
+                    }
+                    else {
+                        Log.d("data_size", call.request().toString())
+                        Log.d("data_size", response.errorBody()!!.string())
+                        putToastMessage("에러 발생!")
+                    }
+                }
+
+                override fun onFailure(call: Call<StatusResponse>, t: Throwable) {
+                    Log.d("data_size", call.request().toString())
+                    Log.d("data_size", t.message.toString())
+                    putToastMessage("잠시 후 다시 시도해주세요.")
+                }
+            })
+        }
+
+        private fun deleteRecipeComment(commentId: Int){
+            recipeAPI.deleteRecipeComment(accessToken, commentId).enqueue(object :
+                Callback<StatusResponse> {
+                override fun onResponse(
+                    call: Call<StatusResponse>,
+                    response: Response<StatusResponse>
+                ) {
+                    if (response.isSuccessful){
+                        putToastMessage("댓글이 삭제되었습니다.")
+                        listener.itemOnClick(recipeId)
                     }
                     else {
                         Log.d("data_size", call.request().toString())

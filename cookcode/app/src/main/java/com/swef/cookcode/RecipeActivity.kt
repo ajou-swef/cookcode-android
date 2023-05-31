@@ -13,13 +13,17 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.swef.cookcode.adapter.CommentRecyclerviewAdapter
 import com.swef.cookcode.adapter.RecipeViewpagerAdapter
 import com.swef.cookcode.api.RecipeAPI
+import com.swef.cookcode.data.CommentData
 import com.swef.cookcode.data.RecipeAndStepData
 import com.swef.cookcode.data.RecipeData
 import com.swef.cookcode.data.StepData
+import com.swef.cookcode.data.response.Comment
+import com.swef.cookcode.data.response.CommentResponse
 import com.swef.cookcode.data.response.Photos
 import com.swef.cookcode.data.response.RecipeContent
 import com.swef.cookcode.data.response.RecipeContentResponse
@@ -27,11 +31,12 @@ import com.swef.cookcode.data.response.StatusResponse
 import com.swef.cookcode.data.response.Step
 import com.swef.cookcode.data.response.Videos
 import com.swef.cookcode.databinding.ActivityRecipeBinding
+import com.swef.cookcode.`interface`.CommentOnClickListener
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class RecipeActivity : AppCompatActivity() {
+class RecipeActivity : AppCompatActivity(), CommentOnClickListener {
     private lateinit var binding: ActivityRecipeBinding
 
     private val ERR_RECIPE_ID = -1
@@ -59,8 +64,6 @@ class RecipeActivity : AppCompatActivity() {
         refreshToken = intent.getStringExtra("refresh_token")!!
         userId = intent.getIntExtra("user_id", ERR_USER_CODE)
         recipeId = intent.getIntExtra("recipe_id", ERR_RECIPE_ID)
-
-        Log.d("data_size", userId.toString())
 
         binding.btnDelete.setOnClickListener {
             // 레시피 삭제 Dialog
@@ -105,6 +108,7 @@ class RecipeActivity : AppCompatActivity() {
         }
 
         initCommentRecyclerview()
+        initCommentConfirmButton()
     }
 
     private fun hideKeyboardFromEditText(view: View, hasFocus: Boolean, context: Context) {
@@ -141,7 +145,6 @@ class RecipeActivity : AppCompatActivity() {
             ) {
                 if (response.body() != null) {
                     val recipeAndStepData = getRecipeDataFromResponseBody(response.body()!!.recipeData)
-                    Log.d("data_size", response.body().toString())
 
                     if (userId == response.body()!!.recipeData.user.userId) {
                         setButtonVisibility(true)
@@ -286,25 +289,129 @@ class RecipeActivity : AppCompatActivity() {
     }
 
     private fun initCommentRecyclerview(){
-        commentRecyclerviewAdapter = CommentRecyclerviewAdapter(this)
+        val linearLayoutManager = LinearLayoutManagerWrapper(this, LinearLayoutManager.VERTICAL, false)
+        commentRecyclerviewAdapter = CommentRecyclerviewAdapter(this, "recipe", this)
         binding.commentRecyclerview.apply {
             adapter = commentRecyclerviewAdapter
-            layoutManager = LinearLayoutManagerWrapper(context, LinearLayoutManager.VERTICAL, false)
+            layoutManager = linearLayoutManager
         }
 
-        // commentRecyclerviewAdapter.datas = tempDatas
-        if (commentRecyclerviewAdapter.datas.isEmpty()) {
-            binding.commentRecyclerview.visibility = View.GONE
-            binding.noExistComments.visibility = View.VISIBLE
-        }
-        else {
-            binding.commentRecyclerview.visibility = View.VISIBLE
-            binding.noExistComments.visibility = View.GONE
+        initOnScrollListener(linearLayoutManager)
+        getRecipeComments(recipeId)
+    }
+
+    private fun getRecipeComments(recipeId: Int){
+        API.getRecipeComments(accessToken, recipeId).enqueue(object: Callback<CommentResponse>{
+            override fun onResponse(
+                call: Call<CommentResponse>,
+                response: Response<CommentResponse>
+            ) {
+                if (response.isSuccessful) {
+                    val comments = getCommentFromResponse(response.body()!!.content.comments)
+                    Log.d("data_size", comments.toString())
+
+                    commentRecyclerviewAdapter.userId = userId
+                    commentRecyclerviewAdapter.accessToken = accessToken
+                    commentRecyclerviewAdapter.recipeId = recipeId
+
+                    if (comments.isEmpty()) {
+                        binding.noExistComments.visibility = View.VISIBLE
+                        commentRecyclerviewAdapter.notifyDataSetChanged()
+                    }
+                    else {
+                        if (commentRecyclerviewAdapter.datas.isEmpty()) {
+                            commentRecyclerviewAdapter.datas = comments as MutableList<CommentData>
+                            commentRecyclerviewAdapter.notifyItemRangeChanged(0, comments.size)
+                        }
+                        else {
+                            val beforeSize = commentRecyclerviewAdapter.itemCount
+                            commentRecyclerviewAdapter.datas.addAll(comments)
+                            commentRecyclerviewAdapter.notifyItemRangeChanged(beforeSize, beforeSize + comments.size)
+                        }
+                        binding.noExistComments.visibility = View.GONE
+                    }
+                }
+                else {
+                    putToastMessage("에러 발생! 관리자에게 문의해주세요.")
+                    Log.d("data_size", response.errorBody()!!.string())
+                    Log.d("data_size", call.request().toString())
+                }
+            }
+
+            override fun onFailure(call: Call<CommentResponse>, t: Throwable) {
+                Log.d("data_size", t.message.toString())
+                Log.d("data_size", call.request().toString())
+                putToastMessage("잠시 후 다시 시도해주세요.")
+            }
+        })
+    }
+
+    private fun getCommentFromResponse(response: List<Comment>): List<CommentData>{
+        val comments = mutableListOf<CommentData>()
+
+        for (item in response){
+            comments.apply {
+                add(CommentData(item.madeUser, item.comment, item.commentId))
+            }
         }
 
-        commentRecyclerviewAdapter.userId = userId
-        commentRecyclerviewAdapter.accessToken = accessToken
+        return comments
+    }
 
-        Log.d("data_size", userId.toString())
+    override fun itemOnClick(id: Int) {
+        commentRecyclerviewAdapter.datas.clear()
+        getRecipeComments(id)
+    }
+
+    private fun initCommentConfirmButton() {
+        binding.btnConfirm.setOnClickListener {
+            commentRecyclerviewAdapter.datas.clear()
+            putRecipeComment(binding.editComment.text.toString())
+        }
+    }
+
+    private fun putRecipeComment(comment: String) {
+        val body = HashMap<String, String>()
+        body["comment"] = comment
+
+        API.putRecipeComment(accessToken, recipeId, body).enqueue(object : Callback<StatusResponse> {
+            override fun onResponse(
+                call: Call<StatusResponse>,
+                response: Response<StatusResponse>
+            ) {
+                if (response.isSuccessful) {
+                    putToastMessage("댓글이 정상적으로 등록되었습니다.")
+                    getRecipeComments(recipeId)
+                } else {
+                    Log.d("data_size", call.request().toString())
+                    Log.d("data_size", response.errorBody()!!.string())
+                    putToastMessage("에러 발생!")
+                }
+            }
+
+            override fun onFailure(call: Call<StatusResponse>, t: Throwable) {
+                Log.d("data_size", call.request().toString())
+                Log.d("data_size", t.message.toString())
+                putToastMessage("잠시 후 다시 시도해주세요.")
+            }
+        })
+    }
+
+    private fun initOnScrollListener(linearLayoutManager: LinearLayoutManager) {
+        binding.commentRecyclerview.addOnScrollListener(object: RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, differentX: Int, differentY: Int) {
+                super.onScrolled(recyclerView, differentX, differentY)
+
+                if(differentY > 0) {
+                    val visibleItemCount = linearLayoutManager.childCount
+                    val totalItemCount = linearLayoutManager.itemCount
+                    val pastVisibleItems = linearLayoutManager.findFirstVisibleItemPosition()
+
+                    if (visibleItemCount + pastVisibleItems >= totalItemCount) {
+                        getRecipeComments(recipeId)
+                    }
+                }
+            }
+        })
     }
 }
