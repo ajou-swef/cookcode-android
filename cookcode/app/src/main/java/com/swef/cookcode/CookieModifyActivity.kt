@@ -17,12 +17,15 @@ import retrofit2.Response
 
 class CookieModifyActivity : AppCompatActivity() {
     companion object{
+        const val ERR_USER_CODE = -1
         const val ERR_COOKIE_CODE = -1
     }
 
     private lateinit var binding: ActivityCookieModifyBinding
 
     private lateinit var accessToken: String
+    private lateinit var refreshToken: String
+    private var userId = ERR_USER_CODE
     private val API = CookieAPI.create()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,6 +35,8 @@ class CookieModifyActivity : AppCompatActivity() {
 
         val cookieId = intent.getIntExtra("cookie_id", ERR_COOKIE_CODE)
         accessToken = intent.getStringExtra("access_token")!!
+        refreshToken = intent.getStringExtra("refresh_token")!!
+        userId = intent.getIntExtra("user_id", ERR_USER_CODE)
 
         getCookieDataFromCookieId(cookieId)
 
@@ -100,6 +105,9 @@ class CookieModifyActivity : AppCompatActivity() {
                 if (response.isSuccessful){
                     putToastMessage("정상적으로 수정되었습니다.")
                     val intent = Intent(this@CookieModifyActivity, HomeActivity::class.java)
+                    intent.putExtra("access_token", accessToken)
+                    intent.putExtra("refresh_token", refreshToken)
+                    intent.putExtra("user_id", userId)
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                     startActivity(intent)
                 }
