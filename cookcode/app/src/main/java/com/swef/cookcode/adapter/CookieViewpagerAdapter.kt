@@ -129,7 +129,7 @@ class CookieViewpagerAdapter(
             initLikeButton(item.isLiked)
 
             binding.btnLike.setOnClickListener {
-                putLikeStateCookie(item, position)
+                putLikeStateCookie(item)
             }
 
             binding.commentNumber.text = item.commentCount.toString()
@@ -288,7 +288,6 @@ class CookieViewpagerAdapter(
                     Log.d("data_size", t.message.toString())
                     putToastMessage("잠시 후 다시 시도해주세요.")
                 }
-
             })
         }
 
@@ -320,7 +319,7 @@ class CookieViewpagerAdapter(
             })
         }
 
-        private fun putLikeStateCookie(item: CookieData, position: Int) {
+        private fun putLikeStateCookie(item: CookieData) {
             API.putLikeCookie(accessToken, item.cookieId).enqueue(object: Callback<StatusResponse> {
                 override fun onResponse(
                     call: Call<StatusResponse>,

@@ -85,6 +85,11 @@ interface RecipeAPI {
         @Path("commentId") commentId: Int,
     ): Call<StatusResponse>
 
+    @POST("recipe/{recipeId}/likes")
+    fun putLikeStatus(
+        @Header("accessToken") accessToken: String,
+        @Path("recipeId") commentId: Int,
+    ): Call<StatusResponse>
 
     companion object {
         private const val BASE_URL = "http://52.79.250.237:8080/api/v1/"

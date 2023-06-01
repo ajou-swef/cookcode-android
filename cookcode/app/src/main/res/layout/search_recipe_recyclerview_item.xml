@@ -35,7 +35,7 @@
             android:id="@+id/like_mark"
             android:layout_width="20dp"
             android:layout_height="20dp"
-            android:background="@drawable/like_mark"
+            android:background="@drawable/icon_unliked"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@+id/like"/>
 

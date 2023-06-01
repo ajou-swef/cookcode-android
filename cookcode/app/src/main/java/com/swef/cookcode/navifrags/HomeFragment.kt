@@ -244,7 +244,7 @@ class HomeFragment : Fragment() {
         for (item in datas) {
             val recipeData = RecipeData(
                 item.recipeId, item.title, item.description,
-                item.mainImage, item.likeCount, item.isCookable,
+                item.mainImage, item.likeCount, item.isLiked, item.isCookable,
                 item.user, item.createdAt.substring(0, 10), item.ingredients, item.additionalIngredients)
             val stepDatas = emptyList<StepData>()
             recipeAndStepDatas.add(RecipeAndStepData(recipeData, stepDatas))
