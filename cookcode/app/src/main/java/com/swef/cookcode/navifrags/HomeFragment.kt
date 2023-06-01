@@ -22,9 +22,7 @@ import com.swef.cookcode.SearchActivity
 import com.swef.cookcode.adapter.SearchRecipeRecyclerviewAdapter
 import com.swef.cookcode.api.AccountAPI
 import com.swef.cookcode.api.RecipeAPI
-import com.swef.cookcode.data.RecipeAndStepData
 import com.swef.cookcode.data.RecipeData
-import com.swef.cookcode.data.StepData
 import com.swef.cookcode.data.response.RecipeContent
 import com.swef.cookcode.data.response.RecipeResponse
 import com.swef.cookcode.data.response.UserResponse
@@ -47,7 +45,7 @@ class HomeFragment : Fragment() {
     private lateinit var refreshToken: String
     private var userId = USER_ERR_CODE
 
-    private var searchedRecipeAndStepDatas = mutableListOf<RecipeAndStepData>()
+    private var searchedRecipeDatas = mutableListOf<RecipeData>()
 
     private lateinit var recyclerViewAdapter: SearchRecipeRecyclerviewAdapter
 
@@ -208,7 +206,7 @@ class HomeFragment : Fragment() {
                 Log.d("data_size", response.body()!!.hasNext.toString())
                 val datas = response.body()
                 if (datas != null && datas.status == 200) {
-                    searchedRecipeAndStepDatas = getRecipeDatasFromResponseBody(datas.recipes.content)
+                    searchedRecipeDatas = getRecipeDatasFromResponseBody(datas.recipes.content)
                     putDataForRecyclerview()
                 }
             }
@@ -227,7 +225,7 @@ class HomeFragment : Fragment() {
                 Log.d("data_size", response.body()!!.hasNext.toString())
                 val datas = response.body()
                 if (datas != null && datas.status == 200) {
-                    searchedRecipeAndStepDatas = getRecipeDatasFromResponseBody(datas.recipes.content)
+                    searchedRecipeDatas = getRecipeDatasFromResponseBody(datas.recipes.content)
                     putNewDataForRecyclerview()
                 }
             }
@@ -238,37 +236,36 @@ class HomeFragment : Fragment() {
         })
     }
 
-    private fun getRecipeDatasFromResponseBody(datas: List<RecipeContent>): MutableList<RecipeAndStepData> {
-        val recipeAndStepDatas = mutableListOf<RecipeAndStepData>()
+    private fun getRecipeDatasFromResponseBody(datas: List<RecipeContent>): MutableList<RecipeData> {
+        val recipeDatas = mutableListOf<RecipeData>()
 
         for (item in datas) {
             val recipeData = RecipeData(
                 item.recipeId, item.title, item.description,
                 item.mainImage, item.likeCount, item.isLiked, item.isCookable,
                 item.user, item.createdAt.substring(0, 10), item.ingredients, item.additionalIngredients)
-            val stepDatas = emptyList<StepData>()
-            recipeAndStepDatas.add(RecipeAndStepData(recipeData, stepDatas))
+            recipeDatas.add(recipeData)
         }
 
-        return recipeAndStepDatas
+        return recipeDatas
     }
 
     private fun putDataForRecyclerview() {
         val isEmpty = recyclerViewAdapter.datas.isEmpty()
 
         if (isEmpty) {
-            recyclerViewAdapter.datas = searchedRecipeAndStepDatas
+            recyclerViewAdapter.datas = searchedRecipeDatas
             recyclerViewAdapter.notifyItemRangeInserted(0, recyclerViewAdapter.datas.size)
         }
         else {
             val beforeSize = recyclerViewAdapter.datas.size
-            recyclerViewAdapter.datas.addAll(searchedRecipeAndStepDatas)
+            recyclerViewAdapter.datas.addAll(searchedRecipeDatas)
             recyclerViewAdapter.notifyItemRangeInserted(beforeSize, recyclerViewAdapter.datas.size)
         }
     }
 
     private fun putNewDataForRecyclerview() {
-        recyclerViewAdapter.datas = searchedRecipeAndStepDatas
+        recyclerViewAdapter.datas = searchedRecipeDatas
         recyclerViewAdapter.notifyDataSetChanged()
     }
 
