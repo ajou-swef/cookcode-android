@@ -76,6 +76,7 @@ class RecipeActivity : AppCompatActivity(), CommentOnClickListener {
         }
 
         recipeViewpagerAdapter = RecipeViewpagerAdapter(this)
+        recipeViewpagerAdapter.accessToken = accessToken
         binding.viewpager.adapter = recipeViewpagerAdapter
 
         getRecipeDataFromRecipeID(recipeId, accessToken)
@@ -182,7 +183,7 @@ class RecipeActivity : AppCompatActivity(), CommentOnClickListener {
 
         val recipeData = RecipeData(
             data.recipeId, data.title, data.description,
-            data.mainImage, data.likeCount, data.isCookable,
+            data.mainImage, data.likeCount, data.isLiked, data.isCookable,
             data.user, data.createdAt, data.ingredients, data.additionalIngredients)
         val stepDatas = getStepDatasFromRecipeContent(data.steps)
 

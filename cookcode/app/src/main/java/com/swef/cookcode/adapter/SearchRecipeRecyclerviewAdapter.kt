@@ -72,6 +72,13 @@ class SearchRecipeRecyclerviewAdapter(
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 binding.layout.context.startActivity(intent)
             }
+
+            if (item.recipeData.isLiked) {
+                binding.likeMark.setBackgroundResource(R.drawable.icon_liked)
+            }
+            else {
+                binding.likeMark.setBackgroundResource(R.drawable.icon_unliked)
+            }
         }
     }
 
