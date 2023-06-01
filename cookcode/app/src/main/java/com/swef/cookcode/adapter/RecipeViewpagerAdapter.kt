@@ -22,6 +22,8 @@ class RecipeViewpagerAdapter(
 
     private lateinit var loadingViewHolder: LoadingViewHolder
 
+    lateinit var accessToken: String
+
     companion object {
         const val VIEW_TYPE_LOADING = 0
         const val VIEW_TYPE_RECIPE = 1
@@ -40,6 +42,7 @@ class RecipeViewpagerAdapter(
         if (recipeData != null) {
             if (viewType == VIEW_TYPE_RECIPE) {
                 recipeTitleAdapter = RecipePreviewAdapter(recipeData!!, context)
+                recipeTitleAdapter.accessToken = accessToken
                 return recipeTitleAdapter.onCreateViewHolder(parent, viewType)
             } else {
                 recipeStepAdapter = StepPreviewRecyclerviewAdapter(stepDatas!!, context)

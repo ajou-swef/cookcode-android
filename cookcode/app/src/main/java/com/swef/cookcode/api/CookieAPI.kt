@@ -1,6 +1,8 @@
 package com.swef.cookcode.api
 
+import com.swef.cookcode.data.response.CommentResponse
 import com.swef.cookcode.data.response.CookieResponse
+import com.swef.cookcode.data.response.OneCookieResponse
 import com.swef.cookcode.data.response.StatusResponse
 import okhttp3.MultipartBody
 import retrofit2.Call
@@ -35,8 +37,9 @@ interface CookieAPI {
 
     @GET("cookie/{cookieId}")
     fun getCookie(
-        @Header("accessToken") accessToken: String
-    ): Call<CookieResponse>
+        @Header("accessToken") accessToken: String,
+        @Path("cookieId") cookieId: Int
+    ): Call<OneCookieResponse>
 
     @PATCH("cookie/{cookieId}")
     fun patchCookie(
@@ -51,8 +54,33 @@ interface CookieAPI {
         @Path("cookieId") cookieId: Int,
     ): Call<StatusResponse>
 
+    @POST("cookie/{cookieId}/likes")
+    fun putLikeCookie(
+        @Header("accessToken") accessToken: String,
+        @Path("cookieId") cookieId: Int,
+    ): Call<StatusResponse>
+
+    @GET("cookie/{cookieId}/comments")
+    fun getCookieComments(
+        @Header("accessToken") accessToken: String,
+        @Path("cookieId") cookieId: Int
+    ): Call<CommentResponse>
+
+    @POST("cookie/{cookieId}/comments")
+    fun putCookieComment(
+        @Header("accessToken") accessToken: String,
+        @Path("cookieId") cookieId: Int,
+        @Body body: Map<String, String>
+    ): Call<StatusResponse>
+
+    @DELETE("cookie/comments/{commentId}")
+    fun deleteCookieComment(
+        @Header("accessToken") accessToken: String,
+        @Path("commentId") commentId: Int,
+    ): Call<StatusResponse>
+
     companion object {
-        private const val BASE_URL = "http://43.201.28.241:8080/api/v1/"
+        private const val BASE_URL = "http://52.79.250.237:8080/api/v1/"
 
         fun create(): CookieAPI {
             return Retrofit.Builder()

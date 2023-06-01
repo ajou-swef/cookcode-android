@@ -8,19 +8,19 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.viewpager2.widget.ViewPager2
+import com.swef.cookcode.R
 import com.swef.cookcode.adapter.CookieViewpagerAdapter
 import com.swef.cookcode.api.CookieAPI
-import com.swef.cookcode.data.CommentData
 import com.swef.cookcode.data.CookieData
 import com.swef.cookcode.data.response.CookieContent
 import com.swef.cookcode.data.response.CookieResponse
-import com.swef.cookcode.data.response.MadeUser
 import com.swef.cookcode.databinding.FragmentCookieBinding
+import com.swef.cookcode.`interface`.CookieDeleteListener
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class CookieFragment : Fragment() {
+class CookieFragment : Fragment(), CookieDeleteListener {
 
     private var _binding: FragmentCookieBinding? = null
     private val binding get() = _binding!!
@@ -36,6 +36,8 @@ class CookieFragment : Fragment() {
     private val API = CookieAPI.create()
     private var page = 0
 
+    private val bundle = Bundle()
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -46,7 +48,7 @@ class CookieFragment : Fragment() {
         refreshToken = arguments?.getString("refresh_token")!!
         userId = arguments?.getInt("user_id")!!
 
-        cookieViewpagerAdapter = CookieViewpagerAdapter(requireContext())
+        cookieViewpagerAdapter = CookieViewpagerAdapter(requireContext(), this)
         binding.viewPager.apply {
             adapter = cookieViewpagerAdapter
             orientation = ViewPager2.ORIENTATION_VERTICAL
@@ -54,6 +56,13 @@ class CookieFragment : Fragment() {
 
         cookieViewpagerAdapter.userId = userId
         cookieViewpagerAdapter.accessToken = accessToken
+        cookieViewpagerAdapter.refreshToken = refreshToken
+
+        bundle.putString("access_token", accessToken)
+        bundle.putString("refresh_token", refreshToken)
+        bundle.putInt("user_id", userId)
+
+        cookieViewpagerAdapter.fragmentManager = parentFragmentManager
 
         getRandomCookies()
         initOnScrollListener()
@@ -69,18 +78,15 @@ class CookieFragment : Fragment() {
             ) {
                 if(response.isSuccessful){
                     Log.d("data_size", response.body().toString())
-
                     if(cookieViewpagerAdapter.datas.isEmpty()) {
-                        cookieViewpagerAdapter.datas = getCookieDatasFromResponseData(response.body()!!.data.cookies) as MutableList<CookieData>
+                        cookieViewpagerAdapter.datas = getCookieDatasFromResponseData(response.body()!!.data) as MutableList<CookieData>
                         cookieViewpagerAdapter.notifyDataSetChanged()
                     }
                     else {
                         val beforeSize = cookieViewpagerAdapter.itemCount
-                        cookieViewpagerAdapter.datas.addAll(getCookieDatasFromResponseData(response.body()!!.data.cookies))
+                        cookieViewpagerAdapter.datas.addAll(getCookieDatasFromResponseData(response.body()!!.data))
                         cookieViewpagerAdapter.notifyItemRangeInserted(beforeSize, cookieViewpagerAdapter.itemCount)
                     }
-
-                    cookieViewpagerAdapter.hasNext = response.body()!!.data.hasNext
                 }
                 else {
                     putToastMessage("에러 발생! 관리자에게 문의해주세요.")
@@ -90,6 +96,8 @@ class CookieFragment : Fragment() {
             }
 
             override fun onFailure(call: Call<CookieResponse>, t: Throwable) {
+                Log.d("data_size", t.message.toString())
+                Log.d("data_size", call.request().toString())
                 putToastMessage("잠시 후 다시 시도해주세요.")
             }
         })
@@ -103,21 +111,14 @@ class CookieFragment : Fragment() {
             val title = data.title
             val description = data.description
             val cookieId = data.cookieId
-            val likeNumber = 100
-            val isLiked = false
-
-            val tempUser = MadeUser(1, "null", "쿡코드짱")
-            val tempCreatedAt = "2023-06-07"
-
-            val tempDatas = mutableListOf<CommentData>()
-
-            tempDatas.apply {
-                add(CommentData(MadeUser(16, "null", "빈푸"), "2023-05-30", "너무 맛있네요", null))
-                add(CommentData(MadeUser(13, "null", "쿡코듲장"), "2023-06-20", "이건 좀,, 별로 인듯 너무 짜고 매워잉 이건 좀,, 별로 인듯 너무 짜고 매워잉 이건 좀,, 별로 인듯 너무 짜고 매워잉", null))
-            }
+            val likeNumber = data.likeCount
+            val isLiked = data.isLiked
+            val madeUser = data.madeUser
+            val createdAt = data.createdAt
+            val commentCount = data.commentCount
 
             cookieDatas.add(
-                CookieData(cookieId, videoUrl, title, description, tempUser, tempCreatedAt, isLiked, likeNumber, tempDatas)
+                CookieData(cookieId, videoUrl, title, description, madeUser, createdAt, isLiked, likeNumber, commentCount)
             )
         }
 
@@ -131,42 +132,24 @@ class CookieFragment : Fragment() {
     private fun initOnScrollListener() {
         binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
-                val currentPositionInPage = position % 5
-                val currentPage = position / 5
-
-                if (testCanGetNextPageOnData(currentPositionInPage, currentPage)) {
+                if (position == cookieViewpagerAdapter.datas.size - 1) {
                     page++
                     getRandomCookies()
-                }
-
-                if (testIsLastData(position)){
-                    putToastMessage("마지막 영상입니다.")
                 }
             }
         })
     }
 
-    private fun testCanGetNextPageOnData(currentPositionInPage: Int, currentPage: Int): Boolean {
-        if (currentPositionInPage != 4) {
-            return false
-        }
-        else if (currentPage != page){
-            return false
-        }
-        else if (!cookieViewpagerAdapter.hasNext){
-            return false
-        }
-        return true
-    }
-
-    private fun testIsLastData(currentPosition: Int): Boolean {
-        if (currentPosition == cookieViewpagerAdapter.itemCount - 1 && !cookieViewpagerAdapter.hasNext)
-            return true
-        return false
-    }
-
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    override fun itemDeleted() {
+        val cookieFragment = CookieFragment()
+        cookieFragment.arguments = bundle
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.fl_container, cookieFragment)
+            .commit()
     }
 }
