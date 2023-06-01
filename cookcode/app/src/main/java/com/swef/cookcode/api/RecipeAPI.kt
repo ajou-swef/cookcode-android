@@ -1,5 +1,6 @@
 package com.swef.cookcode.api
 
+import com.swef.cookcode.data.response.CommentResponse
 import com.swef.cookcode.data.response.FileResponse
 import com.swef.cookcode.data.response.RecipeContentResponse
 import com.swef.cookcode.data.response.RecipeResponse
@@ -24,7 +25,7 @@ interface RecipeAPI {
 
     @Multipart
     @JvmSuppressWildcards
-    @POST("recipe/files")
+    @POST("recipe/files/recipe")
     fun postImage(
         @Header("accessToken") accessToken: String,
         @Part file: MultipartBody.Part
@@ -65,8 +66,33 @@ interface RecipeAPI {
         @Body body: HashMap<String, Any>
     ): Call<RecipeResponse>
 
+    @GET("recipe/{recipeId}/comments")
+    fun getRecipeComments(
+        @Header("accessToken") accessToken: String,
+        @Path("recipeId") recipeId: Int
+    ): Call<CommentResponse>
+
+    @POST("recipe/{recipeId}/comments")
+    fun putRecipeComment(
+        @Header("accessToken") accessToken: String,
+        @Path("recipeId") recipeId: Int,
+        @Body body: Map<String, String>
+    ): Call<StatusResponse>
+
+    @DELETE("recipe/comments/{commentId}")
+    fun deleteRecipeComment(
+        @Header("accessToken") accessToken: String,
+        @Path("commentId") commentId: Int,
+    ): Call<StatusResponse>
+
+    @POST("recipe/{recipeId}/likes")
+    fun putLikeStatus(
+        @Header("accessToken") accessToken: String,
+        @Path("recipeId") commentId: Int,
+    ): Call<StatusResponse>
+
     companion object {
-        private const val BASE_URL = "http://43.201.10.7:8080/api/v1/"
+        private const val BASE_URL = "http://52.79.250.237:8080/api/v1/"
 
         fun create(): RecipeAPI {
             return Retrofit.Builder()

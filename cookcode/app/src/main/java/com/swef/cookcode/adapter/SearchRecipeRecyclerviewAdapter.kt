@@ -8,6 +8,8 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
+import com.swef.cookcode.R
 import com.swef.cookcode.RecipeActivity
 import com.swef.cookcode.data.RecipeAndStepData
 import com.swef.cookcode.databinding.SearchRecipeRecyclerviewItemBinding
@@ -47,7 +49,8 @@ class SearchRecipeRecyclerviewAdapter(
         private val binding: SearchRecipeRecyclerviewItemBinding
     ): RecyclerView.ViewHolder(binding.root) {
         fun bind(item: RecipeAndStepData){
-            binding.recipeName.text = item.recipeData.title
+            binding.recipeName.text = context.getString(
+                R.string.string_shadow_convert, item.recipeData.title)
             binding.likeNumber.text = item.recipeData.likes.toString()
             binding.madeUser.text = item.recipeData.madeUser.nickname
             binding.createdAtTime.text = item.recipeData.createdAt
@@ -69,12 +72,27 @@ class SearchRecipeRecyclerviewAdapter(
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 binding.layout.context.startActivity(intent)
             }
+
+            if (item.recipeData.isLiked) {
+                binding.likeMark.setBackgroundResource(R.drawable.icon_liked)
+            }
+            else {
+                binding.likeMark.setBackgroundResource(R.drawable.icon_unliked)
+            }
         }
     }
 
     private fun getImageFromUrl(imageUrl: String, view: ImageView) {
+        val targetWidth = 1280
+        val targetHeight = 720
+
+        val requestOptions = RequestOptions()
+            .centerCrop()
+            .override(targetWidth, targetHeight)
+
         Glide.with(context)
             .load(imageUrl)
+            .apply(requestOptions)
             .into(view)
     }
 }

@@ -91,7 +91,7 @@ class SearchRecipeFragment : Fragment() {
         for (item in datas) {
             val recipeData = RecipeData(
                 item.recipeId, item.title, item.description,
-                item.mainImage, item.likeCount, item.isCookable,
+                item.mainImage, item.likeCount, item.isLiked, item.isCookable,
                 item.user, item.createdAt, item.ingredients, item.additionalIngredients)
             val stepDatas = getStepDatasFromRecipeContent(item.steps)
             recipeAndStepDatas.add(RecipeAndStepData(recipeData, stepDatas))

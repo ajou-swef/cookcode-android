@@ -205,6 +205,7 @@ class HomeFragment : Fragment() {
         recipeAPI.getRecipes(accessToken, currentPage, pageSize, cookable).enqueue(object :
             Callback<RecipeResponse> {
             override fun onResponse(call: Call<RecipeResponse>, response: Response<RecipeResponse>) {
+                Log.d("data_size", response.body()!!.hasNext.toString())
                 val datas = response.body()
                 if (datas != null && datas.status == 200) {
                     searchedRecipeAndStepDatas = getRecipeDatasFromResponseBody(datas.recipes.content)
@@ -223,6 +224,7 @@ class HomeFragment : Fragment() {
         recipeAPI.getRecipes(accessToken, currentPage, pageSize, cookable).enqueue(object :
             Callback<RecipeResponse> {
             override fun onResponse(call: Call<RecipeResponse>, response: Response<RecipeResponse>) {
+                Log.d("data_size", response.body()!!.hasNext.toString())
                 val datas = response.body()
                 if (datas != null && datas.status == 200) {
                     searchedRecipeAndStepDatas = getRecipeDatasFromResponseBody(datas.recipes.content)
@@ -242,7 +244,7 @@ class HomeFragment : Fragment() {
         for (item in datas) {
             val recipeData = RecipeData(
                 item.recipeId, item.title, item.description,
-                item.mainImage, item.likeCount, item.isCookable,
+                item.mainImage, item.likeCount, item.isLiked, item.isCookable,
                 item.user, item.createdAt.substring(0, 10), item.ingredients, item.additionalIngredients)
             val stepDatas = emptyList<StepData>()
             recipeAndStepDatas.add(RecipeAndStepData(recipeData, stepDatas))
@@ -294,6 +296,7 @@ class HomeFragment : Fragment() {
         val nextIntent = Intent(activity, MypageActivity::class.java)
         nextIntent.putExtra("user_name", nickname)
         nextIntent.putExtra("access_token", accessToken)
+        nextIntent.putExtra("refresh_token", refreshToken)
         nextIntent.putExtra("user_id", userId)
         nextIntent.flags = FLAG_ACTIVITY_CLEAR_TOP
         startActivity(nextIntent)

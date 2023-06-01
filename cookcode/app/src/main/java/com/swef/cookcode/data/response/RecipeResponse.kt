@@ -6,11 +6,7 @@ data class RecipeResponse(
     @SerializedName("status") val status: Int,
     @SerializedName("data") val recipes: Content,
     @SerializedName("numberOfElements") val numberOfElements: Int, // 무한스크롤 시 현재 페이지에 있는 레시피 개수
-    @SerializedName("offset") val offset: Int,
-    @SerializedName("pageNumber") val pageNumber: Int,
-    @SerializedName("pageSize") val pageSize: Int,
-    @SerializedName("totalElements") val totalElements: Int, // 전체 레시피 개수
-    @SerializedName("totalPages") val totalPages: Int
+    @SerializedName("hasNext") val hasNext: Boolean
 )
 
 data class Content(

@@ -8,9 +8,9 @@ import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
-import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -37,8 +37,10 @@ interface AccountAPI {
         @Body body: HashMap<Any, Any>
     ): Call<TokenResponse>
 
-    @DELETE("account")
-    fun deleteAccount(): Call<Any>
+    @PATCH("account")
+    fun patchAccount(
+        @Header("accessToken") accessToken: String
+    ): Call<StatusResponse>
 
     @GET("account/{userId}")
     fun getUserInfo(
@@ -47,7 +49,7 @@ interface AccountAPI {
     ):Call<UserResponse>
 
     companion object {
-        private const val BASE_URL = "http://43.201.10.7:8080/api/v1/"
+        private const val BASE_URL = "http://52.79.250.237:8080/api/v1/"
 
         fun create(): AccountAPI {
             return Retrofit.Builder()
