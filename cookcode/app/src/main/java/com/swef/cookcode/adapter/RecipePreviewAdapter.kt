@@ -58,6 +58,7 @@ class RecipePreviewAdapter(
                 R.string.string_shadow_convert, item.title)
             binding.madeUser.text = item.madeUser.nickname
             binding.descriptionText.text = item.description
+            binding.createdAtTime.text = item.createdAt!!.substring(0 until 10)
 
             // 필수재료, 추가재료 확인
             essentialIngredientsRecyclerviewAdapter = IngredientRecyclerviewAdapter("recipe_preview")
