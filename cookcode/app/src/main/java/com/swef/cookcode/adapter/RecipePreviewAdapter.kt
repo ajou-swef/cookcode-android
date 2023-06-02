@@ -6,7 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.swef.cookcode.R
@@ -34,6 +34,8 @@ class RecipePreviewAdapter(
 
     lateinit var accessToken: String
 
+    val spanCount = 3
+
     private val API = RecipeAPI.create()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -55,25 +57,24 @@ class RecipePreviewAdapter(
             binding.recipeName.text = context.getString(
                 R.string.string_shadow_convert, item.title)
             binding.madeUser.text = item.madeUser.nickname
-            binding.likeNumber.text = item.likes.toString()
             binding.descriptionText.text = item.description
 
             // 필수재료, 추가재료 확인
             essentialIngredientsRecyclerviewAdapter = IngredientRecyclerviewAdapter("recipe_preview")
             essentialIngredientsRecyclerviewAdapter.filteredDatas =
                 makeIngredientToMyIngredientData(item.ingredients) as MutableList<MyIngredientData>
-            binding.essentialIngredients.adapter = essentialIngredientsRecyclerviewAdapter
-            binding.essentialIngredients.layoutManager = LinearLayoutManagerWrapper(
-                context, LinearLayoutManager.HORIZONTAL, false
-            )
+            binding.essentialIngredients.apply {
+                adapter = essentialIngredientsRecyclerviewAdapter
+                layoutManager = GridLayoutManager(context, spanCount)
+            }
 
             additionalIngredientsRecyclerviewAdapter = IngredientRecyclerviewAdapter("recipe_preview")
             additionalIngredientsRecyclerviewAdapter.filteredDatas =
                 makeIngredientToMyIngredientData(item.additionalIngredients) as MutableList<MyIngredientData>
-            binding.additionalIngredients.adapter = additionalIngredientsRecyclerviewAdapter
-            binding.additionalIngredients.layoutManager = LinearLayoutManagerWrapper(
-                context, LinearLayoutManager.HORIZONTAL, false
-            )
+            binding.additionalIngredients.apply {
+                adapter = additionalIngredientsRecyclerviewAdapter
+                layoutManager = GridLayoutManager(context, spanCount)
+            }
 
             if (item.additionalIngredients.isEmpty()) {
                 binding.additionalIngredient.visibility = View.GONE
@@ -112,7 +113,6 @@ class RecipePreviewAdapter(
                         item.isLiked = true
                         item.likes++
                     }
-                    binding.likeNumber.text = item.likes.toString()
                 }
                 else {
                     Log.d("data_size", call.request().toString())
@@ -130,6 +130,8 @@ class RecipePreviewAdapter(
     }
 
     private fun getImageFromUrl(imageUrl: String) {
+        binding.mainImage.clipToOutline = true
+
         Glide.with(context)
             .load(imageUrl)
             .into(binding.mainImage)
@@ -150,12 +152,5 @@ class RecipePreviewAdapter(
 
     fun putToastMessage(message: String) {
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-    }
-}
-
-class LinearLayoutManagerWrapper(context: Context, orientation: Int, reverseLayout: Boolean) :
-    LinearLayoutManager(context, orientation, reverseLayout) {
-    override fun supportsPredictiveItemAnimations(): Boolean {
-        return false
     }
 }

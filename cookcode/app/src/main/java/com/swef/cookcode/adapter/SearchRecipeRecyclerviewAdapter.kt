@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions
 import com.swef.cookcode.R
 import com.swef.cookcode.RecipeActivity
 import com.swef.cookcode.data.RecipeData
@@ -83,16 +82,10 @@ class SearchRecipeRecyclerviewAdapter(
     }
 
     private fun getImageFromUrl(imageUrl: String, view: ImageView) {
-        val targetWidth = 1280
-        val targetHeight = 720
-
-        val requestOptions = RequestOptions()
-            .centerCrop()
-            .override(targetWidth, targetHeight)
-
         Glide.with(context)
             .load(imageUrl)
-            .apply(requestOptions)
             .into(view)
+
+        binding.mainImage.clipToOutline = true
     }
 }

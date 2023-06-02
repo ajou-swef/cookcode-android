@@ -12,32 +12,44 @@
         android:layout_height="match_parent">
 
         <ImageView
+            android:id="@+id/user_profile_image"
+            android:src="@drawable/user_profile"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="10dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <ImageView
             android:id="@+id/blue_check"
             android:layout_width="20dp"
             android:layout_height="20dp"
+            android:layout_marginStart="10dp"
             android:background="@drawable/blue_check"
             android:visibility="gone"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintStart_toEndOf="@id/user_profile_image"
             app:layout_constraintTop_toTopOf="@+id/made_user"/>
 
         <TextView
             android:id="@+id/made_user"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="3dp"
+            android:layout_marginStart="5dp"
             android:ems="6"
             android:text="haeiny"
             android:textColor="@color/black"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintStart_toEndOf="@id/blue_check"
             app:layout_constraintBottom_toTopOf="@+id/like"/>
 
         <ImageView
             android:id="@+id/like_mark"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:layout_marginStart="5dp"
             android:background="@drawable/icon_unliked"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/like"/>
+            app:layout_constraintStart_toEndOf="@id/user_profile_image"
+            app:layout_constraintTop_toTopOf="@+id/like"
+            app:layout_constraintBottom_toBottomOf="@+id/like"/>
 
         <TextView
             android:id="@+id/like"
@@ -72,13 +84,14 @@
             android:id="@+id/main_image"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_marginEnd="2dp"
+            android:layout_marginBottom="10dp"
             android:background="@drawable/rounded_recipe_main_image"
+            android:scaleType="centerCrop"
             android:src="@drawable/food_example"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@+id/made_user"/>
+            app:layout_constraintBottom_toTopOf="@+id/user_profile_image"/>
 
         <TextView
             android:id="@+id/recipe_name"
