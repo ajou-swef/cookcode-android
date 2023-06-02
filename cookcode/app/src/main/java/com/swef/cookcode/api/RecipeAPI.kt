@@ -91,8 +91,17 @@ interface RecipeAPI {
         @Path("recipeId") commentId: Int,
     ): Call<StatusResponse>
 
+    @GET("recipe/search")
+    fun getSearchRecipes(
+        @Header("accessToken") accessToken: String,
+        @Query("query") keyword: String,
+        @Query("cookable") cookable: Int,
+        @Query("page") page: Int,
+        @Query("size") size: Int,
+    ): Call<RecipeResponse>
+
     companion object {
-        private const val BASE_URL = "http://52.79.250.237:8080/api/v1/"
+        private const val BASE_URL = "http://13.124.102.73:8080/api/v1/"
 
         fun create(): RecipeAPI {
             return Retrofit.Builder()

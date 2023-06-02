@@ -12,6 +12,7 @@ class HomeActivity : AppCompatActivity() {
     // refreshtoken은 accesstoken을 refresh하기 위해 사용
     // refreshtoken이 유효하지 않을 경우 로그아웃
     private lateinit var refreshToken : String
+    private lateinit var authority : String
 
     private val USER_ERR_CODE = -1
     private var userId = USER_ERR_CODE
@@ -31,11 +32,16 @@ class HomeActivity : AppCompatActivity() {
             refreshToken = intent.getStringExtra("refresh_token")!!
         }
 
+        if(!intent.getStringExtra("authority").isNullOrBlank()){
+            authority = intent.getStringExtra("authority")!!
+        }
+
         userId = intent.getIntExtra("user_id", USER_ERR_CODE)
 
         bundle.putString("access_token", accessToken)
         bundle.putString("refresh_token", refreshToken)
         bundle.putInt("user_id", userId)
+        bundle.putString("authority", authority)
 
         // bottom navigation bar 초기화
         initBottomNavigation()

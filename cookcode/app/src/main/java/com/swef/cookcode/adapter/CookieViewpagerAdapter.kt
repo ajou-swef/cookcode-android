@@ -18,6 +18,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.swef.cookcode.CookieModifyActivity
+import com.swef.cookcode.LinearLayoutManagerWrapper
 import com.swef.cookcode.R
 import com.swef.cookcode.api.CookieAPI
 import com.swef.cookcode.data.CommentData
@@ -50,7 +51,6 @@ class CookieViewpagerAdapter(
 ) : RecyclerView.Adapter<CookieViewpagerAdapter.ViewHolder>() {
 
     private val ERR_USER_CODE = -1
-    private val REQUEST_CODE = 1
 
     var datas = mutableListOf<CookieData>()
     var hasNext = true
@@ -161,6 +161,7 @@ class CookieViewpagerAdapter(
             initCommentRecyclerview(item.cookieId)
 
             binding.btnConfirm.setOnClickListener {
+                commentRecyclerviewAdapter.datas.clear()
                 val comment = binding.editComment.text.toString()
                 putCommentCookie(item.cookieId, comment)
             }
@@ -421,8 +422,6 @@ class CookieViewpagerAdapter(
                         input.copyTo(output)
                     }
                 }
-
-                Log.d("data_size", tempFile.absolutePath)
 
                 return@withContext Uri.parse(tempFile.absolutePath)
             }

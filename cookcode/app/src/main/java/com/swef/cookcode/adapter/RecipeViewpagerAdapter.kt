@@ -1,7 +1,6 @@
 package com.swef.cookcode.adapter
 
 import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -32,9 +31,6 @@ class RecipeViewpagerAdapter(
     fun setData(data: RecipeAndStepData) {
         this.recipeData = data.recipeData
         this.stepDatas = data.stepData
-
-        Log.d("data_size", recipeData.toString())
-        Log.d("data_size", stepDatas.toString())
         notifyDataSetChanged()
     }
 

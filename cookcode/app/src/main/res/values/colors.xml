@@ -9,4 +9,6 @@
     <color name="main_varient_theme">#FFF4E7DF</color>
     <color name="red">#FFFF0000</color>
     <color name="green">#FF00BC00</color>
+    <color name="blue_17">#FF179CF0</color>
+    <color name="blue_0F">#FF0F53B7</color>
 </resources>

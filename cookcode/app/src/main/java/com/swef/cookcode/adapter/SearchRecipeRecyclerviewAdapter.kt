@@ -8,10 +8,9 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions
 import com.swef.cookcode.R
 import com.swef.cookcode.RecipeActivity
-import com.swef.cookcode.data.RecipeAndStepData
+import com.swef.cookcode.data.RecipeData
 import com.swef.cookcode.databinding.SearchRecipeRecyclerviewItemBinding
 
 class SearchRecipeRecyclerviewAdapter(
@@ -21,7 +20,7 @@ class SearchRecipeRecyclerviewAdapter(
 
     private val ERR_USER_CODE = -1
 
-    var datas = mutableListOf<RecipeAndStepData>()
+    var datas = mutableListOf<RecipeData>()
     var userId = ERR_USER_CODE
 
     lateinit var accessToken: String
@@ -48,15 +47,15 @@ class SearchRecipeRecyclerviewAdapter(
     inner class ViewHolder(
         private val binding: SearchRecipeRecyclerviewItemBinding
     ): RecyclerView.ViewHolder(binding.root) {
-        fun bind(item: RecipeAndStepData){
+        fun bind(item: RecipeData){
             binding.recipeName.text = context.getString(
-                R.string.string_shadow_convert, item.recipeData.title)
-            binding.likeNumber.text = item.recipeData.likes.toString()
-            binding.madeUser.text = item.recipeData.madeUser.nickname
-            binding.createdAtTime.text = item.recipeData.createdAt
-            getImageFromUrl(item.recipeData.mainImage, binding.mainImage)
+                R.string.string_shadow_convert, item.title)
+            binding.likeNumber.text = item.likes.toString()
+            binding.madeUser.text = item.madeUser.nickname
+            binding.createdAtTime.text = item.createdAt
+            getImageFromUrl(item.mainImage, binding.mainImage)
 
-            if (item.recipeData.cookable) {
+            if (item.cookable) {
                 binding.isCookable.visibility = View.VISIBLE
             }
             else {
@@ -65,7 +64,7 @@ class SearchRecipeRecyclerviewAdapter(
 
             binding.layout.setOnClickListener {
                 val intent = Intent(binding.layout.context, RecipeActivity::class.java)
-                intent.putExtra("recipe_id", item.recipeData.recipeId)
+                intent.putExtra("recipe_id", item.recipeId)
                 intent.putExtra("user_id", userId)
                 intent.putExtra("access_token", accessToken)
                 intent.putExtra("refresh_token", refreshToken)
@@ -73,7 +72,7 @@ class SearchRecipeRecyclerviewAdapter(
                 binding.layout.context.startActivity(intent)
             }
 
-            if (item.recipeData.isLiked) {
+            if (item.isLiked) {
                 binding.likeMark.setBackgroundResource(R.drawable.icon_liked)
             }
             else {
@@ -83,16 +82,10 @@ class SearchRecipeRecyclerviewAdapter(
     }
 
     private fun getImageFromUrl(imageUrl: String, view: ImageView) {
-        val targetWidth = 1280
-        val targetHeight = 720
-
-        val requestOptions = RequestOptions()
-            .centerCrop()
-            .override(targetWidth, targetHeight)
-
         Glide.with(context)
             .load(imageUrl)
-            .apply(requestOptions)
             .into(view)
+
+        binding.mainImage.clipToOutline = true
     }
 }
