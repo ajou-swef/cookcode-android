@@ -56,4 +56,5 @@ dependencies {
     implementation 'androidx.viewpager2:viewpager2:1.0.0'
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1"
     implementation "com.arthenica:mobile-ffmpeg-full:4.4"
+    implementation 'de.hdodenhof:circleimageview:3.1.0'
 }
