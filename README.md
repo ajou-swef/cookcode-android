@@ -179,3 +179,9 @@ fun mergeVideos(videoPaths: List<String>): Int {
 </code>
 </pre>
 ### 실제 어플리케이션 시연 영상
+### 무한 스크롤
+[infiniteScroll.webm](https://github.com/ajou-swef/cookcode-android/assets/78847219/f3cd70e5-5cc4-4064-afa3-dd5df6041ef5)
+### 레시피 식재료 필터링
+<img src="https://github.com/ajou-swef/cookcode-android/assets/78847219/d59f0c4a-3b79-47b4-8533-feef96bba0db">
+### 쿠키 무한 스크롤
+<img src="https://github.com/ajou-swef/cookcode-android/assets/78847219/456c0818-5fe2-4f4f-baee-e502c7bdbe4d">
