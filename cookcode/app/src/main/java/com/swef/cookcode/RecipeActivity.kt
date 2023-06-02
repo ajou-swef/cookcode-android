@@ -309,7 +309,6 @@ class RecipeActivity : AppCompatActivity(), CommentOnClickListener {
             ) {
                 if (response.isSuccessful) {
                     val comments = getCommentFromResponse(response.body()!!.content.comments)
-                    Log.d("data_size", comments.toString())
 
                     commentRecyclerviewAdapter.userId = userId
                     commentRecyclerviewAdapter.accessToken = accessToken

@@ -423,8 +423,6 @@ class CookieViewpagerAdapter(
                     }
                 }
 
-                Log.d("data_size", tempFile.absolutePath)
-
                 return@withContext Uri.parse(tempFile.absolutePath)
             }
 
