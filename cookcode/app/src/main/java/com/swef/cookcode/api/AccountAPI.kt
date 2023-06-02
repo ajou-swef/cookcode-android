@@ -49,7 +49,7 @@ interface AccountAPI {
     ):Call<UserResponse>
 
     companion object {
-        private const val BASE_URL = "http://13.124.102.73:8080/api/v1/"
+        private const val BASE_URL = "https://cookcode.link/api/v1/"
 
         fun create(): AccountAPI {
             return Retrofit.Builder()
