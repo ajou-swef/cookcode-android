@@ -10,12 +10,16 @@ import com.swef.cookcode.searchfrags.SearchUserFragment
 class SearchResultActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySearchResultBinding
 
+    private lateinit var accessToken: String
+    private lateinit var refreshToken: String
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySearchResultBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val accessToken = intent.getStringExtra("access_token")!!
+        accessToken = intent.getStringExtra("access_token")!!
+        refreshToken = intent.getStringExtra("refresh_token")!!
 
         // 검색어를 상단에 보여줌
         val searchKeyword = intent.getStringExtra("keyword")!!
@@ -31,14 +35,15 @@ class SearchResultActivity : AppCompatActivity() {
         }
 
         // 레시피, 쿠키, 사용자 버튼 클릭 리스너 초기화
-        initButtonOnclick(searchKeyword, accessToken)
+        initButtonOnclick(searchKeyword)
     }
 
-    private fun initButtonOnclick(keyword: String, accessToken: String){
+    private fun initButtonOnclick(keyword: String) {
         // 검색어를 bundle에 담아 전달함
         val bundle = Bundle()
         bundle.putString("keyword", keyword)
         bundle.putString("access_token", accessToken)
+        bundle.putString("refresh_token", refreshToken)
 
         // 최초 실행 되는 화면은 레시피 검색 화면
         showRecipeFragment(bundle)

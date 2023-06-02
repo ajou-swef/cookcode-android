@@ -24,11 +24,10 @@ class SearchRecipeFragment : Fragment() {
     private var _binding: FragmentSearchRecipeBinding? = null
     private val binding get() = _binding!!
 
-    private var searchedRecipeDatas = mutableListOf<RecipeData>()
-
     private lateinit var recyclerViewAdapter: SearchRecipeRecyclerviewAdapter
 
     private lateinit var accessToken: String
+    private lateinit var refreshToken: String
     private lateinit var searchKeyword: String
 
     private var cookable = 1
@@ -45,10 +44,12 @@ class SearchRecipeFragment : Fragment() {
     ): View {
         _binding = FragmentSearchRecipeBinding.inflate(inflater, container, false)
         accessToken = arguments?.getString("access_token")!!
+        refreshToken = arguments?.getString("refresh_token")!!
         searchKeyword = arguments?.getString("keyword")!!
 
         recyclerViewAdapter = SearchRecipeRecyclerviewAdapter(requireContext())
         recyclerViewAdapter.accessToken = accessToken
+        recyclerViewAdapter.refreshToken = refreshToken
 
         val linearLayoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         binding.recyclerView.apply {
@@ -145,7 +146,7 @@ class SearchRecipeFragment : Fragment() {
             val recipeData = RecipeData(
                 item.recipeId, item.title, item.description,
                 item.mainImage, item.likeCount, item.isLiked, item.isCookable,
-                item.user, item.createdAt, item.ingredients, item.additionalIngredients)
+                item.user, item.createdAt.substring(0 until 10), item.ingredients, item.additionalIngredients)
             recipeDatas.add(recipeData)
         }
 

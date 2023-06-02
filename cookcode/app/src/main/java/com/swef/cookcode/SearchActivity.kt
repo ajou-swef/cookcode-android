@@ -15,6 +15,7 @@ class SearchActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         val accessToken = intent.getStringExtra("access_token")
+        val refreshToken = intent.getStringExtra("refresh_token")
 
         binding.beforeArrow.setOnClickListener {
             finish()
@@ -33,6 +34,7 @@ class SearchActivity : AppCompatActivity() {
                 val intent = Intent(this, SearchResultActivity::class.java)
                 intent.putExtra("keyword", binding.editSearchKeyword.text.toString())
                 intent.putExtra("access_token", accessToken)
+                intent.putExtra("refresh_token", refreshToken)
                 startActivity(intent)
             }
         }
