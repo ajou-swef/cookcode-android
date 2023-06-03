@@ -97,4 +97,5 @@
     <string name="premium_content">프리미엄\n컨텐츠</string>
     <string name="subscribe">구독</string>
     <string name="subscribed">구독중</string>
+    <string name="like_number">좋아요 %d개 </string>
 </resources>

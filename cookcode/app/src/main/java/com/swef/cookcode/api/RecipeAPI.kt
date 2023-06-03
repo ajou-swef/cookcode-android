@@ -100,10 +100,10 @@ interface RecipeAPI {
         @Query("size") size: Int,
     ): Call<RecipeResponse>
 
-    @GET("recipe/user/{userId}")
-    fun getUsersRecipes(
+    @GET("recipe/user/{targetUserId}")
+    fun getUserRecipes(
         @Header("accessToken") accessToken: String,
-        @Path("userId") userId: Int,
+        @Path("targetUserId") userId: Int,
         @Query("page") page: Int,
     ): Call<RecipeResponse>
 

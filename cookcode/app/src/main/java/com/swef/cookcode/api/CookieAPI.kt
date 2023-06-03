@@ -1,6 +1,7 @@
 package com.swef.cookcode.api
 
 import com.swef.cookcode.data.response.CommentResponse
+import com.swef.cookcode.data.response.CookieContentResponse
 import com.swef.cookcode.data.response.CookieResponse
 import com.swef.cookcode.data.response.OneCookieResponse
 import com.swef.cookcode.data.response.StatusResponse
@@ -78,6 +79,13 @@ interface CookieAPI {
         @Header("accessToken") accessToken: String,
         @Path("commentId") commentId: Int,
     ): Call<StatusResponse>
+
+    @GET("cookie/user/{userId}")
+    fun getUserCookies(
+        @Header("accessToken") accessToken: String,
+        @Path("userId") userId: Int,
+        @Query("page") page: Int,
+    ): Call<CookieContentResponse>
 
     companion object {
         private const val BASE_URL = "https://cookcode.link/api/v1/"

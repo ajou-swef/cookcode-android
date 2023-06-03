@@ -62,7 +62,7 @@ class UserRecipeFragment : Fragment() {
     }
 
     private fun getRecipeDataFromUserId() {
-        API.getUsersRecipes(accessToken, userId, page).enqueue(object : Callback<RecipeResponse>{
+        API.getUserRecipes(accessToken, userId, page).enqueue(object : Callback<RecipeResponse>{
             override fun onResponse(
                 call: Call<RecipeResponse>,
                 response: Response<RecipeResponse>
