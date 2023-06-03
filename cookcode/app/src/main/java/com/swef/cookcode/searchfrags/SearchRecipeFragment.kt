@@ -24,8 +24,6 @@ class SearchRecipeFragment : Fragment() {
     private var _binding: FragmentSearchRecipeBinding? = null
     private val binding get() = _binding!!
 
-    private var searchedRecipeDatas = mutableListOf<RecipeData>()
-
     private lateinit var recyclerViewAdapter: SearchRecipeRecyclerviewAdapter
 
     private lateinit var accessToken: String
