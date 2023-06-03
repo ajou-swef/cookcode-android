@@ -71,6 +71,7 @@ class MypageActivity : AppCompatActivity() {
         val nextIntent = Intent(this, UserPageActivity::class.java)
         nextIntent.putExtra("access_token", accessToken)
         nextIntent.putExtra("refresh_token", refreshToken)
+        nextIntent.putExtra("my_user_id", userId)
         nextIntent.putExtra("user_id", userId)
         nextIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         startActivity(nextIntent)

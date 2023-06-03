@@ -97,6 +97,4 @@
     <string name="premium_content">프리미엄\n컨텐츠</string>
     <string name="subscribe">구독</string>
     <string name="subscribed">구독중</string>
-    <!-- TODO: Remove or change this placeholder text -->독
-    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
