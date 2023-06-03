@@ -296,6 +296,7 @@ class HomeFragment : Fragment() {
         nextIntent.putExtra("access_token", accessToken)
         nextIntent.putExtra("refresh_token", refreshToken)
         nextIntent.putExtra("user_id", userId)
+        nextIntent.putExtra("authority", authority)
         nextIntent.flags = FLAG_ACTIVITY_CLEAR_TOP
         startActivity(nextIntent)
     }

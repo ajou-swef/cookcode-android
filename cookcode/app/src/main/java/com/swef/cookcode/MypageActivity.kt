@@ -4,6 +4,7 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import com.swef.cookcode.api.AccountAPI
@@ -23,6 +24,7 @@ class MypageActivity : AppCompatActivity() {
     private lateinit var accessToken: String
     private lateinit var refreshToken: String
     private var userId = ERR_USER_CODE
+    private lateinit var authority: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,6 +34,7 @@ class MypageActivity : AppCompatActivity() {
         accessToken = intent.getStringExtra("access_token")!!
         refreshToken = intent.getStringExtra("refresh_token")!!
         userId = intent.getIntExtra("user_id", ERR_USER_CODE)
+        authority = intent.getStringExtra("authority")!!
 
         val userName = intent.getStringExtra("user_name")
         binding.userName.text = userName
@@ -40,9 +43,10 @@ class MypageActivity : AppCompatActivity() {
             finish()
         }
 
-        // 내가 만든 레시피 조회
-        binding.madeOwnRecipe.setOnClickListener {
+        initButtonByAuthority()
 
+        binding.myContents.setOnClickListener {
+            startMyContentActivity()
         }
 
         // 로그아웃
@@ -50,6 +54,26 @@ class MypageActivity : AppCompatActivity() {
 
         // 계정 삭제
         binding.btnDeleteUser.setOnClickListener { buildAlertDialog("delete") }
+    }
+
+    private fun initButtonByAuthority() {
+        when (authority) {
+            "USER" -> {
+                binding.earningsCheck.visibility = View.GONE
+            }
+            "INFLUENCER" -> {
+                binding.requestAuthority.visibility = View.GONE
+            }
+        }
+    }
+
+    private fun startMyContentActivity() {
+        val nextIntent = Intent(this, UserPageActivity::class.java)
+        nextIntent.putExtra("access_token", accessToken)
+        nextIntent.putExtra("refresh_token", refreshToken)
+        nextIntent.putExtra("user_id", userId)
+        nextIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        startActivity(nextIntent)
     }
 
     private fun buildAlertDialog(type: String) {

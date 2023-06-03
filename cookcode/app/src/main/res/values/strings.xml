@@ -56,7 +56,6 @@
     <string name="fruit">과일</string>
     <string name="sauce">양념</string>
     <string name="hello_user">님 안녕하세요!</string>
-    <string name="made_own_recipe">내가 만든 레시피</string>
     <string name="logout">로그아웃</string>
     <string name="delete_user">계정 삭제</string>
     <string name="update_ingredient">식재료 수정</string>
@@ -86,11 +85,18 @@
     <string name="cookie_info">쿠키 정보</string>
     <string name="title_is">제목 : </string>
     <string name="string_shadow_convert">%s </string>
-    <string name="made_own_cookie">내가 만든 쿠키</string>
     <string name="subscribed_users">구독한 크리에이터 목록</string>
     <string name="premium_membership_manage">프리미엄 멤버십 구독 관리</string>
     <string name="request_authority">인플루언서 권한 요청</string>
     <string name="influencer_only">인플루언서 전용</string>
     <string name="earnings_check">수익 조회</string>
     <string name="premium_contents">프리미엄 컨텐츠 관리</string>
+    <string name="my_contents">내 컨텐츠 관리</string>
+    <string name="subscribe_users">구독자 %d명</string>
+    <string name="mypage_title">MyPage</string>
+    <string name="premium_content">프리미엄\n컨텐츠</string>
+    <string name="subscribe">구독</string>
+    <string name="subscribed">구독중</string>
+    <!-- TODO: Remove or change this placeholder text -->독
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
