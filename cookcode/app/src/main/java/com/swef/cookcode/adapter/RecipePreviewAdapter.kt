@@ -1,6 +1,7 @@
 package com.swef.cookcode.adapter
 
 import android.content.Context
+import android.content.Intent
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -10,6 +11,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.swef.cookcode.R
+import com.swef.cookcode.UserPageActivity
 import com.swef.cookcode.api.RecipeAPI
 import com.swef.cookcode.data.MyIngredientData
 import com.swef.cookcode.data.RecipeData
@@ -26,6 +28,11 @@ class RecipePreviewAdapter(
     private val context: Context
 ) : RecyclerView.Adapter<RecipePreviewAdapter.ViewHolder>() {
 
+    companion object{
+        const val spanCount = 3
+        const val ERR_USER_CODE = -1
+    }
+
     var data = recipeData
     private lateinit var binding: RecipePreviewItemBinding
 
@@ -33,8 +40,9 @@ class RecipePreviewAdapter(
     private lateinit var additionalIngredientsRecyclerviewAdapter: IngredientRecyclerviewAdapter
 
     lateinit var accessToken: String
-
-    val spanCount = 3
+    lateinit var refreshToken: String
+    var madeUserId = ERR_USER_CODE
+    var userId = ERR_USER_CODE
 
     private val API = RecipeAPI.create()
 
@@ -93,6 +101,10 @@ class RecipePreviewAdapter(
             binding.likeMark.setOnClickListener {
                 putLikeStatus(item)
             }
+
+            binding.madeUser.setOnClickListener {
+                startUserPageActivity()
+            }
         }
     }
 
@@ -149,6 +161,16 @@ class RecipePreviewAdapter(
         }
 
         return myIngredientDatas
+    }
+
+    private fun startUserPageActivity() {
+        val nextIntent = Intent(context, UserPageActivity::class.java)
+        nextIntent.putExtra("access_token", accessToken)
+        nextIntent.putExtra("refresh_token", refreshToken)
+        nextIntent.putExtra("my_user_id", userId)
+        nextIntent.putExtra("user_id", madeUserId)
+        nextIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        context.startActivity(nextIntent)
     }
 
     fun putToastMessage(message: String) {

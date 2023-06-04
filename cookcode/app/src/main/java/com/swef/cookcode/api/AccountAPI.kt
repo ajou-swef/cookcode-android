@@ -8,6 +8,7 @@ import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.PATCH
@@ -46,7 +47,29 @@ interface AccountAPI {
     fun getUserInfo(
         @Header("accessToken") accessToken: String,
         @Path("userId") userId: Int
-    ):Call<UserResponse>
+    ): Call<UserResponse>
+
+    @POST("account/subscribe/{createrId}")
+    fun postUserSubscribe(
+        @Header("accessToken") accessToken: String,
+        @Path("createrId") userId: Int
+    ): Call<StatusResponse>
+
+    @DELETE("account/subscribe/{createrId}")
+    fun deleteUserSubscribe(
+        @Header("accessToken") accessToken: String,
+        @Path("createrId") userId: Int
+    ): Call<StatusResponse>
+
+    @GET("account/subscribe/subscribers")
+    fun getMySubscribers(
+        @Header("accessToken") accessToken: String,
+    ): Call<StatusResponse>
+
+    @GET("account/subscribe/publishers")
+    fun getMyPublishers(
+        @Header("accessToken") accessToken: String,
+    ): Call<StatusResponse>
 
     companion object {
         private const val BASE_URL = "https://cookcode.link/api/v1/"

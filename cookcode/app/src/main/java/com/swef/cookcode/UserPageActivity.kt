@@ -2,10 +2,13 @@ package com.swef.cookcode
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.swef.cookcode.api.AccountAPI
+import com.swef.cookcode.data.response.StatusResponse
+import com.swef.cookcode.data.response.UserData
 import com.swef.cookcode.data.response.UserResponse
 import com.swef.cookcode.databinding.ActivityUserPageBinding
 import com.swef.cookcode.userinfofrags.UserCookieFragment
@@ -32,6 +35,8 @@ class UserPageActivity : AppCompatActivity() {
 
     private val accountAPI = AccountAPI.create()
 
+    private var subscribed = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityUserPageBinding.inflate(layoutInflater)
@@ -53,14 +58,69 @@ class UserPageActivity : AppCompatActivity() {
             finish()
         }
 
+        changeButtonSubscribed()
+
         binding.btnSubscribe.setOnClickListener {
-
+            if (subscribed) {
+                deleteSubscribe()
+                subscribed = false
+                changeButtonSubscribed()
+            }
+            else {
+                postSubscribe()
+                subscribed = true
+                changeButtonSubscribed()
+            }
         }
+    }
 
+    private fun changeButtonSubscribed() {
+        if (subscribed) {
+            binding.btnSubscribe.setBackgroundResource(R.drawable.filled_fullround_component)
+            binding.btnSubscribe.text = "구독중"
+        }
+        else {
+            binding.btnSubscribe.setBackgroundResource(R.drawable.filled_fullround_component_clicked)
+            binding.btnSubscribe.text = "구독"
+        }
     }
 
     private fun postSubscribe() {
+        accountAPI.postUserSubscribe(accessToken, userId).enqueue(object : Callback<StatusResponse>{
+            override fun onResponse(
+                call: Call<StatusResponse>,
+                response: Response<StatusResponse>
+            ) {
+                if (!response.isSuccessful){
+                    Log.d("data_size", call.request().toString())
+                    Log.d("data_size", response.errorBody()!!.string())
+                    putToastMessage("에러 발생!")
+                }
+            }
 
+            override fun onFailure(call: Call<StatusResponse>, t: Throwable) {
+                putToastMessage("잠시 후 다시 시도해주세요.")
+            }
+        })
+    }
+
+    private fun deleteSubscribe() {
+        accountAPI.deleteUserSubscribe(accessToken, userId).enqueue(object : Callback<StatusResponse>{
+            override fun onResponse(
+                call: Call<StatusResponse>,
+                response: Response<StatusResponse>
+            ) {
+                if (!response.isSuccessful){
+                    Log.d("data_size", call.request().toString())
+                    Log.d("data_size", response.errorBody()!!.string())
+                    putToastMessage("에러 발생!")
+                }
+            }
+
+            override fun onFailure(call: Call<StatusResponse>, t: Throwable) {
+                putToastMessage("잠시 후 다시 시도해주세요.")
+            }
+        })
     }
 
     private fun initContentView() {
@@ -138,8 +198,12 @@ class UserPageActivity : AppCompatActivity() {
                 if (response.isSuccessful) {
                     val authority = response.body()!!.userData.authority
                     authorityCheck(authority)
+
+                    initUserInfo(response.body()!!.userData)
                 }
                 else {
+                    Log.d("data_size", call.request().toString())
+                    Log.d("data_size", response.errorBody()!!.string())
                     putToastMessage("에러 발생! 관리자에게 문의해주세요.")
                 }
             }
@@ -152,7 +216,14 @@ class UserPageActivity : AppCompatActivity() {
 
     private fun authorityCheck(authority: String) {
         if (authority == "USER")
-                binding.premiumContent.visibility = View.GONE
+            binding.premiumContent.visibility = View.GONE
+    }
+
+    private fun initUserInfo(userData: UserData) {
+        binding.nicknameTitle.text = userData.nickname
+        binding.nickname.text = userData.nickname
+        binding.subscribedUsers.text = getString(R.string.subscribe_users, userData.userId)
+
     }
 
     private fun putToastMessage(message: String){
