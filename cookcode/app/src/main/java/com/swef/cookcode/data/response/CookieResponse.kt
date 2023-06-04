@@ -8,6 +8,17 @@ data class CookieResponse(
     @SerializedName("data") val data: List<CookieContent>
 )
 
+data class CookieContentResponse(
+    @SerializedName("message") val message: String,
+    @SerializedName("status") val status: Int,
+    @SerializedName("data") val data: CookieContentTemp
+)
+
+data class CookieContentTemp(
+    @SerializedName("content") val content: List<CookieContent>,
+    @SerializedName("hasNext") val hasNext: Boolean
+)
+
 data class OneCookieResponse(
     @SerializedName("message") val message: String,
     @SerializedName("status") val status: Int,
@@ -15,6 +26,7 @@ data class OneCookieResponse(
 )
 
 data class CookieContent(
+    @SerializedName("thumbnailUrl") val thumbnail: String,
     @SerializedName("videoUrl") val videoUrl: String,
     @SerializedName("desc") val description: String,
     @SerializedName("title") val title: String,

@@ -100,6 +100,13 @@ interface RecipeAPI {
         @Query("size") size: Int,
     ): Call<RecipeResponse>
 
+    @GET("recipe/user/{targetUserId}")
+    fun getUserRecipes(
+        @Header("accessToken") accessToken: String,
+        @Path("targetUserId") userId: Int,
+        @Query("page") page: Int,
+    ): Call<RecipeResponse>
+
     companion object {
         private const val BASE_URL = "https://cookcode.link/api/v1/"
 

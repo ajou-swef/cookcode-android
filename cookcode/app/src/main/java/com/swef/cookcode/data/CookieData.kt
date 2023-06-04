@@ -13,3 +13,10 @@ data class CookieData(
     var likeNumber: Int,
     var commentCount: Int
 )
+
+data class SearchCookieData(
+    val cookieId: Int,
+    val thumbnail: String,
+    val likeNumber: Int,
+    val madeUserId: Int
+)

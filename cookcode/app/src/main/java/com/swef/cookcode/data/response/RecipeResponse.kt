@@ -42,7 +42,7 @@ data class Ingredient(
 
 data class MadeUser(
     @SerializedName("userId") val userId: Int,
-    @SerializedName("profileImage") val profileImageUri: String,
+    @SerializedName("profileImage") val profileImageUri: String?,
     @SerializedName("nickname") val nickname: String
 )
 data class Step(

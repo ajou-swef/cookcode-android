@@ -111,7 +111,7 @@ class MainActivity : AppCompatActivity() {
             override fun onResponse(call: Call<UserResponse>, response: Response<UserResponse>) {
                 if (response.isSuccessful){
 
-                    when (val authority = response.body()!!.userData.authority) {
+                    when (val authority = response.body()!!.user.authority) {
                         "ADMIN" -> {
                             // start admin page
                         }

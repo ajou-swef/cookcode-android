@@ -1,4 +1,4 @@
-package com.swef.cookcode.searchfrags
+package com.swef.cookcode.userinfofrags
 
 import android.os.Bundle
 import android.util.Log
@@ -9,32 +9,27 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.swef.cookcode.UserPageActivity
 import com.swef.cookcode.adapter.SearchCookieRecyclerviewAdapter
 import com.swef.cookcode.api.CookieAPI
 import com.swef.cookcode.data.SearchCookieData
 import com.swef.cookcode.data.response.CookieContent
 import com.swef.cookcode.data.response.CookieContentResponse
-import com.swef.cookcode.databinding.FragmentSearchCookieBinding
+import com.swef.cookcode.databinding.FragmentUserCookieBinding
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class SearchCookieFragment : Fragment() {
+class UserCookieFragment : Fragment() {
 
-    companion object {
-        const val ERR_USER_CODE = -1
-    }
-
-    private var _binding: FragmentSearchCookieBinding? = null
+    private var _binding : FragmentUserCookieBinding? = null
     private val binding get() = _binding!!
 
     private lateinit var accessToken: String
     private lateinit var refreshToken: String
-    private var userId = ERR_USER_CODE
-    private lateinit var searchKeyword: String
-
-    private val pageSize = 10
+    private var userId = UserPageActivity.ERR_USER_CODE
     private var page = 0
+
     private var hasNext = false
 
     private lateinit var recyclerViewAdapter : SearchCookieRecyclerviewAdapter
@@ -47,12 +42,11 @@ class SearchCookieFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentSearchCookieBinding.inflate(inflater, container, false)
+        _binding = FragmentUserCookieBinding.inflate(inflater, container, false)
 
         accessToken = arguments?.getString("access_token")!!
         refreshToken = arguments?.getString("refresh_token")!!
         userId = arguments?.getInt("user_id")!!
-        searchKeyword = arguments?.getString("keyword")!!
 
         recyclerViewAdapter = SearchCookieRecyclerviewAdapter(requireContext())
         recyclerViewAdapter.accessToken = accessToken
@@ -73,15 +67,14 @@ class SearchCookieFragment : Fragment() {
         recyclerViewAdapter.viewWidth = itemWidth
         recyclerViewAdapter.viewHeight = itemHeight
 
-        getCookieDataFromKeyword()
+        getCookieDataFromUserId()
         initOnScrollListener()
 
         return binding.root
     }
 
-    private fun getCookieDataFromKeyword() {
-        API.getSearchCookies(accessToken, searchKeyword, page).enqueue(object :
-            Callback<CookieContentResponse> {
+    private fun getCookieDataFromUserId() {
+        API.getUserCookies(accessToken, userId, page).enqueue(object : Callback<CookieContentResponse>{
             override fun onResponse(
                 call: Call<CookieContentResponse>,
                 response: Response<CookieContentResponse>
@@ -133,10 +126,10 @@ class SearchCookieFragment : Fragment() {
         return userCookieDatas
     }
 
-    private fun getNewCookieDataFromKeyword() {
+    private fun getNewCookieDataFromUserId() {
         page = 0
         recyclerViewAdapter.datas.clear()
-        getCookieDataFromKeyword()
+        getCookieDataFromUserId()
     }
 
     private fun initOnScrollListener() {
@@ -146,22 +139,23 @@ class SearchCookieFragment : Fragment() {
 
                 if(!recyclerView.canScrollVertically(1) && hasNext) {
                     page++
-                    getCookieDataFromKeyword()
+                    getCookieDataFromUserId()
                 }
                 else if(!recyclerView.canScrollVertically(-1)){
                     putToastMessage("데이터를 불러오는 중입니다.")
-                    getNewCookieDataFromKeyword()
+                    getNewCookieDataFromUserId()
                 }
             }
         })
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        _binding = null
     }
 
     private fun putToastMessage(message: String){
         Toast.makeText(this.context, message, Toast.LENGTH_SHORT).show()
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
 }

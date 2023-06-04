@@ -51,6 +51,8 @@ class RecipeActivity : AppCompatActivity(), CommentOnClickListener {
     private var userId = ERR_USER_CODE
     private var recipeId = ERR_RECIPE_ID
 
+    private var madeUserId = ERR_USER_CODE
+
     private lateinit var bottomSheetCallback: BottomSheetBehavior.BottomSheetCallback
 
     private lateinit var commentRecyclerviewAdapter: CommentRecyclerviewAdapter
@@ -77,6 +79,8 @@ class RecipeActivity : AppCompatActivity(), CommentOnClickListener {
 
         recipeViewpagerAdapter = RecipeViewpagerAdapter(this)
         recipeViewpagerAdapter.accessToken = accessToken
+        recipeViewpagerAdapter.refreshToken = refreshToken
+        recipeViewpagerAdapter.userId = userId
         binding.viewpager.adapter = recipeViewpagerAdapter
 
         getRecipeDataFromRecipeID(recipeId, accessToken)
@@ -146,8 +150,10 @@ class RecipeActivity : AppCompatActivity(), CommentOnClickListener {
             ) {
                 if (response.body() != null) {
                     val recipeAndStepData = getRecipeDataFromResponseBody(response.body()!!.recipeData)
+                    madeUserId = response.body()!!.recipeData.user.userId
+                    recipeViewpagerAdapter.madeUserId = madeUserId
 
-                    if (userId == response.body()!!.recipeData.user.userId) {
+                    if (userId == madeUserId) {
                         setButtonVisibility(true)
                     }
                     else {

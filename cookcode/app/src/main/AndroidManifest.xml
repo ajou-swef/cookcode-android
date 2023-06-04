@@ -17,6 +17,15 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
+            android:name=".CookieActivity"
+            android:exported="false" />
+        <activity
+            android:name=".SubscriberActivity"
+            android:exported="false" />
+        <activity
+            android:name=".UserPageActivity"
+            android:exported="false" />
+        <activity
             android:name=".CookieModifyActivity"
             android:exported="false" />
         <activity

@@ -63,6 +63,8 @@ class HomeFragment : Fragment() {
     private val recipeAPI = RecipeAPI.create()
     private val accountAPI = AccountAPI.create()
 
+    private var hasNext = false
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -116,9 +118,8 @@ class HomeFragment : Fragment() {
         binding.recyclerView.layoutManager = linearLayoutManager
         binding.recyclerView.adapter = recyclerViewAdapter
 
-        initOnScrollListener(linearLayoutManager)
-
         getNewRecipeDatas()
+        initOnScrollListener()
 
         return binding.root
     }
@@ -208,6 +209,7 @@ class HomeFragment : Fragment() {
                 val datas = response.body()
                 if (datas != null && datas.status == 200) {
                     searchedRecipeDatas = getRecipeDatasFromResponseBody(datas.recipes.content)
+                    hasNext = datas.hasNext
                     putDataForRecyclerview()
                 }
             }
@@ -223,7 +225,6 @@ class HomeFragment : Fragment() {
         recipeAPI.getRecipes(accessToken, currentPage, pageSize, cookable).enqueue(object :
             Callback<RecipeResponse> {
             override fun onResponse(call: Call<RecipeResponse>, response: Response<RecipeResponse>) {
-                Log.d("data_size", response.body()!!.hasNext.toString())
                 val datas = response.body()
                 if (datas != null && datas.status == 200) {
                     searchedRecipeDatas = getRecipeDatasFromResponseBody(datas.recipes.content)
@@ -274,8 +275,9 @@ class HomeFragment : Fragment() {
         accountAPI.getUserInfo(accessToken, userId).enqueue(object: Callback<UserResponse>{
             override fun onResponse(call: Call<UserResponse>, response: Response<UserResponse>) {
                 if (response.isSuccessful) {
-                    val nickname = response.body()!!.userData.nickname
-                    startMyPageActivity(nickname)
+                    val nickname = response.body()!!.user.nickname
+                    val profileImage = response.body()!!.user.profileImage
+                    startMyPageActivity(nickname, profileImage)
                 }
                 else {
                     Log.d("data_size", response.errorBody()!!.string())
@@ -290,33 +292,28 @@ class HomeFragment : Fragment() {
         })
     }
 
-    private fun startMyPageActivity(nickname: String) {
+    private fun startMyPageActivity(nickname: String, profileImage: String?) {
         val nextIntent = Intent(activity, MypageActivity::class.java)
         nextIntent.putExtra("user_name", nickname)
         nextIntent.putExtra("access_token", accessToken)
         nextIntent.putExtra("refresh_token", refreshToken)
         nextIntent.putExtra("user_id", userId)
+        nextIntent.putExtra("authority", authority)
+        nextIntent.putExtra("profile_image", profileImage)
         nextIntent.flags = FLAG_ACTIVITY_CLEAR_TOP
         startActivity(nextIntent)
     }
 
-    private fun initOnScrollListener(linearLayoutManager: LinearLayoutManager) {
+    private fun initOnScrollListener() {
         binding.recyclerView.addOnScrollListener(object: RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, differentX: Int, differentY: Int) {
                 super.onScrolled(recyclerView, differentX, differentY)
 
-                if(differentY > 0) {
-                    val visibleItemCount = linearLayoutManager.childCount
-                    val totalItemCount = linearLayoutManager.itemCount
-                    val pastVisibleItems = linearLayoutManager.findFirstVisibleItemPosition()
-
-                    if (visibleItemCount + pastVisibleItems >= totalItemCount) {
-                        currentPage++
-                        getRecipeDatas()
-                    }
+                if(!recyclerView.canScrollVertically(1)) {
+                    currentPage++
+                    getRecipeDatas()
                 }
-
-                if(!recyclerView.canScrollVertically(-1)){
+                else if(!recyclerView.canScrollVertically(-1)){
                     putToastMessage("데이터를 불러오는 중입니다.")
                     getNewRecipeDatas()
                 }
