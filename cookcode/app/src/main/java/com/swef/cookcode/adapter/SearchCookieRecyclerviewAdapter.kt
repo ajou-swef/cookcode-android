@@ -2,7 +2,6 @@ package com.swef.cookcode.adapter
 
 import android.content.Context
 import android.media.MediaMetadataRetriever
-import android.net.Uri
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -20,11 +19,16 @@ class SearchCookieRecyclerviewAdapter(
     private lateinit var binding: CookieThumbnailItemBinding
     var datas = mutableListOf<SearchCookieData>()
 
+    var viewWidth = 0
+    var viewHeight = 0
+
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
     ): SearchCookieRecyclerviewAdapter.ViewHolder {
         binding = CookieThumbnailItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        binding.layout.layoutParams.width = viewWidth
+        binding.layout.layoutParams.height = viewHeight
         return ViewHolder(binding, parent)
     }
 

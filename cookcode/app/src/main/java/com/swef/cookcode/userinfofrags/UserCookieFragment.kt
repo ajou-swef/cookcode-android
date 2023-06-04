@@ -56,6 +56,14 @@ class UserCookieFragment : Fragment() {
             layoutManager = gridLayoutManager
         }
 
+        val screenWidth = resources.displayMetrics.widthPixels
+        val screenHeight = resources.displayMetrics.heightPixels
+        val itemWidth = screenWidth / 3
+        val itemHeight = screenHeight / 3
+
+        recyclerViewAdapter.viewWidth = itemWidth
+        recyclerViewAdapter.viewHeight = itemHeight
+
         getCookieDataFromUserId()
         initOnScrollListener()
 
