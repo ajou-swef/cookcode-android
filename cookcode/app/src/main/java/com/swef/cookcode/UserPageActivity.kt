@@ -8,7 +8,7 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.swef.cookcode.api.AccountAPI
 import com.swef.cookcode.data.response.StatusResponse
-import com.swef.cookcode.data.response.UserData
+import com.swef.cookcode.data.response.User
 import com.swef.cookcode.data.response.UserResponse
 import com.swef.cookcode.databinding.ActivityUserPageBinding
 import com.swef.cookcode.userinfofrags.UserCookieFragment
@@ -196,10 +196,10 @@ class UserPageActivity : AppCompatActivity() {
         accountAPI.getUserInfo(accessToken, userId).enqueue(object : Callback<UserResponse>{
             override fun onResponse(call: Call<UserResponse>, response: Response<UserResponse>) {
                 if (response.isSuccessful) {
-                    val authority = response.body()!!.userData.authority
+                    val authority = response.body()!!.user.authority
                     authorityCheck(authority)
 
-                    initUserInfo(response.body()!!.userData)
+                    initUserInfo(response.body()!!.user)
                 }
                 else {
                     Log.d("data_size", call.request().toString())
@@ -219,10 +219,10 @@ class UserPageActivity : AppCompatActivity() {
             binding.premiumContent.visibility = View.GONE
     }
 
-    private fun initUserInfo(userData: UserData) {
-        binding.nicknameTitle.text = userData.nickname
-        binding.nickname.text = userData.nickname
-        binding.subscribedUsers.text = getString(R.string.subscribe_users, userData.userId)
+    private fun initUserInfo(user: User) {
+        binding.nicknameTitle.text = user.nickname
+        binding.nickname.text = user.nickname
+        binding.subscribedUsers.text = getString(R.string.subscribe_users, user.userId)
 
     }
 

@@ -1,6 +1,7 @@
 package com.swef.cookcode.api
 
 import com.swef.cookcode.data.response.DuplicateResponse
+import com.swef.cookcode.data.response.SearchUserResponse
 import com.swef.cookcode.data.response.StatusResponse
 import com.swef.cookcode.data.response.TokenResponse
 import com.swef.cookcode.data.response.UserResponse
@@ -70,6 +71,14 @@ interface AccountAPI {
     fun getMyPublishers(
         @Header("accessToken") accessToken: String,
     ): Call<StatusResponse>
+
+    @GET("account/search")
+    fun getSearchUsers(
+        @Header("accessToken") accessToken: String,
+        @Query("query") keyword: String,
+        @Query("page") page: Int,
+        @Query("size") size: Int,
+    ): Call<SearchUserResponse>
 
     companion object {
         private const val BASE_URL = "https://cookcode.link/api/v1/"

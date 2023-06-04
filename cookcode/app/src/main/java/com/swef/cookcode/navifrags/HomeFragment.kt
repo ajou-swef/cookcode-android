@@ -275,7 +275,7 @@ class HomeFragment : Fragment() {
         accountAPI.getUserInfo(accessToken, userId).enqueue(object: Callback<UserResponse>{
             override fun onResponse(call: Call<UserResponse>, response: Response<UserResponse>) {
                 if (response.isSuccessful) {
-                    val nickname = response.body()!!.userData.nickname
+                    val nickname = response.body()!!.user.nickname
                     startMyPageActivity(nickname)
                 }
                 else {

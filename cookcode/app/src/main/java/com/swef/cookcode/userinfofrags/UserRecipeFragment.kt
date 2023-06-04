@@ -32,6 +32,7 @@ class UserRecipeFragment : Fragment() {
     private var userId = UserPageActivity.ERR_USER_CODE
 
     private var page = 0
+    private val pageSize = 10
     private var hasNext = false
 
     private val API = RecipeAPI.create()
@@ -79,7 +80,6 @@ class UserRecipeFragment : Fragment() {
                         recyclerViewAdapter.notifyItemRangeChanged(0, recipeDatas.size)
                     }
                     else {
-                        Log.d("data_size", "hi")
                         val beforeSize = recyclerViewAdapter.itemCount
                         recyclerViewAdapter.datas.addAll(recipeDatas)
                         recyclerViewAdapter.notifyItemRangeChanged(beforeSize, recyclerViewAdapter.itemCount)
