@@ -5,6 +5,7 @@ import com.swef.cookcode.data.response.SearchUserResponse
 import com.swef.cookcode.data.response.StatusResponse
 import com.swef.cookcode.data.response.TokenResponse
 import com.swef.cookcode.data.response.UserResponse
+import com.swef.cookcode.data.response.UsersResponse
 import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -65,12 +66,12 @@ interface AccountAPI {
     @GET("account/subscribe/subscribers")
     fun getMySubscribers(
         @Header("accessToken") accessToken: String,
-    ): Call<StatusResponse>
+    ): Call<UsersResponse>
 
     @GET("account/subscribe/publishers")
     fun getMyPublishers(
         @Header("accessToken") accessToken: String,
-    ): Call<StatusResponse>
+    ): Call<UsersResponse>
 
     @GET("account/search")
     fun getSearchUsers(

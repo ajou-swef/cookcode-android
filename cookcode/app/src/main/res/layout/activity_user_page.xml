@@ -66,15 +66,16 @@
 
     <TextView
         android:id="@+id/btn_subscribe"
-        android:ems="4"
         android:text="@string/subscribe"
         android:textColor="@color/white"
         android:textStyle="bold"
         android:gravity="center"
         android:background="@drawable/filled_fullround_component_clicked"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/subscribed_users" />
@@ -122,6 +123,21 @@
         android:background="@drawable/under_bar_component"
         app:layout_constraintTop_toBottomOf="@id/btn_subscribe"
         app:layout_constraintStart_toEndOf="@+id/cookie"
+        app:layout_constraintEnd_toStartOf="@id/subscribers"/>
+
+    <TextView
+        android:id="@+id/subscribers"
+        android:text="@string/subscribers"
+        android:textSize="20sp"
+        android:textColor="@color/gray_80"
+        android:textStyle="bold"
+        android:layout_width="0dp"
+        android:layout_height="60dp"
+        android:layout_margin="10dp"
+        android:gravity="center"
+        android:background="@drawable/under_bar_component"
+        app:layout_constraintTop_toBottomOf="@id/btn_subscribe"
+        app:layout_constraintStart_toEndOf="@+id/premium_content"
         app:layout_constraintEnd_toEndOf="parent"/>
 
     <FrameLayout

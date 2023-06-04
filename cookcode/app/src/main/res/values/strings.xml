@@ -85,7 +85,7 @@
     <string name="cookie_info">쿠키 정보</string>
     <string name="title_is">제목 : </string>
     <string name="string_shadow_convert">%s </string>
-    <string name="subscribed_users">구독한 크리에이터 목록</string>
+    <string name="subscribed_users">구독한 크리에이터 관리</string>
     <string name="premium_membership_manage">프리미엄 멤버십 구독 관리</string>
     <string name="request_authority">인플루언서 권한 요청</string>
     <string name="influencer_only">인플루언서 전용</string>
@@ -95,7 +95,10 @@
     <string name="subscribe_users">구독자 %d명</string>
     <string name="mypage_title">MyPage</string>
     <string name="premium_content">프리미엄\n컨텐츠</string>
-    <string name="subscribe">구독</string>
+    <string name="subscribe">구독하기</string>
     <string name="subscribed">구독중</string>
+    <string name="subscribers">구독자</string>
     <string name="like_number">좋아요 %d개 </string>
+    <string name="my_subscribers">나를 구독한 유저</string>
+    <string name="my_subscribed">내가 구독한 유저</string>
 </resources>

@@ -49,6 +49,10 @@ class MypageActivity : AppCompatActivity() {
             startMyContentActivity()
         }
 
+        binding.subscribedUsers.setOnClickListener {
+            startMySubscriberActivity()
+        }
+
         // 로그아웃
         binding.logout.setOnClickListener { buildAlertDialog("logout") }
 
@@ -69,6 +73,16 @@ class MypageActivity : AppCompatActivity() {
 
     private fun startMyContentActivity() {
         val nextIntent = Intent(this, UserPageActivity::class.java)
+        nextIntent.putExtra("access_token", accessToken)
+        nextIntent.putExtra("refresh_token", refreshToken)
+        nextIntent.putExtra("my_user_id", userId)
+        nextIntent.putExtra("user_id", userId)
+        nextIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        startActivity(nextIntent)
+    }
+
+    private fun startMySubscriberActivity() {
+        val nextIntent = Intent(this, SubscriberActivity::class.java)
         nextIntent.putExtra("access_token", accessToken)
         nextIntent.putExtra("refresh_token", refreshToken)
         nextIntent.putExtra("my_user_id", userId)

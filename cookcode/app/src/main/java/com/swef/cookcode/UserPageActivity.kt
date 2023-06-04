@@ -14,6 +14,7 @@ import com.swef.cookcode.databinding.ActivityUserPageBinding
 import com.swef.cookcode.userinfofrags.UserCookieFragment
 import com.swef.cookcode.userinfofrags.UserPremiumContentFragment
 import com.swef.cookcode.userinfofrags.UserRecipeFragment
+import com.swef.cookcode.userinfofrags.UserSubscriberFragment
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -131,10 +132,12 @@ class UserPageActivity : AppCompatActivity() {
         val recipeFragment = UserRecipeFragment()
         val cookieFragment = UserCookieFragment()
         val premiumContentFragment = UserPremiumContentFragment()
+        val subscriberFragment = UserSubscriberFragment()
 
         recipeFragment.arguments = bundle
         cookieFragment.arguments = bundle
         premiumContentFragment.arguments = bundle
+        subscriberFragment.arguments = bundle
 
         supportFragmentManager.beginTransaction()
             .replace(R.id.fl_container, recipeFragment)
@@ -161,6 +164,13 @@ class UserPageActivity : AppCompatActivity() {
                 .commitAllowingStateLoss()
             selectContentViewListener("premium")
         }
+
+        binding.subscribers.setOnClickListener {
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.fl_container, subscriberFragment)
+                .commitAllowingStateLoss()
+            selectContentViewListener("subscriber")
+        }
     }
 
     private fun selectContentViewListener(content: String) {
@@ -172,6 +182,8 @@ class UserPageActivity : AppCompatActivity() {
                 binding.cookie.setBackgroundResource(R.drawable.under_bar_component)
                 binding.premiumContent.setTextColor(ContextCompat.getColor(this, R.color.gray_80))
                 binding.premiumContent.setBackgroundResource(R.drawable.under_bar_component)
+                binding.subscribers.setTextColor(ContextCompat.getColor(this, R.color.gray_80))
+                binding.subscribers.setBackgroundResource(R.drawable.under_bar_component)
             }
             "cookie" -> {
                 binding.recipe.setTextColor(ContextCompat.getColor(this, R.color.gray_80))
@@ -180,6 +192,8 @@ class UserPageActivity : AppCompatActivity() {
                 binding.cookie.setBackgroundResource(R.drawable.under_bar_component_clicked)
                 binding.premiumContent.setTextColor(ContextCompat.getColor(this, R.color.gray_80))
                 binding.premiumContent.setBackgroundResource(R.drawable.under_bar_component)
+                binding.subscribers.setTextColor(ContextCompat.getColor(this, R.color.gray_80))
+                binding.subscribers.setBackgroundResource(R.drawable.under_bar_component)
             }
             "premium" -> {
                 binding.recipe.setTextColor(ContextCompat.getColor(this, R.color.gray_80))
@@ -188,6 +202,18 @@ class UserPageActivity : AppCompatActivity() {
                 binding.cookie.setBackgroundResource(R.drawable.under_bar_component)
                 binding.premiumContent.setTextColor(ContextCompat.getColor(this, R.color.main_theme))
                 binding.premiumContent.setBackgroundResource(R.drawable.under_bar_component_clicked)
+                binding.subscribers.setTextColor(ContextCompat.getColor(this, R.color.gray_80))
+                binding.subscribers.setBackgroundResource(R.drawable.under_bar_component)
+            }
+            "subscriber" -> {
+                binding.recipe.setTextColor(ContextCompat.getColor(this, R.color.gray_80))
+                binding.recipe.setBackgroundResource(R.drawable.under_bar_component)
+                binding.cookie.setTextColor(ContextCompat.getColor(this, R.color.gray_80))
+                binding.cookie.setBackgroundResource(R.drawable.under_bar_component)
+                binding.premiumContent.setTextColor(ContextCompat.getColor(this, R.color.gray_80))
+                binding.premiumContent.setBackgroundResource(R.drawable.under_bar_component)
+                binding.subscribers.setTextColor(ContextCompat.getColor(this, R.color.main_theme))
+                binding.subscribers.setBackgroundResource(R.drawable.under_bar_component_clicked)
             }
         }
     }
@@ -223,7 +249,6 @@ class UserPageActivity : AppCompatActivity() {
         binding.nicknameTitle.text = user.nickname
         binding.nickname.text = user.nickname
         binding.subscribedUsers.text = getString(R.string.subscribe_users, user.userId)
-
     }
 
     private fun putToastMessage(message: String){

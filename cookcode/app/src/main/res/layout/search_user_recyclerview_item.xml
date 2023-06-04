@@ -40,7 +40,7 @@
 
     <TextView
         android:id="@+id/btn_subscribe"
-        android:ems="4"
+        android:ems="5"
         android:text="@string/subscribe"
         android:textColor="@color/white"
         android:textStyle="bold"

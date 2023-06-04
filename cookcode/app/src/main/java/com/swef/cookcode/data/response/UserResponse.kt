@@ -11,7 +11,17 @@ data class UserResponse(
 data class SearchUserResponse(
     @SerializedName("message") val message: String,
     @SerializedName("status") val status: Int,
+    @SerializedName("data") val content: UserContent
+)
+
+data class UsersResponse(
+    @SerializedName("message") val message: String,
+    @SerializedName("status") val status: Int,
     @SerializedName("data") val users: List<User>
+)
+
+data class UserContent(
+    @SerializedName("content") val users: List<User>
 )
 
 data class User(
