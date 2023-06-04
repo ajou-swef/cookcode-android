@@ -17,5 +17,6 @@ data class CookieData(
 data class SearchCookieData(
     val cookieId: Int,
     val thumbnail: String,
-    val likeNumber: Int
+    val likeNumber: Int,
+    val madeUserId: Int
 )

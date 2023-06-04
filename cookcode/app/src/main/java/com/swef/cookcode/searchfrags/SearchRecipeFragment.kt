@@ -87,7 +87,6 @@ class SearchRecipeFragment : Fragment() {
                 response: Response<RecipeResponse>
             ) {
                 if (response.isSuccessful){
-                    Log.d("data_size", call.request().toString())
                     val data = response.body()!!.recipes.content
                     val recipeDatas = getRecipeDatasFromResponseBody(data)
 

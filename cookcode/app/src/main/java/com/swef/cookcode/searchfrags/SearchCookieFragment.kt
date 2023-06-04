@@ -55,6 +55,9 @@ class SearchCookieFragment : Fragment() {
         searchKeyword = arguments?.getString("keyword")!!
 
         recyclerViewAdapter = SearchCookieRecyclerviewAdapter(requireContext())
+        recyclerViewAdapter.accessToken = accessToken
+        recyclerViewAdapter.refreshToken = refreshToken
+        recyclerViewAdapter.userId = userId
 
         val gridLayoutManager = GridLayoutManager(requireContext(), spanCount)
         binding.recyclerView.apply {
@@ -122,8 +125,9 @@ class SearchCookieFragment : Fragment() {
             val thumbnail = data.thumbnail
             val cookieId = data.cookieId
             val likeCount = data.likeCount
+            val madeUserId = data.madeUser.userId
 
-            userCookieDatas.add(SearchCookieData(cookieId, thumbnail, likeCount))
+            userCookieDatas.add(SearchCookieData(cookieId, thumbnail, likeCount, madeUserId))
         }
 
         return userCookieDatas

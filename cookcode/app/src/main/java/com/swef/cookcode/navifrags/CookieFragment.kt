@@ -62,8 +62,6 @@ class CookieFragment : Fragment(), CookieDeleteListener {
         bundle.putString("refresh_token", refreshToken)
         bundle.putInt("user_id", userId)
 
-        cookieViewpagerAdapter.fragmentManager = parentFragmentManager
-
         getRandomCookies()
         initOnScrollListener()
 
@@ -151,5 +149,9 @@ class CookieFragment : Fragment(), CookieDeleteListener {
         parentFragmentManager.beginTransaction()
             .replace(R.id.fl_container, cookieFragment)
             .commit()
+    }
+
+    override fun itemDeletedAt(position: Int) {
+        // do nothing
     }
 }

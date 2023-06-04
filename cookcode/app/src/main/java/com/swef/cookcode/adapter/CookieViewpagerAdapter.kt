@@ -14,7 +14,6 @@ import android.widget.Toast
 import android.widget.VideoView
 import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.swef.cookcode.CookieModifyActivity
@@ -61,8 +60,6 @@ class CookieViewpagerAdapter(
 
     private val API = CookieAPI.create()
 
-    lateinit var fragmentManager: FragmentManager
-
     private lateinit var commentBottomSheetCallback: BottomSheetBehavior.BottomSheetCallback
     private lateinit var infoBottomSheetBehavior: BottomSheetBehavior.BottomSheetCallback
 
@@ -76,18 +73,18 @@ class CookieViewpagerAdapter(
     override fun getItemCount(): Int = datas.size
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(datas[position])
+        holder.bind(datas[position], position)
     }
 
     inner class ViewHolder(
         private val binding: CookiePreviewItemBinding
     ): RecyclerView.ViewHolder(binding.root), CommentOnClickListener {
         private lateinit var commentRecyclerviewAdapter: CommentRecyclerviewAdapter
-        fun bind(item: CookieData) {
+        fun bind(item: CookieData, position: Int) {
             binding.cookie.setBackgroundResource(R.drawable.loading_video_page)
             binding.progressBar.visibility = View.VISIBLE
 
-            initModifyDeleteButton(item.cookieId)
+            initModifyDeleteButton(item.cookieId, position)
 
             CoroutineScope(Dispatchers.Main).launch {
                 val videoUri = withContext(Dispatchers.IO) {
@@ -243,7 +240,7 @@ class CookieViewpagerAdapter(
             }
         }
 
-        private fun initModifyDeleteButton(cookieId: Int) {
+        private fun initModifyDeleteButton(cookieId: Int, position: Int) {
             binding.btnModify.setOnClickListener {
                 val intent = Intent(context, CookieModifyActivity::class.java)
                 intent.putExtra("access_token", accessToken)
@@ -261,6 +258,7 @@ class CookieViewpagerAdapter(
                     setPositiveButton("삭제") { _, _ ->
                         deleteCookie(cookieId)
                         listener.itemDeleted()
+                        listener.itemDeletedAt(position)
                     }
                     setNegativeButton("취소") { _, _ -> /* Do nothing */ }
                     show()
