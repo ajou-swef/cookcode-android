@@ -55,6 +55,10 @@ class SearchRecipeRecyclerviewAdapter(
             binding.createdAtTime.text = item.createdAt
             getImageFromUrl(item.mainImage, binding.mainImage)
 
+            if (item.madeUser.profileImageUri != null){
+                getImageFromUrl(item.madeUser.profileImageUri, binding.userProfileImage)
+            }
+
             if (item.cookable) {
                 binding.isCookable.visibility = View.VISIBLE
             }

@@ -276,7 +276,8 @@ class HomeFragment : Fragment() {
             override fun onResponse(call: Call<UserResponse>, response: Response<UserResponse>) {
                 if (response.isSuccessful) {
                     val nickname = response.body()!!.user.nickname
-                    startMyPageActivity(nickname)
+                    val profileImage = response.body()!!.user.profileImage
+                    startMyPageActivity(nickname, profileImage)
                 }
                 else {
                     Log.d("data_size", response.errorBody()!!.string())
@@ -291,13 +292,14 @@ class HomeFragment : Fragment() {
         })
     }
 
-    private fun startMyPageActivity(nickname: String) {
+    private fun startMyPageActivity(nickname: String, profileImage: String?) {
         val nextIntent = Intent(activity, MypageActivity::class.java)
         nextIntent.putExtra("user_name", nickname)
         nextIntent.putExtra("access_token", accessToken)
         nextIntent.putExtra("refresh_token", refreshToken)
         nextIntent.putExtra("user_id", userId)
         nextIntent.putExtra("authority", authority)
+        nextIntent.putExtra("profile_image", profileImage)
         nextIntent.flags = FLAG_ACTIVITY_CLEAR_TOP
         startActivity(nextIntent)
     }

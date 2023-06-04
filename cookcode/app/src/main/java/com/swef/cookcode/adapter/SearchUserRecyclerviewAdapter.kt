@@ -5,8 +5,10 @@ import android.content.Intent
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.swef.cookcode.R
 import com.swef.cookcode.UserPageActivity
 import com.swef.cookcode.api.AccountAPI
@@ -50,6 +52,9 @@ class SearchUserRecyclerviewAdapter(
         fun bind(item : UserData){
             binding.userName.text = item.nickname
             binding.subscribeUsers.text = context.getString(R.string.subscribe_users, item.userId)
+            if (item.profileImage != null){
+                getImageFromUrl(item.profileImage, binding.profileImage)
+            }
 
             binding.layout.setOnClickListener {
                 startUserPageActivity(item.userId)
@@ -131,6 +136,12 @@ class SearchUserRecyclerviewAdapter(
             nextIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
             context.startActivity(nextIntent)
         }
+    }
+
+    fun getImageFromUrl(imageUrl: String, view: ImageView) {
+        Glide.with(context)
+            .load(imageUrl)
+            .into(view)
     }
 
     fun putToastMessage(message: String) {

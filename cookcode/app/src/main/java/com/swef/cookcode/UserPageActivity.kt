@@ -4,8 +4,10 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import com.bumptech.glide.Glide
 import com.swef.cookcode.api.AccountAPI
 import com.swef.cookcode.data.response.StatusResponse
 import com.swef.cookcode.data.response.User
@@ -249,6 +251,16 @@ class UserPageActivity : AppCompatActivity() {
         binding.nicknameTitle.text = user.nickname
         binding.nickname.text = user.nickname
         binding.subscribedUsers.text = getString(R.string.subscribe_users, user.userId)
+
+        if(user.profileImage != null) {
+            getImageFromUrl(user.profileImage, binding.userProfile)
+        }
+    }
+
+    private fun getImageFromUrl(imageUrl: String, view: ImageView) {
+        Glide.with(this)
+            .load(imageUrl)
+            .into(view)
     }
 
     private fun putToastMessage(message: String){

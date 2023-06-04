@@ -1,11 +1,13 @@
 package com.swef.cookcode.api
 
 import com.swef.cookcode.data.response.DuplicateResponse
+import com.swef.cookcode.data.response.ProfileImageResponse
 import com.swef.cookcode.data.response.SearchUserResponse
 import com.swef.cookcode.data.response.StatusResponse
 import com.swef.cookcode.data.response.TokenResponse
 import com.swef.cookcode.data.response.UserResponse
 import com.swef.cookcode.data.response.UsersResponse
+import okhttp3.MultipartBody
 import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -13,8 +15,10 @@ import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.Multipart
 import retrofit2.http.PATCH
 import retrofit2.http.POST
+import retrofit2.http.Part
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -80,6 +84,14 @@ interface AccountAPI {
         @Query("page") page: Int,
         @Query("size") size: Int,
     ): Call<SearchUserResponse>
+
+    @Multipart
+    @JvmSuppressWildcards
+    @PATCH("account/profileImage")
+    fun patchProfileImage(
+        @Header("accessToken") accessToken: String,
+        @Part partList: List<MultipartBody.Part>?
+    ): Call<ProfileImageResponse>
 
     companion object {
         private const val BASE_URL = "https://cookcode.link/api/v1/"
