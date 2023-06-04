@@ -30,6 +30,8 @@ class UserCookieFragment : Fragment() {
     private var userId = UserPageActivity.ERR_USER_CODE
     private var page = 0
 
+    private var hasNext = false
+
     private lateinit var recyclerViewAdapter : SearchCookieRecyclerviewAdapter
 
     private val spanCount = 3
@@ -55,7 +57,7 @@ class UserCookieFragment : Fragment() {
         }
 
         getCookieDataFromUserId()
-        initOnScrollListener(gridLayoutManager)
+        initOnScrollListener()
 
         return binding.root
     }
@@ -68,6 +70,7 @@ class UserCookieFragment : Fragment() {
             ) {
                 if (response.isSuccessful) {
                     val cookieDatas = getCookieDatasFromResponseData(response.body()!!.data.content)
+                    hasNext = response.body()!!.data.hasNext
 
                     if (recyclerViewAdapter.datas.isEmpty()) {
                         recyclerViewAdapter.datas = cookieDatas as MutableList<SearchCookieData>
@@ -117,23 +120,16 @@ class UserCookieFragment : Fragment() {
         getCookieDataFromUserId()
     }
 
-    private fun initOnScrollListener(gridLayoutManager: GridLayoutManager) {
+    private fun initOnScrollListener() {
         binding.recyclerView.addOnScrollListener(object: RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, differentX: Int, differentY: Int) {
                 super.onScrolled(recyclerView, differentX, differentY)
 
-                if(differentY > 0) {
-                    val visibleItemCount = gridLayoutManager.childCount
-                    val totalItemCount = gridLayoutManager.itemCount
-                    val pastVisibleItems = gridLayoutManager.findFirstVisibleItemPosition()
-
-                    if (visibleItemCount + pastVisibleItems >= totalItemCount) {
-                        page++
-                        getCookieDataFromUserId()
-                    }
+                if(!recyclerView.canScrollVertically(1) && hasNext) {
+                    page++
+                    getCookieDataFromUserId()
                 }
-
-                if(!recyclerView.canScrollVertically(-1)){
+                else if(!recyclerView.canScrollVertically(-1)){
                     putToastMessage("데이터를 불러오는 중입니다.")
                     getNewCookieDataFromUserId()
                 }

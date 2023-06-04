@@ -63,6 +63,8 @@ class HomeFragment : Fragment() {
     private val recipeAPI = RecipeAPI.create()
     private val accountAPI = AccountAPI.create()
 
+    private var hasNext = false
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -116,9 +118,8 @@ class HomeFragment : Fragment() {
         binding.recyclerView.layoutManager = linearLayoutManager
         binding.recyclerView.adapter = recyclerViewAdapter
 
-        initOnScrollListener(linearLayoutManager)
-
         getNewRecipeDatas()
+        initOnScrollListener()
 
         return binding.root
     }
@@ -208,6 +209,7 @@ class HomeFragment : Fragment() {
                 val datas = response.body()
                 if (datas != null && datas.status == 200) {
                     searchedRecipeDatas = getRecipeDatasFromResponseBody(datas.recipes.content)
+                    hasNext = datas.hasNext
                     putDataForRecyclerview()
                 }
             }
@@ -223,7 +225,6 @@ class HomeFragment : Fragment() {
         recipeAPI.getRecipes(accessToken, currentPage, pageSize, cookable).enqueue(object :
             Callback<RecipeResponse> {
             override fun onResponse(call: Call<RecipeResponse>, response: Response<RecipeResponse>) {
-                Log.d("data_size", response.body()!!.hasNext.toString())
                 val datas = response.body()
                 if (datas != null && datas.status == 200) {
                     searchedRecipeDatas = getRecipeDatasFromResponseBody(datas.recipes.content)
@@ -301,23 +302,16 @@ class HomeFragment : Fragment() {
         startActivity(nextIntent)
     }
 
-    private fun initOnScrollListener(linearLayoutManager: LinearLayoutManager) {
+    private fun initOnScrollListener() {
         binding.recyclerView.addOnScrollListener(object: RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, differentX: Int, differentY: Int) {
                 super.onScrolled(recyclerView, differentX, differentY)
 
-                if(differentY > 0) {
-                    val visibleItemCount = linearLayoutManager.childCount
-                    val totalItemCount = linearLayoutManager.itemCount
-                    val pastVisibleItems = linearLayoutManager.findFirstVisibleItemPosition()
-
-                    if (visibleItemCount + pastVisibleItems >= totalItemCount) {
-                        currentPage++
-                        getRecipeDatas()
-                    }
+                if(!recyclerView.canScrollVertically(1)) {
+                    currentPage++
+                    getRecipeDatas()
                 }
-
-                if(!recyclerView.canScrollVertically(-1)){
+                else if(!recyclerView.canScrollVertically(-1)){
                     putToastMessage("데이터를 불러오는 중입니다.")
                     getNewRecipeDatas()
                 }

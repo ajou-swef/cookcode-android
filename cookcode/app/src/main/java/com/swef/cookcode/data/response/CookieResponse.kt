@@ -15,7 +15,8 @@ data class CookieContentResponse(
 )
 
 data class CookieContentTemp(
-    @SerializedName("content") val content: List<CookieContent>
+    @SerializedName("content") val content: List<CookieContent>,
+    @SerializedName("hasNext") val hasNext: Boolean
 )
 
 data class OneCookieResponse(

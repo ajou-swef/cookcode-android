@@ -32,6 +32,7 @@ class UserRecipeFragment : Fragment() {
     private var userId = UserPageActivity.ERR_USER_CODE
 
     private var page = 0
+    private var hasNext = false
 
     private val API = RecipeAPI.create()
 
@@ -47,6 +48,8 @@ class UserRecipeFragment : Fragment() {
 
         recyclerViewAdapter = SearchRecipeRecyclerviewAdapter(requireContext())
         recyclerViewAdapter.accessToken = accessToken
+        recyclerViewAdapter.refreshToken = refreshToken
+        recyclerViewAdapter.userId = userId
 
         val linearLayoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         binding.recyclerView.apply {
@@ -54,9 +57,8 @@ class UserRecipeFragment : Fragment() {
             adapter = recyclerViewAdapter
         }
 
-        initOnScrollListener(linearLayoutManager)
-
-        getRecipeDataFromUserId()
+        getNewRecipeDataFromUserId()
+        initOnScrollListener()
 
         return binding.root
     }
@@ -70,12 +72,14 @@ class UserRecipeFragment : Fragment() {
                 if (response.isSuccessful) {
                     val data = response.body()!!.recipes.content
                     val recipeDatas = getRecipeDatasFromResponseBody(data)
+                    hasNext = response.body()!!.hasNext
 
                     if (recyclerViewAdapter.datas.isEmpty()) {
                         recyclerViewAdapter.datas = recipeDatas
-                        recyclerViewAdapter.notifyDataSetChanged()
+                        recyclerViewAdapter.notifyItemRangeChanged(0, recipeDatas.size)
                     }
                     else {
+                        Log.d("data_size", "hi")
                         val beforeSize = recyclerViewAdapter.itemCount
                         recyclerViewAdapter.datas.addAll(recipeDatas)
                         recyclerViewAdapter.notifyItemRangeChanged(beforeSize, recyclerViewAdapter.itemCount)
@@ -110,32 +114,26 @@ class UserRecipeFragment : Fragment() {
             val recipeData = RecipeData(
                 item.recipeId, item.title, item.description,
                 item.mainImage, item.likeCount, item.isLiked, item.isCookable,
-                item.user, item.createdAt, item.ingredients, item.additionalIngredients)
+                item.user, item.createdAt.substring(0 until 10), item.ingredients, item.additionalIngredients)
             recipeDatas.add(recipeData)
         }
 
         return recipeDatas
     }
 
-    private fun initOnScrollListener(linearLayoutManager: LinearLayoutManager) {
+    private fun initOnScrollListener() {
         binding.recyclerView.addOnScrollListener(object: RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, differentX: Int, differentY: Int) {
                 super.onScrolled(recyclerView, differentX, differentY)
 
-                if(differentY > 0) {
-                    val visibleItemCount = linearLayoutManager.childCount
-                    val totalItemCount = linearLayoutManager.itemCount
-                    val pastVisibleItems = linearLayoutManager.findFirstVisibleItemPosition()
-
-                    if (visibleItemCount + pastVisibleItems >= totalItemCount) {
+                if (recyclerViewAdapter.datas.isNotEmpty()) {
+                    if (!recyclerView.canScrollVertically(1) && hasNext) {
                         page++
                         getRecipeDataFromUserId()
+                    } else if (!recyclerView.canScrollVertically(-1)) {
+                        putToastMessage("데이터를 불러오는 중입니다.")
+                        getNewRecipeDataFromUserId()
                     }
-                }
-
-                if(!recyclerView.canScrollVertically(-1)){
-                    putToastMessage("데이터를 불러오는 중입니다.")
-                    getNewRecipeDataFromUserId()
                 }
             }
         })

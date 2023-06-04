@@ -53,6 +53,14 @@ class UserPageActivity : AppCompatActivity() {
             finish()
         }
 
+        binding.btnSubscribe.setOnClickListener {
+
+        }
+
+    }
+
+    private fun postSubscribe() {
+
     }
 
     private fun initContentView() {
