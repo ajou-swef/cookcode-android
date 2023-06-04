@@ -75,7 +75,7 @@ interface AccountAPI {
     @GET("account/search")
     fun getSearchUsers(
         @Header("accessToken") accessToken: String,
-        @Query("query") keyword: String,
+        @Query("nickname") keyword: String,
         @Query("page") page: Int,
         @Query("size") size: Int,
     ): Call<SearchUserResponse>
