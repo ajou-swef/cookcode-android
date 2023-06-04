@@ -19,6 +19,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.swef.cookcode.CookieModifyActivity
 import com.swef.cookcode.LinearLayoutManagerWrapper
 import com.swef.cookcode.R
+import com.swef.cookcode.UserPageActivity
 import com.swef.cookcode.api.CookieAPI
 import com.swef.cookcode.data.CommentData
 import com.swef.cookcode.data.CookieData
@@ -163,6 +164,12 @@ class CookieViewpagerAdapter(
                 putCommentCookie(item.cookieId, comment)
             }
 
+            binding.madeUserInBottomSheet.setOnClickListener {
+                startUserPageActivity(item.madeUser.userId)
+            }
+            binding.madeUser.setOnClickListener {
+                startUserPageActivity(item.madeUser.userId)
+            }
         }
 
         private fun initCommentRecyclerview(cookieId: Int) {
@@ -385,6 +392,8 @@ class CookieViewpagerAdapter(
                     }
                 }
             }
+
+
             binding.infoBottomSheet.bringToFront()
         }
 
@@ -393,6 +402,16 @@ class CookieViewpagerAdapter(
                 if (infoBottomSheet.state == BottomSheetBehavior.STATE_EXPANDED)
                     infoBottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
             }
+        }
+
+        private fun startUserPageActivity(madeUserId: Int) {
+            val nextIntent = Intent(context, UserPageActivity::class.java)
+            nextIntent.putExtra("access_token", accessToken)
+            nextIntent.putExtra("refresh_token", refreshToken)
+            nextIntent.putExtra("my_user_id", userId)
+            nextIntent.putExtra("user_id", madeUserId)
+            nextIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            context.startActivity(nextIntent)
         }
 
         private suspend fun prepareVideo(videoUrl: String): Uri? = withContext(Dispatchers.IO) {
