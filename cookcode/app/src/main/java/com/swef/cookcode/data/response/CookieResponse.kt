@@ -26,6 +26,7 @@ data class OneCookieResponse(
 )
 
 data class CookieContent(
+    @SerializedName("thumbnailUrl") val thumbnail: String,
     @SerializedName("videoUrl") val videoUrl: String,
     @SerializedName("desc") val description: String,
     @SerializedName("title") val title: String,

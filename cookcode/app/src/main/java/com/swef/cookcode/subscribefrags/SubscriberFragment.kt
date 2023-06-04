@@ -132,8 +132,9 @@ class SubscriberFragment : Fragment() {
             val nickname = item.nickname
             val userId = item.userId
             val profileImage = item.profileImage
+            val subscribed = false
 
-            userDatas.add(UserData(userId, nickname, profileImage))
+            userDatas.add(UserData(userId, nickname, profileImage, subscribed))
         }
 
         return userDatas

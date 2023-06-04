@@ -87,6 +87,13 @@ interface CookieAPI {
         @Query("page") page: Int,
     ): Call<CookieContentResponse>
 
+    @GET("cookie/search")
+    fun getSearchCookies(
+        @Header("accessToken") accessToken: String,
+        @Query("query") keyword: String,
+        @Query("page") page: Int,
+    ): Call<CookieContentResponse>
+
     companion object {
         private const val BASE_URL = "https://cookcode.link/api/v1/"
 

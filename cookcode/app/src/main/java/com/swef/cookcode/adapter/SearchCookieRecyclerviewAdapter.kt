@@ -1,13 +1,11 @@
 package com.swef.cookcode.adapter
 
 import android.content.Context
-import android.media.MediaMetadataRetriever
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions
 import com.swef.cookcode.R
 import com.swef.cookcode.data.SearchCookieData
 import com.swef.cookcode.databinding.CookieThumbnailItemBinding
@@ -53,24 +51,13 @@ class SearchCookieRecyclerviewAdapter(
     }
 
     private fun getImageFromUrl(imageUrl: String, view: ImageView) {
-        // 현재 썸네일 안보내주므로 해당 코드는 imageUrl이 왔을때 사용
-        /*
-        Glide.with(context)
-            .load(imageUrl)
-            .into(view)
-         */
-
-        // 지금은 동영상만 오므로 영상에서 썸네일을 직접 추출
-        val retriever = MediaMetadataRetriever()
-        retriever.setDataSource(imageUrl)
-
-        val options = RequestOptions()
-            .frame(0) // 0초의 썸네일을 가져옵니다.
-
-        Glide.with(context)
-            .asBitmap()
-            .load(imageUrl)
-            .apply(options)
-            .into(view)
+        if (imageUrl != "") {
+            Glide.with(context)
+                .load(imageUrl)
+                .into(view)
+        }
+        else {
+            view.setImageResource(R.drawable.upload_image)
+        }
     }
 }

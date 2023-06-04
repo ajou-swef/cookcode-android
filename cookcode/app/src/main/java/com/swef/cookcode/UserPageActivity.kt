@@ -82,7 +82,7 @@ class UserPageActivity : AppCompatActivity() {
         }
         else {
             binding.btnSubscribe.setBackgroundResource(R.drawable.filled_fullround_component_clicked)
-            binding.btnSubscribe.text = "구독"
+            binding.btnSubscribe.text = "구독하기"
         }
     }
 

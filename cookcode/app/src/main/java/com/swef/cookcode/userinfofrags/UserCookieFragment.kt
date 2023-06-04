@@ -112,11 +112,11 @@ class UserCookieFragment : Fragment() {
         val userCookieDatas = mutableListOf<SearchCookieData>()
 
         for(data in datas){
-            val videoUrl = data.videoUrl
+            val thumbnail = data.thumbnail
             val cookieId = data.cookieId
             val likeCount = data.likeCount
 
-            userCookieDatas.add(SearchCookieData(cookieId, videoUrl, likeCount))
+            userCookieDatas.add(SearchCookieData(cookieId, thumbnail, likeCount))
         }
 
         return userCookieDatas

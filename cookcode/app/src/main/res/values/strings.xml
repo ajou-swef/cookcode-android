@@ -84,7 +84,7 @@
     <string name="no_exist_comment">아직 댓글이 없습니다.</string>
     <string name="cookie_info">쿠키 정보</string>
     <string name="title_is">제목 : </string>
-    <string name="string_shadow_convert">%s </string>
+    <string name="string_shadow_convert">%s\t</string>
     <string name="subscribed_users">구독한 크리에이터 관리</string>
     <string name="premium_membership_manage">프리미엄 멤버십 구독 관리</string>
     <string name="request_authority">인플루언서 권한 요청</string>
@@ -98,7 +98,7 @@
     <string name="subscribe">구독하기</string>
     <string name="subscribed">구독중</string>
     <string name="subscribers">구독자</string>
-    <string name="like_number">좋아요 %d개 </string>
+    <string name="like_number">좋아요 %d개\t</string>
     <string name="my_subscribers">나를 구독한 유저</string>
     <string name="my_subscribed">내가 구독한 유저</string>
 </resources>
