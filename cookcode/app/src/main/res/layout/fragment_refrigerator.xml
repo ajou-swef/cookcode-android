@@ -10,6 +10,25 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <ImageView
+            android:id="@+id/exclamation_mark"
+            android:src="@drawable/icon_exclamation_mark"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginTop="10dp"
+            app:layout_constraintTop_toBottomOf="@id/divider"
+            app:layout_constraintStart_toStartOf="@id/divider"/>
+
+        <TextView
+            android:id="@+id/mark_info"
+            android:text="@string/tutorial_expire"
+            android:textColor="@color/black"
+            android:layout_marginTop="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/divider"
+            app:layout_constraintStart_toEndOf="@id/exclamation_mark"/>
+
         <TextView
             android:id="@+id/refrigerator"
             android:text="@string/refrigerator"

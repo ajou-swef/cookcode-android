@@ -2,6 +2,7 @@ package com.swef.cookcode
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.core.content.ContextCompat
 import com.swef.cookcode.databinding.ActivitySearchResultBinding
 import com.swef.cookcode.searchfrags.SearchCookieFragment
 import com.swef.cookcode.searchfrags.SearchRecipeFragment
@@ -76,9 +77,12 @@ class SearchResultActivity : AppCompatActivity() {
         supportFragmentManager.beginTransaction()
             .replace(R.id.fl_container, searchRecipeFragment)
             .commitAllowingStateLoss()
-        binding.btnRecipe.setBackgroundResource(R.drawable.filled_round_component_clicked)
-        binding.btnCookie.setBackgroundResource(R.drawable.filled_round_component)
-        binding.btnUser.setBackgroundResource(R.drawable.filled_round_component)
+        binding.btnRecipe.setTextColor(ContextCompat.getColor(this, R.color.main_theme))
+        binding.btnRecipe.setBackgroundResource(R.drawable.under_bar_component_clicked)
+        binding.btnCookie.setTextColor(ContextCompat.getColor(this, R.color.gray_80))
+        binding.btnCookie.setBackgroundResource(R.drawable.under_bar_component)
+        binding.btnUser.setTextColor(ContextCompat.getColor(this, R.color.gray_80))
+        binding.btnUser.setBackgroundResource(R.drawable.under_bar_component)
     }
 
     private fun showCookieFragment(bundle: Bundle) {
@@ -88,9 +92,12 @@ class SearchResultActivity : AppCompatActivity() {
         supportFragmentManager.beginTransaction()
             .replace(R.id.fl_container, searchCookieFragment)
             .commitAllowingStateLoss()
-        binding.btnCookie.setBackgroundResource(R.drawable.filled_round_component_clicked)
-        binding.btnRecipe.setBackgroundResource(R.drawable.filled_round_component)
-        binding.btnUser.setBackgroundResource(R.drawable.filled_round_component)
+        binding.btnRecipe.setTextColor(ContextCompat.getColor(this, R.color.gray_80))
+        binding.btnRecipe.setBackgroundResource(R.drawable.under_bar_component)
+        binding.btnCookie.setTextColor(ContextCompat.getColor(this, R.color.main_theme))
+        binding.btnCookie.setBackgroundResource(R.drawable.under_bar_component_clicked)
+        binding.btnUser.setTextColor(ContextCompat.getColor(this, R.color.gray_80))
+        binding.btnUser.setBackgroundResource(R.drawable.under_bar_component)
     }
 
     private fun showUserFragment(bundle: Bundle) {
@@ -100,8 +107,11 @@ class SearchResultActivity : AppCompatActivity() {
         supportFragmentManager.beginTransaction()
             .replace(R.id.fl_container, searchUserFragment)
             .commitAllowingStateLoss()
-        binding.btnUser.setBackgroundResource(R.drawable.filled_round_component_clicked)
-        binding.btnCookie.setBackgroundResource(R.drawable.filled_round_component)
-        binding.btnRecipe.setBackgroundResource(R.drawable.filled_round_component)
+        binding.btnRecipe.setTextColor(ContextCompat.getColor(this, R.color.gray_80))
+        binding.btnRecipe.setBackgroundResource(R.drawable.under_bar_component)
+        binding.btnCookie.setTextColor(ContextCompat.getColor(this, R.color.gray_80))
+        binding.btnCookie.setBackgroundResource(R.drawable.under_bar_component)
+        binding.btnUser.setTextColor(ContextCompat.getColor(this, R.color.main_theme))
+        binding.btnUser.setBackgroundResource(R.drawable.under_bar_component_clicked)
     }
 }
