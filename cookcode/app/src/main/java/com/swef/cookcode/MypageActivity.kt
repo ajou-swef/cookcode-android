@@ -143,10 +143,8 @@ class MypageActivity : AppCompatActivity() {
     private fun patchProfileImage(profileImage: MultipartBody.Part?, oldProfileImage: MultipartBody.Part?) {
         val formData = mutableListOf<MultipartBody.Part>()
 
-        if (profileImage != null)
-            formData.add(profileImage)
-        if (oldProfileImage != null)
-            formData.add(oldProfileImage)
+        formData.add(profileImage ?: makeNullMultipartBody("profileImage"))
+        formData.add(oldProfileImage ?: makeNullMultipartBody("oldProfileImage"))
 
         API.patchProfileImage(accessToken, formData).enqueue(object : Callback<ProfileImageResponse> {
             override fun onResponse(
@@ -193,6 +191,10 @@ class MypageActivity : AppCompatActivity() {
 
     private fun makeStringMultipartBody(url: String): MultipartBody.Part {
         return MultipartBody.Part.createFormData("oldProfileImage", url)
+    }
+
+    private fun makeNullMultipartBody(key: String): MultipartBody.Part {
+        return MultipartBody.Part.createFormData(key, "")
     }
 
     private fun initButtonByAuthority() {

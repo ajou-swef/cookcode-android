@@ -71,6 +71,8 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                     else {
+                        Log.d("data_size", call.request().toString())
+                        Log.d("data_size", response.errorBody()!!.string())
                         putToastMessage(getString(R.string.err_userdata))
                     }
                 }

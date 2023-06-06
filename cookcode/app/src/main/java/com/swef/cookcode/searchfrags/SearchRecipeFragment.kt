@@ -7,8 +7,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.appcompat.widget.PopupMenu
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.swef.cookcode.R
 import com.swef.cookcode.adapter.SearchRecipeRecyclerviewAdapter
 import com.swef.cookcode.api.RecipeAPI
 import com.swef.cookcode.data.RecipeData
@@ -35,7 +37,7 @@ class SearchRecipeFragment : Fragment() {
     private var userId = ERR_USER_CODE
     private lateinit var searchKeyword: String
 
-    private var cookable = 1
+    private var cookable = 0
     private var sort = "createdAt"
     private var createdMonth = 5
     private val pageSize = 10
@@ -64,8 +66,22 @@ class SearchRecipeFragment : Fragment() {
             adapter = recyclerViewAdapter
         }
 
-        initOnScrollListener(linearLayoutManager)
+        binding.btnSort.setOnClickListener {
+            showPopupMenuToSetSort()
+        }
 
+        binding.btnCookable.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                cookable = 1
+                getNewSearchedRecipeDatas()
+            } else {
+                cookable = 0
+                getNewSearchedRecipeDatas()
+            }
+        }
+
+
+        initOnScrollListener(linearLayoutManager)
         getSearchedRecipeDatas()
 
         return binding.root
@@ -78,6 +94,31 @@ class SearchRecipeFragment : Fragment() {
 
     private fun putToastMessage(message: String){
         Toast.makeText(this.context, message, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun showPopupMenuToSetSort() {
+        val popupMenu = PopupMenu(requireContext(), binding.btnSort)
+        popupMenu.menuInflater.inflate(R.menu.sort_popup_menu, popupMenu.menu)
+
+        // 팝업 메뉴 아이템 클릭 리스너
+        popupMenu.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.createdAt -> {
+                    sort = "createdAt"
+                    getNewSearchedRecipeDatas()
+                    true
+                }
+                R.id.popular -> {
+                    // 아직 popular는 구현되지 않음
+                    // sort = "popular"
+                    getNewSearchedRecipeDatas()
+                    true
+                }
+                else -> false
+            }
+        }
+
+        popupMenu.show()
     }
 
     private fun getSearchedRecipeDatas() {

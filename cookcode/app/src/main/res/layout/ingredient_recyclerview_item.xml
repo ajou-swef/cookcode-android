@@ -50,11 +50,11 @@
 
     <ImageView
         android:id="@+id/expired_soon"
-        android:background="@drawable/expired_soon"
+        android:background="@drawable/icon_exclamation_mark"
         android:visibility="gone"
-        android:layout_width="10dp"
-        android:layout_height="10dp"
-        app:layout_constraintBottom_toBottomOf="@+id/ingredient_icon"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        app:layout_constraintTop_toTopOf="@+id/ingredient_icon"
         app:layout_constraintEnd_toEndOf="@+id/ingredient_icon"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

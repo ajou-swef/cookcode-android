@@ -7,7 +7,7 @@
         android:top="-6dp"    >
         <shape android:shape="rectangle">
             <stroke android:color="@color/main_theme"
-                android:width="5dp"/>
+                android:width="2dp"/>
         </shape>
     </item>
 
