@@ -2,6 +2,9 @@ package com.swef.cookcode
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
+import com.swef.cookcode.api.AccountAPI
 import com.swef.cookcode.databinding.ActivityHomeBinding
 import com.swef.cookcode.navifrags.*
 
@@ -12,12 +15,13 @@ class HomeActivity : AppCompatActivity() {
     // refreshtoken은 accesstoken을 refresh하기 위해 사용
     // refreshtoken이 유효하지 않을 경우 로그아웃
     private lateinit var refreshToken : String
-    private lateinit var authority : String
 
     private val USER_ERR_CODE = -1
     private var userId = USER_ERR_CODE
 
     private val bundle = Bundle()
+
+    private val API = AccountAPI.create()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,22 +30,19 @@ class HomeActivity : AppCompatActivity() {
 
         if(!intent.getStringExtra("access_token").isNullOrBlank()) {
             accessToken = intent.getStringExtra("access_token")!!
+            Log.d("data_size", accessToken)
         }
 
         if(!intent.getStringExtra("refresh_token").isNullOrBlank()){
             refreshToken = intent.getStringExtra("refresh_token")!!
         }
 
-        if(!intent.getStringExtra("authority").isNullOrBlank()){
-            authority = intent.getStringExtra("authority")!!
-        }
-
         userId = intent.getIntExtra("user_id", USER_ERR_CODE)
+        Log.d("data_size", userId.toString())
 
         bundle.putString("access_token", accessToken)
         bundle.putString("refresh_token", refreshToken)
         bundle.putInt("user_id", userId)
-        bundle.putString("authority", authority)
 
         // bottom navigation bar 초기화
         initBottomNavigation()
@@ -91,5 +92,9 @@ class HomeActivity : AppCompatActivity() {
                 else -> false
             }
         }
+    }
+
+    private fun putToastMessage(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }

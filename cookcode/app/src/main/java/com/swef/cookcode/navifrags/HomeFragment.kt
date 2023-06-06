@@ -74,7 +74,8 @@ class HomeFragment : Fragment() {
         accessToken = arguments?.getString("access_token")!!
         refreshToken = arguments?.getString("refresh_token")!!
         userId = arguments?.getInt("user_id")!!
-        authority = arguments?.getString("authority")!!
+
+        getAuthorityFromUserId()
 
         // 컨텐츠 추가 버튼 click listener
         binding.btnAddContents.setOnClickListener{
@@ -122,6 +123,27 @@ class HomeFragment : Fragment() {
         initOnScrollListener()
 
         return binding.root
+    }
+
+    private fun getAuthorityFromUserId() {
+        accountAPI.getUserInfo(accessToken, userId).enqueue(object : Callback<UserResponse> {
+            override fun onResponse(call: Call<UserResponse>, response: Response<UserResponse>) {
+                if (response.isSuccessful) {
+                    authority = response.body()!!.user.authority
+                }
+                else {
+                    Log.d("data_size", call.request().toString())
+                    Log.d("data_size", response.errorBody()!!.string())
+                    putToastMessage("에러 발생!")
+                }
+            }
+
+            override fun onFailure(call: Call<UserResponse>, t: Throwable) {
+                Log.d("data_size", call.request().toString())
+                Log.d("data_size", t.message.toString())
+                putToastMessage("잠시 후 다시 시도해주세요.")
+            }
+        })
     }
 
     // Fragment는 생명 주기가 매우 길기 때문에 view가 destroy되어도 fragment는 살아있음

@@ -191,7 +191,7 @@ class RecipePreviewActivity : AppCompatActivity() {
         val intent = Intent(this, HomeActivity::class.java)
         intent.putExtra("access_token", accessToken)
         intent.putExtra("refresh_token", refreshToken)
-        intent.putExtra("userId", userId)
+        intent.putExtra("user_id", userId)
         startActivity(intent)
     }
 
