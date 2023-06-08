@@ -11,13 +11,17 @@ data class UserResponse(
 data class SearchUserResponse(
     @SerializedName("message") val message: String,
     @SerializedName("status") val status: Int,
-    @SerializedName("data") val content: UserContent
+    @SerializedName("data") val content: UserContent,
+    @SerializedName("numberOfElements") val numberOfElements: Int,
+    @SerializedName("hasNext") val hasNext: Boolean
 )
 
 data class UsersResponse(
     @SerializedName("message") val message: String,
     @SerializedName("status") val status: Int,
-    @SerializedName("data") val users: List<User>
+    @SerializedName("data") val users: List<User>,
+    @SerializedName("numberOfElements") val numberOfElements: Int,
+    @SerializedName("hasNext") val hasNext: Boolean
 )
 
 data class UserContent(
@@ -30,5 +34,7 @@ data class User(
     @SerializedName("nickname") val nickname: String,
     @SerializedName("authority") val authority: String,
     @SerializedName("status") val accountStatus: String,
-    @SerializedName("profileImage") val profileImage: String?
+    @SerializedName("profileImage") val profileImage: String?,
+    @SerializedName("isSubscribed") val isSubscribed: Boolean,
+    @SerializedName("subscriberCount") val subscriberCount: Int
 )

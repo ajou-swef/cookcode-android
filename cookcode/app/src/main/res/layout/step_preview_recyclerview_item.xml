@@ -16,9 +16,22 @@
             android:id="@+id/media_viewpager"
             android:layout_width="match_parent"
             android:layout_height="200dp"
-            android:nestedScrollingEnabled="true"/>
+            android:nestedScrollingEnabled="true"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"/>
 
     </com.swef.cookcode.data.host.NestedScrollableHost>
+
+    <com.tbuonomo.viewpagerdotsindicator.WormDotsIndicator
+        android:id="@+id/dots_indicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        app:dotsColor="@color/white"
+        app:dotsSize="8dp"
+        app:layout_constraintBottom_toBottomOf="@id/viewpager_host"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
     <TextView
         android:id="@+id/step_number"

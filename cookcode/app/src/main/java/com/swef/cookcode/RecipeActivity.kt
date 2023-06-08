@@ -24,6 +24,7 @@ import com.swef.cookcode.data.RecipeData
 import com.swef.cookcode.data.StepData
 import com.swef.cookcode.data.response.Comment
 import com.swef.cookcode.data.response.CommentResponse
+import com.swef.cookcode.data.response.MadeUser
 import com.swef.cookcode.data.response.Photos
 import com.swef.cookcode.data.response.RecipeContent
 import com.swef.cookcode.data.response.RecipeContentResponse
@@ -51,7 +52,7 @@ class RecipeActivity : AppCompatActivity(), CommentOnClickListener {
     private var userId = ERR_USER_CODE
     private var recipeId = ERR_RECIPE_ID
 
-    private var madeUserId = ERR_USER_CODE
+    private lateinit var madeUser: MadeUser
 
     private lateinit var bottomSheetCallback: BottomSheetBehavior.BottomSheetCallback
 
@@ -149,11 +150,12 @@ class RecipeActivity : AppCompatActivity(), CommentOnClickListener {
                 response: Response<RecipeContentResponse>
             ) {
                 if (response.body() != null) {
+                    Log.d("data_size", response.body()!!.recipeData.user.toString())
                     val recipeAndStepData = getRecipeDataFromResponseBody(response.body()!!.recipeData)
-                    madeUserId = response.body()!!.recipeData.user.userId
-                    recipeViewpagerAdapter.madeUserId = madeUserId
+                    madeUser = response.body()!!.recipeData.user
+                    recipeViewpagerAdapter.madeUser =  madeUser
 
-                    if (userId == madeUserId) {
+                    if (userId == madeUser.userId) {
                         setButtonVisibility(true)
                     }
                     else {
@@ -194,6 +196,8 @@ class RecipeActivity : AppCompatActivity(), CommentOnClickListener {
         val stepDatas = getStepDatasFromRecipeContent(data.steps)
 
         recipeAndStepData = RecipeAndStepData(recipeData, stepDatas)
+
+        binding.recipeName.text = data.title
 
         return recipeAndStepData
     }

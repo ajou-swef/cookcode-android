@@ -247,29 +247,31 @@ class MypageActivity : AppCompatActivity() {
             ) { _, _ ->
                 val intent = Intent(this, MainActivity::class.java)
 
-                API.patchAccount(accessToken).enqueue(object: Callback<StatusResponse>{
-                    override fun onResponse(
-                        call: Call<StatusResponse>,
-                        response: Response<StatusResponse>
-                    ) {
-                        if (response.isSuccessful){
-                            putToastMessage(toastMessage)
-                            startActivity(intent)
+                if (type == "logout") {
+                    startActivity(intent)
+                }
+                else {
+                    API.patchAccount(accessToken).enqueue(object : Callback<StatusResponse> {
+                        override fun onResponse(
+                            call: Call<StatusResponse>,
+                            response: Response<StatusResponse>
+                        ) {
+                            if (response.isSuccessful) {
+                                putToastMessage(toastMessage)
+                                startActivity(intent)
+                            } else {
+                                putToastMessage("에러 발생! 관리자에게 문의해주세요.")
+                                Log.d("data_size", response.errorBody()!!.string())
+                            }
                         }
-                        else {
-                            putToastMessage("에러 발생! 관리자에게 문의해주세요.")
-                            Log.d("data_size", response.errorBody()!!.string())
+
+                        override fun onFailure(call: Call<StatusResponse>, t: Throwable) {
+                            putToastMessage("잠시 후 다시 시도해주세요.")
+                            Log.d("data_size", call.request().toString())
+                            Log.d("data_size", t.message.toString())
                         }
-                    }
-
-                    override fun onFailure(call: Call<StatusResponse>, t: Throwable) {
-                        putToastMessage("잠시 후 다시 시도해주세요.")
-                        Log.d("data_size", call.request().toString())
-                        Log.d("data_size", t.message.toString())
-                    }
-
-                })
-
+                    })
+                }
             }
             .setNegativeButton("취소") { _, _ -> }
             .create()

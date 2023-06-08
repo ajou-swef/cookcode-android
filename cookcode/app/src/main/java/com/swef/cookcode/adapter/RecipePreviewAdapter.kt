@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -17,6 +18,7 @@ import com.swef.cookcode.data.MyIngredientData
 import com.swef.cookcode.data.RecipeData
 import com.swef.cookcode.data.host.IngredientDataHost
 import com.swef.cookcode.data.response.Ingredient
+import com.swef.cookcode.data.response.MadeUser
 import com.swef.cookcode.data.response.StatusResponse
 import com.swef.cookcode.databinding.RecipePreviewItemBinding
 import retrofit2.Call
@@ -41,7 +43,7 @@ class RecipePreviewAdapter(
 
     lateinit var accessToken: String
     lateinit var refreshToken: String
-    var madeUserId = ERR_USER_CODE
+    lateinit var madeUser: MadeUser
     var userId = ERR_USER_CODE
 
     private val API = RecipeAPI.create()
@@ -61,12 +63,16 @@ class RecipePreviewAdapter(
         private val binding: RecipePreviewItemBinding
     ): RecyclerView.ViewHolder(binding.root) {
         fun bind(item: RecipeData){
-            getImageFromUrl(item.mainImage)
+            getImageFromUrl(item.mainImage, binding.mainImage)
             binding.recipeName.text = context.getString(
                 R.string.string_shadow_convert, item.title)
             binding.madeUser.text = item.madeUser.nickname
             binding.descriptionText.text = item.description
             binding.createdAtTime.text = item.createdAt!!.substring(0 until 10)
+
+            if (madeUser.profileImageUri != null) {
+                getImageFromUrl(madeUser.profileImageUri!!, binding.userProfileImage)
+            }
 
             // 필수재료, 추가재료 확인
             essentialIngredientsRecyclerviewAdapter = IngredientRecyclerviewAdapter("recipe_preview")
@@ -142,12 +148,12 @@ class RecipePreviewAdapter(
         })
     }
 
-    private fun getImageFromUrl(imageUrl: String) {
-        binding.mainImage.clipToOutline = true
+    private fun getImageFromUrl(imageUrl: String, view: ImageView) {
+        view.clipToOutline = true
 
         Glide.with(context)
             .load(imageUrl)
-            .into(binding.mainImage)
+            .into(view)
     }
 
     private fun makeIngredientToMyIngredientData(ingredients: List<Ingredient>): List<MyIngredientData> {
@@ -168,7 +174,7 @@ class RecipePreviewAdapter(
         nextIntent.putExtra("access_token", accessToken)
         nextIntent.putExtra("refresh_token", refreshToken)
         nextIntent.putExtra("my_user_id", userId)
-        nextIntent.putExtra("user_id", madeUserId)
+        nextIntent.putExtra("user_id", madeUser.userId)
         nextIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         context.startActivity(nextIntent)
     }

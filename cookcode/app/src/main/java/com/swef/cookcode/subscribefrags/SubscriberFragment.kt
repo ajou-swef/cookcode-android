@@ -12,8 +12,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.swef.cookcode.adapter.SearchUserRecyclerviewAdapter
 import com.swef.cookcode.api.AccountAPI
 import com.swef.cookcode.data.UserData
+import com.swef.cookcode.data.response.SearchUserResponse
 import com.swef.cookcode.data.response.User
-import com.swef.cookcode.data.response.UsersResponse
 import com.swef.cookcode.databinding.FragmentSubscriberBinding
 import retrofit2.Call
 import retrofit2.Callback
@@ -75,10 +75,10 @@ class SubscriberFragment : Fragment() {
     }
 
     private fun getMySubscribers() {
-        API.getMySubscribers(accessToken).enqueue(object : Callback<UsersResponse> {
-            override fun onResponse(call: Call<UsersResponse>, response: Response<UsersResponse>) {
+        API.getMySubscribers(accessToken).enqueue(object : Callback<SearchUserResponse> {
+            override fun onResponse(call: Call<SearchUserResponse>, response: Response<SearchUserResponse>) {
                 if (response.isSuccessful){
-                    val data = response.body()!!.users
+                    val data = response.body()!!.content.users
                     val userDatas = getUserDatasFromResponseBody(data)
 
                     if (recyclerViewAdapter.datas.isEmpty()) {
@@ -98,7 +98,7 @@ class SubscriberFragment : Fragment() {
                 }
             }
 
-            override fun onFailure(call: Call<UsersResponse>, t: Throwable) {
+            override fun onFailure(call: Call<SearchUserResponse>, t: Throwable) {
                 Log.d("data_size", call.request().toString())
                 Log.d("data_size", t.message.toString())
                 putToastMessage("잠시 후 다시 시도해주세요.")
@@ -132,9 +132,10 @@ class SubscriberFragment : Fragment() {
             val nickname = item.nickname
             val userId = item.userId
             val profileImage = item.profileImage
-            val subscribed = false
+            val subscribed = item.isSubscribed
+            val subscriberCount = item.subscriberCount
 
-            userDatas.add(UserData(userId, nickname, profileImage, subscribed))
+            userDatas.add(UserData(userId, nickname, profileImage, subscribed, subscriberCount))
         }
 
         return userDatas

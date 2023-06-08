@@ -113,9 +113,10 @@ class SearchUserFragment : Fragment() {
             val nickname = item.nickname
             val userId = item.userId
             val profileImage = item.profileImage
-            val subscribed = false
+            val subscribed = item.isSubscribed
+            val subscriberCount = item.subscriberCount
 
-            userDatas.add(UserData(userId, nickname, profileImage, subscribed))
+            userDatas.add(UserData(userId, nickname, profileImage, subscribed, subscriberCount))
         }
 
         return userDatas

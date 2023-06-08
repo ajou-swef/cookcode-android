@@ -30,28 +30,28 @@
             android:id="@+id/blue_check"
             android:layout_width="20dp"
             android:layout_height="20dp"
-            android:layout_marginStart="10dp"
-            android:background="@drawable/blue_check"
+            android:layout_marginStart="3dp"
             android:visibility="gone"
-            app:layout_constraintStart_toEndOf="@id/user_profile_image"
+            android:background="@drawable/blue_check"
+            app:layout_constraintStart_toEndOf="@id/made_user"
             app:layout_constraintTop_toTopOf="@+id/made_user"/>
 
         <TextView
             android:id="@+id/made_user"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="5dp"
-            android:ems="6"
+            android:layout_marginStart="15dp"
+            android:layout_marginBottom="3dp"
             android:text="haeiny"
             android:textColor="@color/black"
-            app:layout_constraintStart_toEndOf="@id/blue_check"
+            app:layout_constraintStart_toEndOf="@id/user_profile_image"
             app:layout_constraintBottom_toTopOf="@+id/like"/>
 
         <ImageView
             android:id="@+id/like_mark"
             android:layout_width="18dp"
             android:layout_height="18dp"
-            android:layout_marginStart="5dp"
+            android:layout_marginStart="15dp"
             android:background="@drawable/icon_unliked"
             app:layout_constraintStart_toEndOf="@id/user_profile_image"
             app:layout_constraintBottom_toBottomOf="parent"/>

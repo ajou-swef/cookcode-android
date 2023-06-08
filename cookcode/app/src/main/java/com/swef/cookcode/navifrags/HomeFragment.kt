@@ -205,12 +205,14 @@ class HomeFragment : Fragment() {
                 R.id.createdAt -> {
                     sort = "createdAt"
                     getRecipeDatas()
+                    binding.btnSort.text = "최신순 정렬"
                     true
                 }
                 R.id.popular -> {
                     // 아직 popular는 구현되지 않음
                     // sort = "popular"
                     getRecipeDatas()
+                    binding.btnSort.text = "인기순 정렬"
                     true
                 }
                 else -> false

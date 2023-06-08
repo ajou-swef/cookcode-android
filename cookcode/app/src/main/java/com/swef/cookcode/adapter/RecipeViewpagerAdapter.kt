@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.swef.cookcode.data.RecipeAndStepData
 import com.swef.cookcode.data.RecipeData
 import com.swef.cookcode.data.StepData
+import com.swef.cookcode.data.response.MadeUser
 import com.swef.cookcode.databinding.ShowLoadingViewBinding
 
 class RecipeViewpagerAdapter(
@@ -24,7 +25,7 @@ class RecipeViewpagerAdapter(
 
     lateinit var accessToken: String
     lateinit var refreshToken: String
-    var madeUserId = ERR_USER_CODE
+    lateinit var madeUser: MadeUser
     var userId = ERR_USER_CODE
 
     companion object {
@@ -46,7 +47,7 @@ class RecipeViewpagerAdapter(
                 recipeTitleAdapter.accessToken = accessToken
                 recipeTitleAdapter.refreshToken = refreshToken
                 recipeTitleAdapter.userId = userId
-                recipeTitleAdapter.madeUserId = madeUserId
+                recipeTitleAdapter.madeUser = madeUser
                 return recipeTitleAdapter.onCreateViewHolder(parent, viewType)
             } else {
                 recipeStepAdapter = StepPreviewRecyclerviewAdapter(stepDatas!!, context)

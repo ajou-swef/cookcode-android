@@ -51,7 +51,7 @@ class SearchUserRecyclerviewAdapter(
     ): RecyclerView.ViewHolder(binding.root) {
         fun bind(item : UserData){
             binding.userName.text = item.nickname
-            binding.subscribeUsers.text = context.getString(R.string.subscribe_users, item.userId)
+            binding.subscribeUsers.text = context.getString(R.string.subscribe_users, item.subscriberCount)
             if (item.profileImage != null){
                 getImageFromUrl(item.profileImage, binding.profileImage)
             }
@@ -60,11 +60,11 @@ class SearchUserRecyclerviewAdapter(
                 startUserPageActivity(item.userId)
             }
 
-            changeButtonSubscribed(false)
+            changeButtonSubscribed(item.subscribed)
 
             binding.btnSubscribe.setOnClickListener {
                 if (item.subscribed) {
-                    deleteSubscribe()
+                    postSubscribe()
                     item.subscribed = false
                     changeButtonSubscribed(false)
                 }
@@ -78,26 +78,6 @@ class SearchUserRecyclerviewAdapter(
 
         private fun postSubscribe() {
             accountAPI.postUserSubscribe(accessToken, userId).enqueue(object :
-                Callback<StatusResponse> {
-                override fun onResponse(
-                    call: Call<StatusResponse>,
-                    response: Response<StatusResponse>
-                ) {
-                    if (!response.isSuccessful){
-                        Log.d("data_size", call.request().toString())
-                        Log.d("data_size", response.errorBody()!!.string())
-                        putToastMessage("에러 발생!")
-                    }
-                }
-
-                override fun onFailure(call: Call<StatusResponse>, t: Throwable) {
-                    putToastMessage("잠시 후 다시 시도해주세요.")
-                }
-            })
-        }
-
-        private fun deleteSubscribe() {
-            accountAPI.deleteUserSubscribe(accessToken, userId).enqueue(object :
                 Callback<StatusResponse> {
                 override fun onResponse(
                     call: Call<StatusResponse>,

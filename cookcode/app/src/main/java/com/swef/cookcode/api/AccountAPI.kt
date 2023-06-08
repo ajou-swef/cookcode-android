@@ -61,21 +61,15 @@ interface AccountAPI {
         @Path("createrId") userId: Int
     ): Call<StatusResponse>
 
-    @DELETE("account/subscribe/{createrId}")
-    fun deleteUserSubscribe(
-        @Header("accessToken") accessToken: String,
-        @Path("createrId") userId: Int
-    ): Call<StatusResponse>
-
     @GET("account/subscribe/subscribers")
     fun getMySubscribers(
         @Header("accessToken") accessToken: String,
-    ): Call<UsersResponse>
+    ): Call<SearchUserResponse>
 
     @GET("account/subscribe/publishers")
     fun getMyPublishers(
         @Header("accessToken") accessToken: String,
-    ): Call<UsersResponse>
+    ): Call<SearchUserResponse>
 
     @GET("account/search")
     fun getSearchUsers(

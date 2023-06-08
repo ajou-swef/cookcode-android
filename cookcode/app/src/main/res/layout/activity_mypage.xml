@@ -37,12 +37,12 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <!-- android:visibility="gone" -->
             <ImageView
                 android:id="@+id/blue_check"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:layout_marginEnd="5dp"
+                android:visibility="gone"
                 android:background="@drawable/blue_check"
                 app:layout_constraintTop_toTopOf="@id/user_name"
                 app:layout_constraintEnd_toStartOf="@+id/user_name"/>
