@@ -87,7 +87,7 @@ class RecipeActivity : AppCompatActivity(), CommentOnClickListener {
         getRecipeDataFromRecipeID(recipeId, accessToken)
 
         binding.beforeArrow.setOnClickListener {
-            finish()
+            startHomeActivity()
         }
 
         initBottomSheetCallback()
@@ -256,12 +256,21 @@ class RecipeActivity : AppCompatActivity(), CommentOnClickListener {
         }
     }
 
+    private fun startHomeActivity() {
+        val intent = Intent(this, HomeActivity::class.java)
+        intent.putExtra("access_token", accessToken)
+        intent.putExtra("refresh_token", refreshToken)
+        intent.putExtra("user_id", userId)
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        startActivity(intent)
+    }
+
     private fun deleteRecipe() {
         API.deleteRecipe(accessToken, recipeId).enqueue(object: Callback<StatusResponse>{
             override fun onResponse(call: Call<StatusResponse>,response: Response<StatusResponse>) {
                 if (response.isSuccessful){
                     putToastMessage("정상적으로 삭제 되었습니다.")
-                    finish()
+                    startHomeActivity()
                 }
                 else {
                     Log.d("data_size", call.request().toString())

@@ -45,7 +45,7 @@
             android:text="haeiny"
             android:textColor="@color/black"
             app:layout_constraintStart_toEndOf="@id/user_profile_image"
-            app:layout_constraintBottom_toTopOf="@+id/like"/>
+            app:layout_constraintBottom_toTopOf="@+id/like_mark"/>
 
         <ImageView
             android:id="@+id/like_mark"
@@ -56,15 +56,6 @@
             app:layout_constraintStart_toEndOf="@id/user_profile_image"
             app:layout_constraintBottom_toBottomOf="parent"/>
 
-        <TextView
-            android:id="@+id/like"
-            android:text="@string/like"
-            android:textColor="@color/main_theme"
-            android:layout_marginStart="3dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintStart_toEndOf="@+id/like_mark"
-            app:layout_constraintBottom_toBottomOf="parent"/>
 
         <TextView
             android:id="@+id/like_number"
@@ -74,7 +65,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="3dp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/like"/>
+            app:layout_constraintStart_toEndOf="@+id/like_mark"/>
 
         <ImageView
             android:id="@+id/is_cookable"

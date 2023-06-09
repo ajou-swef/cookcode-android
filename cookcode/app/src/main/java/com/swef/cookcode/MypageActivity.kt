@@ -67,7 +67,7 @@ class MypageActivity : AppCompatActivity() {
         binding.userName.text = userName
 
         binding.beforeArrow.setOnClickListener {
-            finish()
+            startHomeActivity()
         }
 
         initButtonByAuthority()
@@ -91,6 +91,15 @@ class MypageActivity : AppCompatActivity() {
         binding.btnDeleteUser.setOnClickListener { buildAlertDialog("delete") }
     }
 
+    private fun startHomeActivity() {
+        val intent = Intent(this, HomeActivity::class.java)
+        intent.putExtra("access_token", accessToken)
+        intent.putExtra("refresh_token", refreshToken)
+        intent.putExtra("user_id", userId)
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        startActivity(intent)
+    }
+
     private fun getImageFromUrl(imageUrl: String, view: ImageView) {
         Glide.with(this)
             .load(imageUrl)
@@ -105,7 +114,6 @@ class MypageActivity : AppCompatActivity() {
             when (menuItem.itemId) {
                 R.id.update_image -> {
                     galleryLauncher.launch(galleryIntent)
-                    putToastMessage("변경이 완료되었습니다.")
                     true
                 }
                 R.id.delete_image -> {
@@ -135,6 +143,7 @@ class MypageActivity : AppCompatActivity() {
                     }
 
                     patchProfileImage(imageFile, oldImageFile)
+                    putToastMessage("변경이 완료되었습니다.")
                 }
             }
         }

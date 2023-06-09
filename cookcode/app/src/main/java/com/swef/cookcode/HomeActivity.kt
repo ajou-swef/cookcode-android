@@ -2,7 +2,6 @@ package com.swef.cookcode
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import com.swef.cookcode.api.AccountAPI
 import com.swef.cookcode.databinding.ActivityHomeBinding
@@ -30,7 +29,6 @@ class HomeActivity : AppCompatActivity() {
 
         if(!intent.getStringExtra("access_token").isNullOrBlank()) {
             accessToken = intent.getStringExtra("access_token")!!
-            Log.d("data_size", accessToken)
         }
 
         if(!intent.getStringExtra("refresh_token").isNullOrBlank()){
@@ -38,7 +36,6 @@ class HomeActivity : AppCompatActivity() {
         }
 
         userId = intent.getIntExtra("user_id", USER_ERR_CODE)
-        Log.d("data_size", userId.toString())
 
         bundle.putString("access_token", accessToken)
         bundle.putString("refresh_token", refreshToken)

@@ -17,7 +17,6 @@
         android:id="@+id/like_number"
         android:text="@string/like_number"
         android:textColor="@color/white"
-        android:textStyle="bold"
         android:shadowRadius="5.0"
         android:shadowDx="2.0"
         android:shadowDy="2.0"

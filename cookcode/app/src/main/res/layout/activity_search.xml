@@ -23,7 +23,6 @@
         android:hint="@string/type_word"
         android:inputType="text"
         android:textSize="15sp"
-        android:textStyle="bold"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toEndOf="@+id/before_arrow"
         app:layout_constraintEnd_toStartOf="@+id/btn_search"/>

@@ -319,6 +319,11 @@ class IngredientRecyclerviewAdapter(
     }
 
     private fun testValueOrDateIsValid(value: String, date: String, parent: ViewGroup): Boolean {
+        val currentDate = LocalDate.now()
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+        val formattedCurrentDate = LocalDate.parse(currentDate.toString(), formatter)
+        val ingredientExpiredDate = LocalDate.parse(date, formatter)
+
         if (value.isEmpty()) {
             Toast.makeText(parent.context, "양이 입력되지 않았습니다.", Toast.LENGTH_SHORT).show()
         }
@@ -327,6 +332,9 @@ class IngredientRecyclerviewAdapter(
         }
         else if (!date.matches(Regex("20\\d{2}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])"))){
             Toast.makeText(parent.context, "정확한 날짜를 입력해주세요.", Toast.LENGTH_SHORT).show()
+        }
+        else if (ingredientExpiredDate.isBefore(formattedCurrentDate)){
+            Toast.makeText(parent.context, "오늘 이전의 날짜는 입력할 수 없습니다.", Toast.LENGTH_SHORT).show()
         }
         else
             return true
@@ -344,8 +352,10 @@ class IngredientRecyclerviewAdapter(
 
     private fun dateTypeTextAutomaticallyChange(refrigeratorDialogView: RefrigeratorIngredientDialogBinding): TextWatcher {
         return object: TextWatcher {
+            var beforeText = ""
+
             override fun beforeTextChanged(beforeText: CharSequence?, start: Int, count: Int, after: Int) {
-                // Do Nothing
+                this.beforeText = beforeText.toString()
             }
 
             override fun onTextChanged(currentText: CharSequence?, start: Int, before: Int, count: Int) {
@@ -357,7 +367,11 @@ class IngredientRecyclerviewAdapter(
                 val input = afterText?.toString() ?: ""
 
                 val formattedInput = if (input.length == 4 || input.length == 7) {
-                    "$input-"
+                    if (beforeText.last() == '-') {
+                        input.substring(0, input.length - 1)
+                    } else {
+                        "$input-"
+                    }
                 } else {
                     input
                 }

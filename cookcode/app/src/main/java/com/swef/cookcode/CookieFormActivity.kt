@@ -6,6 +6,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Rect
 import android.graphics.drawable.Drawable
+import android.media.MediaMetadataRetriever
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -34,6 +35,10 @@ import com.swef.cookcode.data.host.ItemTouchCallback
 import com.swef.cookcode.data.response.StatusResponse
 import com.swef.cookcode.`interface`.ItemTouchHelperListener
 import com.swef.cookcode.`interface`.VideoOnClickListener
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -71,6 +76,7 @@ class CookieFormActivity : AppCompatActivity(), VideoOnClickListener, ItemTouchH
 
     private lateinit var mergedVideoFile: String
     private lateinit var videoListTextFile: File
+    private lateinit var thumbnailImageFile: String
 
     private lateinit var cookieIndividualVideoRecyclerviewAdapter: CookieIndividualVideoRecyclerviewAdapter
     private val itemTouchHelper by lazy { ItemTouchHelper(ItemTouchCallback(this)) }
@@ -93,6 +99,8 @@ class CookieFormActivity : AppCompatActivity(), VideoOnClickListener, ItemTouchH
         initGalleryLauncher()
         initGalleryStartIntent()
         initEditTextViewToKeyboardHide()
+
+        thumbnailImageFile = this.filesDir.absolutePath + "thumbnail.png"
 
         binding.cookieUpload.setOnClickListener{
             if (testInfoTyped()) {
@@ -165,22 +173,38 @@ class CookieFormActivity : AppCompatActivity(), VideoOnClickListener, ItemTouchH
             binding.combinedVideo.visibility = View.VISIBLE
             binding.combinedVideo.setVideoURI(Uri.parse(videoUrls[0]))
 
+            val file = File(videoUrls[0])
+            mergedVideoFile = file.absolutePath
+
             binding.combinedVideo.setOnPreparedListener{ mediaPlayer ->
                 mediaPlayer.start()
             }
         } else if(videoUrls.count() > 1) {
-            if (mergeVideos(videoUrls) != Config.RETURN_CODE_SUCCESS) {
-                binding.waitingUploadVideos.visibility = View.VISIBLE
-                binding.combinedVideo.visibility = View.INVISIBLE
-                putToastMessage("에러 발생! 관리자에게 문의해주세요.")
-            } else {
-                val videoUri = Uri.parse(mergedVideoFile)
-                binding.waitingUploadVideos.visibility = View.GONE
-                binding.combinedVideo.visibility = View.VISIBLE
-                binding.combinedVideo.setVideoURI(videoUri)
+            binding.waitingUploadVideos.visibility = View.GONE
+            binding.progressBar.visibility = View.VISIBLE
 
-                binding.combinedVideo.setOnPreparedListener{ mediaPlayer ->
-                    mediaPlayer.start()
+            CoroutineScope(Dispatchers.Main).launch {
+                val test = withContext(Dispatchers.IO) {
+                    mergeVideos(videoUrls)
+                }
+
+                if (test != Config.RETURN_CODE_SUCCESS) {
+                    binding.waitingUploadVideos.visibility = View.VISIBLE
+                    binding.progressBar.visibility = View.GONE
+                    binding.combinedVideo.visibility = View.INVISIBLE
+                    putToastMessage("에러 발생! 관리자에게 문의해주세요.")
+                } else {
+                    val videoUri = Uri.parse(mergedVideoFile)
+                    binding.waitingUploadVideos.visibility = View.GONE
+                    binding.progressBar.visibility = View.GONE
+                    binding.combinedVideo.visibility = View.VISIBLE
+                    binding.combinedVideo.setVideoURI(videoUri)
+
+                    binding.combinedVideo.setOnPreparedListener{ mediaPlayer ->
+                        mediaPlayer.start()
+                    }
+
+                    getVideoThumbnail(thumbnailImageFile)
                 }
             }
         }
@@ -195,12 +219,12 @@ class CookieFormActivity : AppCompatActivity(), VideoOnClickListener, ItemTouchH
         galleryStartIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
     }
 
-    fun handleVideo(file: File) {
+    private fun handleVideo(file: File) {
         videoUrls.add(file.absolutePath)
         getVideoInfoAndThumbnail(file.absolutePath)
     }
 
-    fun mergeVideos(videoPaths: List<String>): Int {
+    private fun mergeVideos(videoPaths: List<String>): Int {
         mergedVideoFile = this.filesDir.absolutePath + "/merged_video.mp4"
 
         val command = StringBuilder()
@@ -221,6 +245,28 @@ class CookieFormActivity : AppCompatActivity(), VideoOnClickListener, ItemTouchH
         command.append(" -map \"[v]\" -map \"[a]\" ").append("-vsync 0 ").append(mergedVideoFile)
 
         return FFmpeg.execute(command.toString())
+    }
+
+    private fun getVideoThumbnail(thumbnailPath: String): Boolean {
+        val file = File(mergedVideoFile)
+        if (!file.exists()) {
+            return false
+        }
+
+        val retriever = MediaMetadataRetriever()
+        retriever.setDataSource(file.absolutePath)
+
+        val timeMs = 0L // 썸네일을 추출할 시간 (밀리초 단위)
+        val bitmap: Bitmap? = retriever.getFrameAtTime(timeMs, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
+        if (bitmap != null) {
+            val thumbnailFile = File(thumbnailPath)
+            val outputStream = FileOutputStream(thumbnailFile)
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+            outputStream.close()
+            return true
+        }
+
+        return false
     }
 
     private fun putToastMessage(message: String) {
@@ -322,7 +368,7 @@ class CookieFormActivity : AppCompatActivity(), VideoOnClickListener, ItemTouchH
 
         val videoFile = File(mergedVideoFile)
         val videoPart = MultipartBody.Part.createFormData(
-            "multipartFile", videoFile.name, videoFile.asRequestBody("video/mp4".toMediaType())
+            "cookieVideo", videoFile.name, videoFile.asRequestBody("video/mp4".toMediaType())
         )
 
         val cookieTitle = binding.editCookieName.text
@@ -332,10 +378,16 @@ class CookieFormActivity : AppCompatActivity(), VideoOnClickListener, ItemTouchH
         val descriptionPart =
             MultipartBody.Part.createFormData("desc", cookieDescription.toString())
 
+        val thumbnail = File(thumbnailImageFile)
+        val thumbnailPart = MultipartBody.Part.createFormData(
+            "thumbnail", thumbnail.name, thumbnail.asRequestBody("image/jpg".toMediaType())
+        )
+
         parts.apply {
             add(videoPart)
             add(titlePart)
             add(descriptionPart)
+            add(thumbnailPart)
         }
 
         return parts
@@ -368,7 +420,8 @@ class CookieFormActivity : AppCompatActivity(), VideoOnClickListener, ItemTouchH
         val intent = Intent(this, HomeActivity::class.java)
         intent.putExtra("access_token", accessToken)
         intent.putExtra("refresh_token", refreshToken)
-        intent.putExtra("userId", userId)
+        intent.putExtra("user_id", userId)
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         startActivity(intent)
     }
 

@@ -92,6 +92,7 @@ interface CookieAPI {
         @Header("accessToken") accessToken: String,
         @Query("query") keyword: String,
         @Query("page") page: Int,
+        @Query("size") size: Int?
     ): Call<CookieContentResponse>
 
     companion object {

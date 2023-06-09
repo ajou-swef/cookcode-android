@@ -9,11 +9,13 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.widget.PopupMenu
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.swef.cookcode.CookieFormActivity
 import com.swef.cookcode.MypageActivity
 import com.swef.cookcode.R
@@ -71,12 +73,6 @@ class HomeFragment : Fragment() {
     ): View {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
 
-        accessToken = arguments?.getString("access_token")!!
-        refreshToken = arguments?.getString("refresh_token")!!
-        userId = arguments?.getInt("user_id")!!
-
-        getAuthorityFromUserId()
-
         // 컨텐츠 추가 버튼 click listener
         binding.btnAddContents.setOnClickListener{
             showPopupMenuToCreateContent()
@@ -87,6 +83,10 @@ class HomeFragment : Fragment() {
         binding.btnSort.setOnClickListener {
             showPopupMenuToSetSort()
         }
+
+        accessToken = arguments?.getString("access_token")!!
+        refreshToken = arguments?.getString("refresh_token")!!
+        userId = arguments?.getInt("user_id")!!
 
         binding.btnCookable.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
@@ -122,6 +122,8 @@ class HomeFragment : Fragment() {
         getNewRecipeDatas()
         initOnScrollListener()
 
+        getAuthorityFromUserId()
+
         return binding.root
     }
 
@@ -129,6 +131,14 @@ class HomeFragment : Fragment() {
         accountAPI.getUserInfo(accessToken, userId).enqueue(object : Callback<UserResponse> {
             override fun onResponse(call: Call<UserResponse>, response: Response<UserResponse>) {
                 if (response.isSuccessful) {
+                    val imageUrl = response.body()!!.user.profileImage
+                    if (imageUrl != null) {
+                        if (activity != null) {
+                            Glide.with(requireActivity())
+                                .load(imageUrl)
+                                .into(binding.userMark)
+                        }
+                    }
                     authority = response.body()!!.user.authority
                 }
                 else {
@@ -144,6 +154,14 @@ class HomeFragment : Fragment() {
                 putToastMessage("잠시 후 다시 시도해주세요.")
             }
         })
+    }
+
+    private fun getImageFromUrl(imageUrl: String, view: ImageView) {
+        view.clipToOutline = true
+
+        Glide.with(this)
+            .load(imageUrl)
+            .into(view)
     }
 
     // Fragment는 생명 주기가 매우 길기 때문에 view가 destroy되어도 fragment는 살아있음

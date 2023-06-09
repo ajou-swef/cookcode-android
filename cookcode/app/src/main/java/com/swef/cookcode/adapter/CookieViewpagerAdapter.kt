@@ -238,8 +238,8 @@ class CookieViewpagerAdapter(
             return comments
         }
 
-        private fun initLikeButton(like: Int) {
-            if (like == 1){
+        private fun initLikeButton(isLiked: Boolean) {
+            if (isLiked){
                 binding.btnLike.setBackgroundResource(R.drawable.icon_liked)
             }
             else {
@@ -332,15 +332,15 @@ class CookieViewpagerAdapter(
                     response: Response<StatusResponse>
                 ) {
                     if (response.isSuccessful){
-                        if(item.isLiked == 1) {
+                        if(item.isLiked) {
                             binding.btnLike.setBackgroundResource(R.drawable.icon_unliked)
-                            item.isLiked = 0
+                            item.isLiked = false
                             item.likeNumber--
 
                         }
                         else {
                             binding.btnLike.setBackgroundResource(R.drawable.icon_liked)
-                            item.isLiked = 1
+                            item.isLiked = true
                             item.likeNumber++
                         }
                         binding.likeNumber.text = item.likeNumber.toString()

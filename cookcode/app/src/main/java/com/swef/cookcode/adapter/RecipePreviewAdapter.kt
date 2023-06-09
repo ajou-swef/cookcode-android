@@ -111,6 +111,9 @@ class RecipePreviewAdapter(
             binding.madeUser.setOnClickListener {
                 startUserPageActivity()
             }
+            binding.userProfileImage.setOnClickListener {
+                startUserPageActivity()
+            }
         }
     }
 

@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.swef.cookcode.R
 import com.swef.cookcode.RecipeActivity
+import com.swef.cookcode.UserPageActivity
 import com.swef.cookcode.data.RecipeData
 import com.swef.cookcode.databinding.SearchRecipeRecyclerviewItemBinding
 
@@ -82,7 +83,24 @@ class SearchRecipeRecyclerviewAdapter(
             else {
                 binding.likeMark.setBackgroundResource(R.drawable.icon_unliked)
             }
+
+            binding.madeUser.setOnClickListener {
+                startUserPageActivity(item.madeUser.userId)
+            }
+            binding.userProfileImage.setOnClickListener {
+                startUserPageActivity(item.madeUser.userId)
+            }
         }
+    }
+
+    private fun startUserPageActivity(madeUserId: Int) {
+        val nextIntent = Intent(context, UserPageActivity::class.java)
+        nextIntent.putExtra("access_token", accessToken)
+        nextIntent.putExtra("refresh_token", refreshToken)
+        nextIntent.putExtra("my_user_id", userId)
+        nextIntent.putExtra("user_id", madeUserId)
+        nextIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        context.startActivity(nextIntent)
     }
 
     private fun getImageFromUrl(imageUrl: String, view: ImageView) {
