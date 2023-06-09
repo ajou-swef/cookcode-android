@@ -10,9 +10,7 @@ import android.view.MotionEvent
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.Toast
-import com.swef.cookcode.api.AccountAPI
-import com.swef.cookcode.data.GlobalVariables
-import com.swef.cookcode.data.GlobalVariables.ERR_CODE
+import com.swef.cookcode.data.GlobalVariables.accessToken
 import com.swef.cookcode.data.GlobalVariables.accountAPI
 import com.swef.cookcode.data.GlobalVariables.authService
 import com.swef.cookcode.data.GlobalVariables.authority
@@ -62,6 +60,7 @@ class MainActivity : AppCompatActivity() {
                     if(response.body() != null) {
                         if (response.body()!!.status == 200) {
                             userId = response.body()!!.tokenData.userId
+                            accessToken = response.body()!!.tokenData.accessToken
                             refreshToken = response.body()!!.tokenData.refreshToken
                             getAuthorityFromUserId()
                         }

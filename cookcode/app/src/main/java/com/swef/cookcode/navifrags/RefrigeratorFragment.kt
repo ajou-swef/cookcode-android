@@ -222,6 +222,7 @@ class RefrigeratorFragment : Fragment() {
                         }
                     }
                     refrigeratorRecyclerAdapter.ingredDatas = ingredDatas
+                    refrigeratorRecyclerAdapter.notifyDataSetChanged()
                 }
             }
 

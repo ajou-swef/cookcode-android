@@ -7,6 +7,7 @@ import com.swef.cookcode.api.FridgeAPI
 import com.swef.cookcode.api.RecipeAPI
 
 object GlobalVariables {
+    var accessToken: String = ""
     var refreshToken: String = ""
     var userId: Int = -1
     var authority: String = ""
