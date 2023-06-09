@@ -36,6 +36,9 @@ class UserCookieFragment : Fragment() {
 
     private val spanCount = 3
 
+    private var isScrollingUp = false
+    private var isScrollingDown = false
+
     private val API = CookieAPI.create()
 
     override fun onCreateView(
@@ -68,7 +71,7 @@ class UserCookieFragment : Fragment() {
         recyclerViewAdapter.viewHeight = itemHeight
 
         getCookieDataFromUserId()
-        initOnScrollListener()
+        initOnScrollListener(gridLayoutManager)
 
         return binding.root
     }
@@ -132,18 +135,39 @@ class UserCookieFragment : Fragment() {
         getCookieDataFromUserId()
     }
 
-    private fun initOnScrollListener() {
+    private fun initOnScrollListener(layoutManager: GridLayoutManager) {
         binding.recyclerView.addOnScrollListener(object: RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    // 스크롤 상태가 변경되지 않은 경우 (정지 상태)
+                    isScrollingUp = false
+                    isScrollingDown = false
+                }
+            }
+
             override fun onScrolled(recyclerView: RecyclerView, differentX: Int, differentY: Int) {
                 super.onScrolled(recyclerView, differentX, differentY)
+                isScrollingUp = differentY > 0
+                isScrollingDown = differentY < 0
 
-                if(!recyclerView.canScrollVertically(1) && hasNext) {
-                    page++
-                    getCookieDataFromUserId()
-                }
-                else if(!recyclerView.canScrollVertically(-1)){
-                    putToastMessage("데이터를 불러오는 중입니다.")
-                    getNewCookieDataFromUserId()
+                if (isScrollingUp) {
+                    val visibleItemCount = layoutManager.childCount
+                    val totalItemCount = layoutManager.itemCount
+                    val pastVisibleItems = layoutManager.findFirstVisibleItemPosition()
+
+                    if (visibleItemCount + pastVisibleItems >= totalItemCount) {
+                        page++
+                        getCookieDataFromUserId()
+                    }
+                } else if (isScrollingDown) {
+                    // 맨 아래에서 위로 당겨질 때
+                    val pastVisibleItems = layoutManager.findFirstVisibleItemPosition()
+
+                    if (pastVisibleItems == 0) {
+                        putToastMessage("데이터를 불러오는 중입니다.")
+                        getNewCookieDataFromUserId()
+                    }
                 }
             }
         })
