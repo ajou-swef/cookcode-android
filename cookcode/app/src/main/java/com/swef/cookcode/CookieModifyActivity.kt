@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.MediaController
 import android.widget.Toast
-import com.swef.cookcode.api.CookieAPI
 import com.swef.cookcode.data.GlobalVariables.ERR_CODE
 import com.swef.cookcode.data.GlobalVariables.cookieAPI
 import com.swef.cookcode.data.response.OneCookieResponse

@@ -10,7 +10,6 @@ import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.swef.cookcode.adapter.SearchUserRecyclerviewAdapter
-import com.swef.cookcode.api.AccountAPI
 import com.swef.cookcode.data.GlobalVariables.accountAPI
 import com.swef.cookcode.data.UserData
 import com.swef.cookcode.data.response.SearchUserResponse

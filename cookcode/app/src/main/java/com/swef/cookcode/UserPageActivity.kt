@@ -8,7 +8,6 @@ import android.widget.ImageView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
-import com.swef.cookcode.api.AccountAPI
 import com.swef.cookcode.data.GlobalVariables.ERR_CODE
 import com.swef.cookcode.data.GlobalVariables.accountAPI
 import com.swef.cookcode.data.GlobalVariables.authority

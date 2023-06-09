@@ -11,7 +11,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.swef.cookcode.R
 import com.swef.cookcode.UserPageActivity
-import com.swef.cookcode.api.AccountAPI
 import com.swef.cookcode.data.GlobalVariables.accountAPI
 import com.swef.cookcode.data.GlobalVariables.userId
 import com.swef.cookcode.data.UserData

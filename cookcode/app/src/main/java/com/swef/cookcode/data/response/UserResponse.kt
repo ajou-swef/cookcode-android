@@ -16,14 +16,6 @@ data class SearchUserResponse(
     @SerializedName("hasNext") val hasNext: Boolean
 )
 
-data class UsersResponse(
-    @SerializedName("message") val message: String,
-    @SerializedName("status") val status: Int,
-    @SerializedName("data") val users: List<User>,
-    @SerializedName("numberOfElements") val numberOfElements: Int,
-    @SerializedName("hasNext") val hasNext: Boolean
-)
-
 data class UserContent(
     @SerializedName("content") val users: List<User>
 )

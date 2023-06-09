@@ -7,7 +7,6 @@ import android.util.Log
 import android.widget.Toast
 import androidx.viewpager2.widget.ViewPager2
 import com.swef.cookcode.adapter.StepPreviewRecyclerviewAdapter
-import com.swef.cookcode.api.RecipeAPI
 import com.swef.cookcode.data.GlobalVariables.ERR_CODE
 import com.swef.cookcode.data.GlobalVariables.recipeAPI
 import com.swef.cookcode.data.StepData

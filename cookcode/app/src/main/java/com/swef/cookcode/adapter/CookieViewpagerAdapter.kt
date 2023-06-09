@@ -20,7 +20,6 @@ import com.swef.cookcode.CookieModifyActivity
 import com.swef.cookcode.LinearLayoutManagerWrapper
 import com.swef.cookcode.R
 import com.swef.cookcode.UserPageActivity
-import com.swef.cookcode.api.CookieAPI
 import com.swef.cookcode.data.CommentData
 import com.swef.cookcode.data.CookieData
 import com.swef.cookcode.data.GlobalVariables.cookieAPI

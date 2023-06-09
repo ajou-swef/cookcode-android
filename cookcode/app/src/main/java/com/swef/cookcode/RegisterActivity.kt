@@ -11,7 +11,6 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.Toast
-import com.swef.cookcode.api.AccountAPI
 import com.swef.cookcode.data.GlobalVariables.authService
 import com.swef.cookcode.data.response.DuplicateResponse
 import com.swef.cookcode.data.response.StatusResponse

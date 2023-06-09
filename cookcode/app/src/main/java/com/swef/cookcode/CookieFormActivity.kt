@@ -30,7 +30,6 @@ import com.swef.cookcode.data.VideoData
 import com.swef.cookcode.databinding.ActivityCookieFormBinding
 import com.arthenica.mobileffmpeg.FFmpeg
 import com.swef.cookcode.adapter.CookieIndividualVideoRecyclerviewAdapter
-import com.swef.cookcode.api.CookieAPI
 import com.swef.cookcode.data.GlobalVariables.cookieAPI
 import com.swef.cookcode.data.host.ItemTouchCallback
 import com.swef.cookcode.data.response.StatusResponse

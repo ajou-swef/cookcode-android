@@ -21,7 +21,6 @@ import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.swef.cookcode.adapter.StepImageRecyclerviewAdapter
 import com.swef.cookcode.adapter.StepVideoRecyclerviewAdapter
-import com.swef.cookcode.api.RecipeAPI
 import com.swef.cookcode.data.GlobalVariables.recipeAPI
 import com.swef.cookcode.data.StepImageData
 import com.swef.cookcode.data.VideoData

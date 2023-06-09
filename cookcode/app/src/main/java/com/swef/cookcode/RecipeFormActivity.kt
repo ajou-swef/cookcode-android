@@ -26,7 +26,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.swef.cookcode.adapter.IngredientRecyclerviewAdapter
 import com.swef.cookcode.adapter.StepRecyclerviewAdapter
-import com.swef.cookcode.api.RecipeAPI
 import com.swef.cookcode.data.GlobalVariables.ERR_CODE
 import com.swef.cookcode.data.GlobalVariables.SPAN_COUNT
 import com.swef.cookcode.data.GlobalVariables.recipeAPI

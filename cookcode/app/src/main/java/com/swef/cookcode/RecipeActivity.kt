@@ -17,7 +17,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.swef.cookcode.adapter.CommentRecyclerviewAdapter
 import com.swef.cookcode.adapter.RecipeViewpagerAdapter
-import com.swef.cookcode.api.RecipeAPI
 import com.swef.cookcode.data.CommentData
 import com.swef.cookcode.data.GlobalVariables.ERR_CODE
 import com.swef.cookcode.data.GlobalVariables.recipeAPI

@@ -12,7 +12,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.swef.cookcode.R
 import com.swef.cookcode.adapter.SearchRecipeRecyclerviewAdapter
-import com.swef.cookcode.api.RecipeAPI
 import com.swef.cookcode.data.GlobalVariables.recipeAPI
 import com.swef.cookcode.data.RecipeData
 import com.swef.cookcode.data.response.RecipeContent

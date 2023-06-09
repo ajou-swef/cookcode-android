@@ -2,8 +2,6 @@ package com.swef.cookcode
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.Toast
-import com.swef.cookcode.api.AccountAPI
 import com.swef.cookcode.databinding.ActivityHomeBinding
 import com.swef.cookcode.navifrags.*
 

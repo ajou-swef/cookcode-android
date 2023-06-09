@@ -6,7 +6,6 @@ import android.util.Log
 import android.widget.Toast
 import androidx.viewpager2.widget.ViewPager2
 import com.swef.cookcode.adapter.CookieViewpagerAdapter
-import com.swef.cookcode.api.CookieAPI
 import com.swef.cookcode.data.CookieData
 import com.swef.cookcode.data.GlobalVariables.ERR_CODE
 import com.swef.cookcode.data.GlobalVariables.cookieAPI

@@ -13,8 +13,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.swef.cookcode.R
 import com.swef.cookcode.UserPageActivity
-import com.swef.cookcode.api.RecipeAPI
-import com.swef.cookcode.data.GlobalVariables.ERR_CODE
 import com.swef.cookcode.data.GlobalVariables.SPAN_COUNT
 import com.swef.cookcode.data.GlobalVariables.recipeAPI
 import com.swef.cookcode.data.MyIngredientData
