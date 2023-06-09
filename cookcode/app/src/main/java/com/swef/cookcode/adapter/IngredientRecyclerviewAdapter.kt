@@ -12,6 +12,7 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.swef.cookcode.R
+import com.swef.cookcode.data.GlobalVariables.ERR_CODE
 import com.swef.cookcode.data.MyIngredientData
 import com.swef.cookcode.databinding.IngredientRecyclerviewItemBinding
 import com.swef.cookcode.databinding.RecipeIngredientDialogBinding
@@ -28,8 +29,6 @@ class IngredientRecyclerviewAdapter(
     constructor(type: String, listener: OnDialogRecyclerviewItemClickListener) : this(type) {
         this.listener = listener
     }
-
-    private val ERR_COLOR_CODE = -1
 
     // datas는 데이터베이스에 들어있는 식재료 원본
     // 필터 검색을 위해서 filteredDatas에 검색 결과를 저장해서 binding
@@ -347,7 +346,7 @@ class IngredientRecyclerviewAdapter(
             ContextCompat.getColor(parent.context, R.color.black)
         else if(color == "red")
             ContextCompat.getColor(parent.context, R.color.red)
-        else ERR_COLOR_CODE
+        else ERR_CODE
     }
 
     private fun dateTypeTextAutomaticallyChange(refrigeratorDialogView: RefrigeratorIngredientDialogBinding): TextWatcher {

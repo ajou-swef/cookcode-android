@@ -12,6 +12,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.Toast
 import com.swef.cookcode.api.AccountAPI
+import com.swef.cookcode.data.GlobalVariables.authService
 import com.swef.cookcode.data.response.DuplicateResponse
 import com.swef.cookcode.data.response.StatusResponse
 import com.swef.cookcode.databinding.ActivityRegisterBinding
@@ -30,9 +31,6 @@ class RegisterActivity : AppCompatActivity() {
     // 닉네임 중복 검사
     private var isDuplicateNicknameCheck = false
 
-    // AccountAPI
-    private val api = AccountAPI.create()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityRegisterBinding.inflate(layoutInflater)
@@ -49,7 +47,7 @@ class RegisterActivity : AppCompatActivity() {
         // 닉네임 중복확인
         binding.dupNickTest.setOnClickListener{
             // API를 통해 서버에 중복 확인
-            api.getDupNickTest(binding.editNickname.text.toString()).enqueue(object: Callback<DuplicateResponse> {
+            authService.getDupNickTest(binding.editNickname.text.toString()).enqueue(object: Callback<DuplicateResponse> {
                     override fun onResponse(call: Call<DuplicateResponse>, response: Response<DuplicateResponse>) {
                         // 호출 성공
                         // response는 nullable하므로 추가
@@ -116,7 +114,7 @@ class RegisterActivity : AppCompatActivity() {
                     userDataMap["nickname"] = nickname
                     userDataMap["password"] = pw
 
-                    api.postUserData(userDataMap).enqueue(object: Callback<StatusResponse> {
+                    authService.postUserData(userDataMap).enqueue(object: Callback<StatusResponse> {
                         override fun onResponse(call: Call<StatusResponse>, response: Response<StatusResponse>) {
                             if (response.body()?.status == 201) {
                                 // 회원가입 완료 토스트 메시지

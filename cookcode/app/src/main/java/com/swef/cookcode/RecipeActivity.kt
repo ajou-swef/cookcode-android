@@ -19,6 +19,9 @@ import com.swef.cookcode.adapter.CommentRecyclerviewAdapter
 import com.swef.cookcode.adapter.RecipeViewpagerAdapter
 import com.swef.cookcode.api.RecipeAPI
 import com.swef.cookcode.data.CommentData
+import com.swef.cookcode.data.GlobalVariables.ERR_CODE
+import com.swef.cookcode.data.GlobalVariables.recipeAPI
+import com.swef.cookcode.data.GlobalVariables.userId
 import com.swef.cookcode.data.RecipeAndStepData
 import com.swef.cookcode.data.RecipeData
 import com.swef.cookcode.data.StepData
@@ -38,24 +41,14 @@ import retrofit2.Callback
 import retrofit2.Response
 
 class RecipeActivity : AppCompatActivity(), CommentOnClickListener {
+
     private lateinit var binding: ActivityRecipeBinding
 
-    private val ERR_RECIPE_ID = -1
-    private val ERR_USER_CODE = -1
-
-    private val API = RecipeAPI.create()
-
-    private lateinit var recipeViewpagerAdapter: RecipeViewpagerAdapter
-    private lateinit var accessToken: String
-    private lateinit var refreshToken: String
-
-    private var userId = ERR_USER_CODE
-    private var recipeId = ERR_RECIPE_ID
-
+    private var recipeId = ERR_CODE
     private lateinit var madeUser: MadeUser
 
     private lateinit var bottomSheetCallback: BottomSheetBehavior.BottomSheetCallback
-
+    private lateinit var recipeViewpagerAdapter: RecipeViewpagerAdapter
     private lateinit var commentRecyclerviewAdapter: CommentRecyclerviewAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -63,10 +56,7 @@ class RecipeActivity : AppCompatActivity(), CommentOnClickListener {
         binding = ActivityRecipeBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        accessToken = intent.getStringExtra("access_token")!!
-        refreshToken = intent.getStringExtra("refresh_token")!!
-        userId = intent.getIntExtra("user_id", ERR_USER_CODE)
-        recipeId = intent.getIntExtra("recipe_id", ERR_RECIPE_ID)
+        recipeId = intent.getIntExtra("recipe_id", ERR_CODE)
 
         binding.btnDelete.setOnClickListener {
             // 레시피 삭제 Dialog
@@ -79,12 +69,9 @@ class RecipeActivity : AppCompatActivity(), CommentOnClickListener {
         }
 
         recipeViewpagerAdapter = RecipeViewpagerAdapter(this)
-        recipeViewpagerAdapter.accessToken = accessToken
-        recipeViewpagerAdapter.refreshToken = refreshToken
-        recipeViewpagerAdapter.userId = userId
         binding.viewpager.adapter = recipeViewpagerAdapter
 
-        getRecipeDataFromRecipeID(recipeId, accessToken)
+        getRecipeDataFromRecipeID(recipeId)
 
         binding.beforeArrow.setOnClickListener {
             startHomeActivity()
@@ -143,8 +130,8 @@ class RecipeActivity : AppCompatActivity(), CommentOnClickListener {
         return super.dispatchTouchEvent(event)
     }
 
-    private fun getRecipeDataFromRecipeID(recipeId: Int, accessToken: String) {
-        API.getRecipe(accessToken, recipeId).enqueue(object : Callback<RecipeContentResponse> {
+    private fun getRecipeDataFromRecipeID(recipeId: Int) {
+        recipeAPI.getRecipe(recipeId).enqueue(object : Callback<RecipeContentResponse> {
             override fun onResponse(
                 call: Call<RecipeContentResponse>,
                 response: Response<RecipeContentResponse>
@@ -258,15 +245,12 @@ class RecipeActivity : AppCompatActivity(), CommentOnClickListener {
 
     private fun startHomeActivity() {
         val intent = Intent(this, HomeActivity::class.java)
-        intent.putExtra("access_token", accessToken)
-        intent.putExtra("refresh_token", refreshToken)
-        intent.putExtra("user_id", userId)
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         startActivity(intent)
     }
 
     private fun deleteRecipe() {
-        API.deleteRecipe(accessToken, recipeId).enqueue(object: Callback<StatusResponse>{
+        recipeAPI.deleteRecipe(recipeId).enqueue(object: Callback<StatusResponse>{
             override fun onResponse(call: Call<StatusResponse>,response: Response<StatusResponse>) {
                 if (response.isSuccessful){
                     putToastMessage("정상적으로 삭제 되었습니다.")
@@ -287,8 +271,6 @@ class RecipeActivity : AppCompatActivity(), CommentOnClickListener {
 
     private fun startModifyRecipeActivity() {
         val nextIntent = Intent(this, RecipeFormActivity::class.java)
-        nextIntent.putExtra("access_token", accessToken)
-        nextIntent.putExtra("refresh_token", refreshToken)
         nextIntent.putExtra("recipe_id", recipeId)
         nextIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         startActivity(nextIntent)
@@ -321,7 +303,7 @@ class RecipeActivity : AppCompatActivity(), CommentOnClickListener {
     }
 
     private fun getRecipeComments(recipeId: Int){
-        API.getRecipeComments(accessToken, recipeId).enqueue(object: Callback<CommentResponse>{
+        recipeAPI.getRecipeComments(recipeId).enqueue(object: Callback<CommentResponse>{
             override fun onResponse(
                 call: Call<CommentResponse>,
                 response: Response<CommentResponse>
@@ -329,8 +311,6 @@ class RecipeActivity : AppCompatActivity(), CommentOnClickListener {
                 if (response.isSuccessful) {
                     val comments = getCommentFromResponse(response.body()!!.content.comments)
 
-                    commentRecyclerviewAdapter.userId = userId
-                    commentRecyclerviewAdapter.accessToken = accessToken
                     commentRecyclerviewAdapter.recipeId = recipeId
 
                     if (comments.isEmpty()) {
@@ -393,7 +373,7 @@ class RecipeActivity : AppCompatActivity(), CommentOnClickListener {
         val body = HashMap<String, String>()
         body["comment"] = comment
 
-        API.putRecipeComment(accessToken, recipeId, body).enqueue(object : Callback<StatusResponse> {
+        recipeAPI.putRecipeComment(recipeId, body).enqueue(object : Callback<StatusResponse> {
             override fun onResponse(
                 call: Call<StatusResponse>,
                 response: Response<StatusResponse>

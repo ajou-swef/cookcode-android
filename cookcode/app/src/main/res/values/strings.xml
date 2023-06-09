@@ -34,7 +34,7 @@
     <string name="type_word">입력해주세요</string>
     <string name="goto_preview">미리보기하고 업로드</string>
     <string name="step">스텝</string>
-    <string name="new_recipe">새 레시피</string>
+    <string name="new_recipe">레시피 제작</string>
     <string name="image">이미지</string>
     <string name="video">동영상</string>
     <string name="step_title">스텝 제목</string>
@@ -102,4 +102,9 @@
     <string name="my_subscribers">나를 구독한 유저</string>
     <string name="my_subscribed">내가 구독한 유저</string>
     <string name="tutorial_expire">: 유통기한이 2일 이하 남았을 때 표시됩니다.</string>
+    <string name="modify_password">비밀번호 변경</string>
+    <string name="new_cookie">쿠키 제작</string>
+    <string name="modify_cookie">쿠키 수정</string>
+    <string name="before_pw">기존 비밀번호</string>
+    <string name="new_pw">새 비밀번호</string>
 </resources>

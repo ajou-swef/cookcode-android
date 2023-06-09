@@ -1,11 +1,13 @@
 package com.swef.cookcode.api
 
+import com.swef.cookcode.data.host.TokenInterceptor
 import com.swef.cookcode.data.response.CommentResponse
 import com.swef.cookcode.data.response.CookieContentResponse
 import com.swef.cookcode.data.response.CookieResponse
 import com.swef.cookcode.data.response.OneCookieResponse
 import com.swef.cookcode.data.response.StatusResponse
 import okhttp3.MultipartBody
+import okhttp3.OkHttpClient
 import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -26,70 +28,59 @@ interface CookieAPI {
     @JvmSuppressWildcards
     @POST("cookie")
     fun postCookie(
-        @Header("accessToken") accessToken: String,
         @Part partList: List<MultipartBody.Part>
     ): Call<StatusResponse>
 
     @GET("cookie")
     fun getCookies(
-        @Header("accessToken") accessToken: String,
         @Query("page") page: Int
     ): Call<CookieResponse>
 
     @GET("cookie/{cookieId}")
     fun getCookie(
-        @Header("accessToken") accessToken: String,
         @Path("cookieId") cookieId: Int
     ): Call<OneCookieResponse>
 
     @PATCH("cookie/{cookieId}")
     fun patchCookie(
-        @Header("accessToken") accessToken: String,
         @Path("cookieId") cookieId: Int,
         @Body body: Map<String, String>
     ): Call<StatusResponse>
 
     @DELETE("cookie/{cookieId}")
     fun deleteCookie(
-        @Header("accessToken") accessToken: String,
         @Path("cookieId") cookieId: Int,
     ): Call<StatusResponse>
 
     @POST("cookie/{cookieId}/likes")
     fun putLikeCookie(
-        @Header("accessToken") accessToken: String,
         @Path("cookieId") cookieId: Int,
     ): Call<StatusResponse>
 
     @GET("cookie/{cookieId}/comments")
     fun getCookieComments(
-        @Header("accessToken") accessToken: String,
         @Path("cookieId") cookieId: Int
     ): Call<CommentResponse>
 
     @POST("cookie/{cookieId}/comments")
     fun putCookieComment(
-        @Header("accessToken") accessToken: String,
         @Path("cookieId") cookieId: Int,
         @Body body: Map<String, String>
     ): Call<StatusResponse>
 
     @DELETE("cookie/comments/{commentId}")
     fun deleteCookieComment(
-        @Header("accessToken") accessToken: String,
         @Path("commentId") commentId: Int,
     ): Call<StatusResponse>
 
     @GET("cookie/user/{userId}")
     fun getUserCookies(
-        @Header("accessToken") accessToken: String,
         @Path("userId") userId: Int,
         @Query("page") page: Int,
     ): Call<CookieContentResponse>
 
     @GET("cookie/search")
     fun getSearchCookies(
-        @Header("accessToken") accessToken: String,
         @Query("query") keyword: String,
         @Query("page") page: Int,
         @Query("size") size: Int?
@@ -99,8 +90,13 @@ interface CookieAPI {
         private const val BASE_URL = "https://cookcode.link/api/v1/"
 
         fun create(): CookieAPI {
+            val client = OkHttpClient.Builder()
+                .addInterceptor(TokenInterceptor()) // TokenInterceptor 추가
+                .build()
+
             return Retrofit.Builder()
                 .baseUrl(BASE_URL)
+                .client(client)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
                 .create(CookieAPI::class.java)

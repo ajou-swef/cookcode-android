@@ -16,6 +16,9 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.PopupMenu
 import com.bumptech.glide.Glide
 import com.swef.cookcode.api.AccountAPI
+import com.swef.cookcode.data.GlobalVariables.accountAPI
+import com.swef.cookcode.data.GlobalVariables.authority
+import com.swef.cookcode.data.GlobalVariables.userId
 import com.swef.cookcode.data.response.ProfileImageResponse
 import com.swef.cookcode.data.response.StatusResponse
 import com.swef.cookcode.databinding.ActivityMypageBinding
@@ -31,16 +34,9 @@ import java.io.InputStream
 import java.io.OutputStream
 
 class MypageActivity : AppCompatActivity() {
-    private val ERR_USER_CODE = -1
 
     private lateinit var binding: ActivityMypageBinding
 
-    private val API = AccountAPI.create()
-
-    private lateinit var accessToken: String
-    private lateinit var refreshToken: String
-    private var userId = ERR_USER_CODE
-    private lateinit var authority: String
     private var profileImage : String? = null
 
     private lateinit var galleryLauncher: ActivityResultLauncher<Intent>
@@ -51,23 +47,18 @@ class MypageActivity : AppCompatActivity() {
         binding = ActivityMypageBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        accessToken = intent.getStringExtra("access_token")!!
-        refreshToken = intent.getStringExtra("refresh_token")!!
-        userId = intent.getIntExtra("user_id", ERR_USER_CODE)
-        authority = intent.getStringExtra("authority")!!
         profileImage = intent.getStringExtra("profile_image")
-
-        initGalleryLauncher()
-
         if (profileImage != null) {
             getImageFromUrl(profileImage!!, binding.profileImage)
         }
+
+        initGalleryLauncher()
 
         val userName = intent.getStringExtra("user_name")
         binding.userName.text = userName
 
         binding.beforeArrow.setOnClickListener {
-            startHomeActivity()
+            finish()
         }
 
         initButtonByAuthority()
@@ -89,15 +80,6 @@ class MypageActivity : AppCompatActivity() {
 
         // 계정 삭제
         binding.btnDeleteUser.setOnClickListener { buildAlertDialog("delete") }
-    }
-
-    private fun startHomeActivity() {
-        val intent = Intent(this, HomeActivity::class.java)
-        intent.putExtra("access_token", accessToken)
-        intent.putExtra("refresh_token", refreshToken)
-        intent.putExtra("user_id", userId)
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-        startActivity(intent)
     }
 
     private fun getImageFromUrl(imageUrl: String, view: ImageView) {
@@ -155,7 +137,7 @@ class MypageActivity : AppCompatActivity() {
         formData.add(profileImage ?: makeNullMultipartBody("profileImage"))
         formData.add(oldProfileImage ?: makeNullMultipartBody("oldProfileImage"))
 
-        API.patchProfileImage(accessToken, formData).enqueue(object : Callback<ProfileImageResponse> {
+        accountAPI.patchProfileImage(formData).enqueue(object : Callback<ProfileImageResponse> {
             override fun onResponse(
                 call: Call<ProfileImageResponse>,
                 response: Response<ProfileImageResponse>
@@ -219,9 +201,6 @@ class MypageActivity : AppCompatActivity() {
 
     private fun startMyContentActivity() {
         val nextIntent = Intent(this, UserPageActivity::class.java)
-        nextIntent.putExtra("access_token", accessToken)
-        nextIntent.putExtra("refresh_token", refreshToken)
-        nextIntent.putExtra("my_user_id", userId)
         nextIntent.putExtra("user_id", userId)
         nextIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         startActivity(nextIntent)
@@ -229,9 +208,6 @@ class MypageActivity : AppCompatActivity() {
 
     private fun startMySubscriberActivity() {
         val nextIntent = Intent(this, SubscriberActivity::class.java)
-        nextIntent.putExtra("access_token", accessToken)
-        nextIntent.putExtra("refresh_token", refreshToken)
-        nextIntent.putExtra("my_user_id", userId)
         nextIntent.putExtra("user_id", userId)
         nextIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         startActivity(nextIntent)
@@ -257,10 +233,10 @@ class MypageActivity : AppCompatActivity() {
                 val intent = Intent(this, MainActivity::class.java)
 
                 if (type == "logout") {
-                    startActivity(intent)
+                    finish()
                 }
                 else {
-                    API.patchAccount(accessToken).enqueue(object : Callback<StatusResponse> {
+                    accountAPI.patchAccount().enqueue(object : Callback<StatusResponse> {
                         override fun onResponse(
                             call: Call<StatusResponse>,
                             response: Response<StatusResponse>

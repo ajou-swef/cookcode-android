@@ -19,13 +19,8 @@ class SearchRecipeRecyclerviewAdapter(
 ): RecyclerView.Adapter<SearchRecipeRecyclerviewAdapter.ViewHolder>() {
     private lateinit var binding: SearchRecipeRecyclerviewItemBinding
 
-    private val ERR_USER_CODE = -1
-
     var datas = mutableListOf<RecipeData>()
-    var userId = ERR_USER_CODE
 
-    lateinit var accessToken: String
-    lateinit var refreshToken: String
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
@@ -70,9 +65,6 @@ class SearchRecipeRecyclerviewAdapter(
             binding.layout.setOnClickListener {
                 val intent = Intent(binding.layout.context, RecipeActivity::class.java)
                 intent.putExtra("recipe_id", item.recipeId)
-                intent.putExtra("user_id", userId)
-                intent.putExtra("access_token", accessToken)
-                intent.putExtra("refresh_token", refreshToken)
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 binding.layout.context.startActivity(intent)
             }
@@ -95,9 +87,6 @@ class SearchRecipeRecyclerviewAdapter(
 
     private fun startUserPageActivity(madeUserId: Int) {
         val nextIntent = Intent(context, UserPageActivity::class.java)
-        nextIntent.putExtra("access_token", accessToken)
-        nextIntent.putExtra("refresh_token", refreshToken)
-        nextIntent.putExtra("my_user_id", userId)
         nextIntent.putExtra("user_id", madeUserId)
         nextIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         context.startActivity(nextIntent)

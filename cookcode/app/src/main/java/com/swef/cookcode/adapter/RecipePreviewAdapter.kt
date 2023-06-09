@@ -14,6 +14,9 @@ import com.bumptech.glide.Glide
 import com.swef.cookcode.R
 import com.swef.cookcode.UserPageActivity
 import com.swef.cookcode.api.RecipeAPI
+import com.swef.cookcode.data.GlobalVariables.ERR_CODE
+import com.swef.cookcode.data.GlobalVariables.SPAN_COUNT
+import com.swef.cookcode.data.GlobalVariables.recipeAPI
 import com.swef.cookcode.data.MyIngredientData
 import com.swef.cookcode.data.RecipeData
 import com.swef.cookcode.data.host.IngredientDataHost
@@ -30,23 +33,13 @@ class RecipePreviewAdapter(
     private val context: Context
 ) : RecyclerView.Adapter<RecipePreviewAdapter.ViewHolder>() {
 
-    companion object{
-        const val spanCount = 3
-        const val ERR_USER_CODE = -1
-    }
-
     var data = recipeData
     private lateinit var binding: RecipePreviewItemBinding
 
     private lateinit var essentialIngredientsRecyclerviewAdapter: IngredientRecyclerviewAdapter
     private lateinit var additionalIngredientsRecyclerviewAdapter: IngredientRecyclerviewAdapter
 
-    lateinit var accessToken: String
-    lateinit var refreshToken: String
     lateinit var madeUser: MadeUser
-    var userId = ERR_USER_CODE
-
-    private val API = RecipeAPI.create()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         binding = RecipePreviewItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -80,7 +73,7 @@ class RecipePreviewAdapter(
                 makeIngredientToMyIngredientData(item.ingredients) as MutableList<MyIngredientData>
             binding.essentialIngredients.apply {
                 adapter = essentialIngredientsRecyclerviewAdapter
-                layoutManager = GridLayoutManager(context, spanCount)
+                layoutManager = GridLayoutManager(context, SPAN_COUNT)
             }
 
             additionalIngredientsRecyclerviewAdapter = IngredientRecyclerviewAdapter("recipe_preview")
@@ -88,7 +81,7 @@ class RecipePreviewAdapter(
                 makeIngredientToMyIngredientData(item.additionalIngredients) as MutableList<MyIngredientData>
             binding.additionalIngredients.apply {
                 adapter = additionalIngredientsRecyclerviewAdapter
-                layoutManager = GridLayoutManager(context, spanCount)
+                layoutManager = GridLayoutManager(context, SPAN_COUNT)
             }
 
             if (item.additionalIngredients.isEmpty()) {
@@ -118,7 +111,7 @@ class RecipePreviewAdapter(
     }
 
     private fun putLikeStatus(item: RecipeData){
-        API.putLikeStatus(accessToken, item.recipeId).enqueue(object : Callback<StatusResponse> {
+        recipeAPI.putLikeStatus(item.recipeId).enqueue(object : Callback<StatusResponse> {
             override fun onResponse(
                 call: Call<StatusResponse>,
                 response: Response<StatusResponse>
@@ -174,9 +167,6 @@ class RecipePreviewAdapter(
 
     private fun startUserPageActivity() {
         val nextIntent = Intent(context, UserPageActivity::class.java)
-        nextIntent.putExtra("access_token", accessToken)
-        nextIntent.putExtra("refresh_token", refreshToken)
-        nextIntent.putExtra("my_user_id", userId)
         nextIntent.putExtra("user_id", madeUser.userId)
         nextIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         context.startActivity(nextIntent)

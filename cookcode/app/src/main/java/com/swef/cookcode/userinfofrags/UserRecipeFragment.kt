@@ -12,6 +12,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.swef.cookcode.UserPageActivity
 import com.swef.cookcode.adapter.SearchRecipeRecyclerviewAdapter
 import com.swef.cookcode.api.RecipeAPI
+import com.swef.cookcode.data.GlobalVariables.recipeAPI
+import com.swef.cookcode.data.GlobalVariables.userId
 import com.swef.cookcode.data.RecipeData
 import com.swef.cookcode.data.response.RecipeContent
 import com.swef.cookcode.data.response.RecipeResponse
@@ -27,15 +29,9 @@ class UserRecipeFragment : Fragment() {
 
     private lateinit var recyclerViewAdapter: SearchRecipeRecyclerviewAdapter
 
-    private lateinit var accessToken: String
-    private lateinit var refreshToken: String
-    private var userId = UserPageActivity.ERR_USER_CODE
-
     private var page = 0
     private val pageSize = 10
     private var hasNext = false
-
-    private val API = RecipeAPI.create()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -43,14 +39,7 @@ class UserRecipeFragment : Fragment() {
     ): View {
         _binding = FragmentUserRecipeBinding.inflate(inflater, container, false)
 
-        accessToken = arguments?.getString("access_token")!!
-        refreshToken = arguments?.getString("refresh_token")!!
-        userId = arguments?.getInt("user_id")!!
-
         recyclerViewAdapter = SearchRecipeRecyclerviewAdapter(requireContext())
-        recyclerViewAdapter.accessToken = accessToken
-        recyclerViewAdapter.refreshToken = refreshToken
-        recyclerViewAdapter.userId = userId
 
         val linearLayoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         binding.recyclerView.apply {
@@ -65,7 +54,7 @@ class UserRecipeFragment : Fragment() {
     }
 
     private fun getRecipeDataFromUserId() {
-        API.getUserRecipes(accessToken, userId, page).enqueue(object : Callback<RecipeResponse>{
+        recipeAPI.getUserRecipes(userId, page).enqueue(object : Callback<RecipeResponse>{
             override fun onResponse(
                 call: Call<RecipeResponse>,
                 response: Response<RecipeResponse>

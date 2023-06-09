@@ -12,6 +12,8 @@ import com.bumptech.glide.Glide
 import com.swef.cookcode.R
 import com.swef.cookcode.UserPageActivity
 import com.swef.cookcode.api.AccountAPI
+import com.swef.cookcode.data.GlobalVariables.accountAPI
+import com.swef.cookcode.data.GlobalVariables.userId
 import com.swef.cookcode.data.UserData
 import com.swef.cookcode.data.response.StatusResponse
 import com.swef.cookcode.databinding.SearchUserRecyclerviewItemBinding
@@ -22,15 +24,8 @@ import retrofit2.Response
 class SearchUserRecyclerviewAdapter(
     private val context: Context
 ): RecyclerView.Adapter<SearchUserRecyclerviewAdapter.ViewHolder>() {
-    private val ERR_USER_CODE = -1
 
     var datas = mutableListOf<UserData>()
-    var userId = ERR_USER_CODE
-
-    lateinit var accessToken: String
-    lateinit var refreshToken: String
-
-    private val accountAPI = AccountAPI.create()
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -77,7 +72,7 @@ class SearchUserRecyclerviewAdapter(
         }
 
         private fun postSubscribe() {
-            accountAPI.postUserSubscribe(accessToken, userId).enqueue(object :
+            accountAPI.postUserSubscribe(userId).enqueue(object :
                 Callback<StatusResponse> {
                 override fun onResponse(
                     call: Call<StatusResponse>,
@@ -109,9 +104,6 @@ class SearchUserRecyclerviewAdapter(
 
         private fun startUserPageActivity(madeUserId: Int) {
             val nextIntent = Intent(context, UserPageActivity::class.java)
-            nextIntent.putExtra("access_token", accessToken)
-            nextIntent.putExtra("refresh_token", refreshToken)
-            nextIntent.putExtra("my_user_id", userId)
             nextIntent.putExtra("user_id", madeUserId)
             nextIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
             context.startActivity(nextIntent)

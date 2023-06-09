@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.swef.cookcode.adapter.SearchUserRecyclerviewAdapter
 import com.swef.cookcode.api.AccountAPI
+import com.swef.cookcode.data.GlobalVariables.accountAPI
 import com.swef.cookcode.data.UserData
 import com.swef.cookcode.data.response.SearchUserResponse
 import com.swef.cookcode.data.response.User
@@ -21,23 +22,13 @@ import retrofit2.Response
 
 class SubscribedFragment : Fragment() {
 
-    companion object {
-        const val ERR_USER_CODE = -1
-    }
-
     private var _binding: FragmentSubscribedBinding? = null
     private val binding get() = _binding!!
-
-    private lateinit var accessToken: String
-    private lateinit var refreshToken: String
-    private var userId = ERR_USER_CODE
 
     private var hasNext = false
 
     private val pageSize = 10
     private var page = 0
-
-    private val API = AccountAPI.create()
 
     private lateinit var recyclerViewAdapter: SearchUserRecyclerviewAdapter
 
@@ -47,14 +38,7 @@ class SubscribedFragment : Fragment() {
     ): View {
         _binding = FragmentSubscribedBinding.inflate(inflater, container, false)
 
-        accessToken = arguments?.getString("access_token")!!
-        refreshToken = arguments?.getString("refresh_token")!!
-        userId = arguments?.getInt("user_id")!!
-
         recyclerViewAdapter = SearchUserRecyclerviewAdapter(requireContext())
-        recyclerViewAdapter.accessToken = accessToken
-        recyclerViewAdapter.refreshToken = refreshToken
-        recyclerViewAdapter.userId = userId
 
         val linearLayoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         binding.recyclerView.apply {
@@ -75,7 +59,7 @@ class SubscribedFragment : Fragment() {
     }
 
     private fun getMyPublishers() {
-        API.getMyPublishers(accessToken).enqueue(object : Callback<SearchUserResponse> {
+        accountAPI.getMyPublishers().enqueue(object : Callback<SearchUserResponse> {
             override fun onResponse(call: Call<SearchUserResponse>, response: Response<SearchUserResponse>) {
                 if (response.isSuccessful){
                     val data = response.body()!!.content.users

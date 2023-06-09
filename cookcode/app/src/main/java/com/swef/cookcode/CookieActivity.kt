@@ -8,6 +8,8 @@ import androidx.viewpager2.widget.ViewPager2
 import com.swef.cookcode.adapter.CookieViewpagerAdapter
 import com.swef.cookcode.api.CookieAPI
 import com.swef.cookcode.data.CookieData
+import com.swef.cookcode.data.GlobalVariables.ERR_CODE
+import com.swef.cookcode.data.GlobalVariables.cookieAPI
 import com.swef.cookcode.data.response.CookieContent
 import com.swef.cookcode.data.response.CookieContentResponse
 import com.swef.cookcode.data.response.OneCookieResponse
@@ -18,26 +20,17 @@ import retrofit2.Callback
 import retrofit2.Response
 
 class CookieActivity : AppCompatActivity(), CookieDeleteListener {
-    companion object{
-        const val ERR_USER_CODE = -1
-        const val ERR_COOKIE_CODE = -1
-    }
 
     private lateinit var binding : ActivityCookieBinding
 
-    private lateinit var accessToken: String
-    private lateinit var refreshToken: String
-    private var userId = ERR_USER_CODE
-    private var madeUserId = ERR_USER_CODE
-    private var cookieId = ERR_COOKIE_CODE
+    private var madeUserId = ERR_CODE
+    private var cookieId = ERR_CODE
 
     private var hasNext = false
     private var page = 0
 
     private lateinit var viewpagerAdapter: CookieViewpagerAdapter
     private val datas = mutableListOf<CookieData>()
-
-    private val API = CookieAPI.create()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,11 +43,8 @@ class CookieActivity : AppCompatActivity(), CookieDeleteListener {
 
         binding.beforeArrow.bringToFront()
 
-        cookieId = intent.getIntExtra("cookie_id", ERR_COOKIE_CODE)
-        accessToken = intent.getStringExtra("access_token")!!
-        refreshToken = intent.getStringExtra("refresh_token")!!
-        userId = intent.getIntExtra("user_id", ERR_USER_CODE)
-        madeUserId = intent.getIntExtra("made_user_id", ERR_USER_CODE)
+        cookieId = intent.getIntExtra("cookie_id", ERR_CODE)
+        madeUserId = intent.getIntExtra("user_id", ERR_CODE)
 
         viewpagerAdapter = CookieViewpagerAdapter(this, this)
         binding.viewpager.apply {
@@ -62,16 +52,12 @@ class CookieActivity : AppCompatActivity(), CookieDeleteListener {
             orientation = ViewPager2.ORIENTATION_VERTICAL
         }
 
-        viewpagerAdapter.userId = userId
-        viewpagerAdapter.accessToken = accessToken
-        viewpagerAdapter.refreshToken = refreshToken
-
         getSelectedCookie()
         initOnScrollListener()
     }
 
     private fun getSelectedCookie() {
-        API.getCookie(accessToken, cookieId).enqueue(object : Callback<OneCookieResponse> {
+        cookieAPI.getCookie(cookieId).enqueue(object : Callback<OneCookieResponse> {
             override fun onResponse(
                 call: Call<OneCookieResponse>,
                 response: Response<OneCookieResponse>
@@ -102,7 +88,7 @@ class CookieActivity : AppCompatActivity(), CookieDeleteListener {
     }
 
     private fun getUsersCookies() {
-        API.getUserCookies(accessToken, madeUserId, page).enqueue(object : Callback<CookieContentResponse>{
+        cookieAPI.getUserCookies(madeUserId, page).enqueue(object : Callback<CookieContentResponse>{
             override fun onResponse(
                 call: Call<CookieContentResponse>,
                 response: Response<CookieContentResponse>
@@ -199,6 +185,7 @@ class CookieActivity : AppCompatActivity(), CookieDeleteListener {
     }
 
     override fun itemDeletedAt(position: Int) {
-
+        viewpagerAdapter.datas.removeAt(position)
+        viewpagerAdapter.notifyItemRemoved(position)
     }
 }

@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.swef.cookcode.R
 import com.swef.cookcode.adapter.IngredientRecyclerviewAdapter
 import com.swef.cookcode.adapter.RefrigeratorRecyclerAdapter
-import com.swef.cookcode.api.FridgeAPI
+import com.swef.cookcode.data.GlobalVariables.fridgeAPI
 import com.swef.cookcode.data.MyIngredientData
 import com.swef.cookcode.data.RefrigeratorData
 import com.swef.cookcode.data.host.IngredientDataHost
@@ -34,11 +34,6 @@ class RefrigeratorFragment : Fragment() {
     private var _binding: FragmentRefrigeratorBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var accessToken: String
-    private lateinit var refreshToken: String
-
-    private val API = FridgeAPI.create()
-
     private lateinit var refrigeratorRecyclerAdapter: RefrigeratorRecyclerAdapter
 
     override fun onCreateView(
@@ -47,38 +42,7 @@ class RefrigeratorFragment : Fragment() {
     ): View {
         _binding = FragmentRefrigeratorBinding.inflate(inflater, container, false)
 
-        accessToken = arguments?.getString("access_token")!!
-        refreshToken = arguments?.getString("refresh_token")!!
-
         val ingredDatas = mutableListOf<MyIngredientData>()
-
-        API.getFridgeData(accessToken).enqueue(object : Callback<MyIngredList> {
-            override fun onResponse(
-                call: Call<MyIngredList>,
-                response: Response<MyIngredList>
-            ) {
-                if (response.body() != null) {
-                    val myIngredientData = response.body()!!.data.ingreds
-                    for (item in myIngredientData) {
-                        ingredDatas.apply {
-                            val ingredData =
-                                IngredientDataHost().getIngredientFromId(item.IngredId)!!.ingredientData
-                            val fridgeId = item.fridgeIngredId
-                            val value = item.value
-                            val expiredAt = item.expiredAt
-                            add(MyIngredientData(ingredData, fridgeId, value, expiredAt, null))
-                        }
-                    }
-                    refrigeratorRecyclerAdapter.ingredDatas = ingredDatas
-                    refrigeratorRecyclerAdapter.notifyDataSetChanged()
-                }
-            }
-
-            override fun onFailure(call: Call<MyIngredList>, t: Throwable) {
-                Toast.makeText(context, R.string.err_server, Toast.LENGTH_SHORT).show()
-            }
-        })
-
 
         // 식재료 등록 Dialog
         val refrigeratorDialogView = RefrigeratorIngredientSelectDialogBinding.inflate(layoutInflater)
@@ -101,7 +65,7 @@ class RefrigeratorFragment : Fragment() {
                 var fridgeId = 0
 
                 Thread {
-                    API.postIngredientData(accessToken, postData)
+                    fridgeAPI.postIngredientData(postData)
                         .enqueue(object : Callback<FridgeResponse> {
                             override fun onResponse(
                                 call: Call<FridgeResponse>,
@@ -140,7 +104,7 @@ class RefrigeratorFragment : Fragment() {
             }
 
             override fun deleteIngredient(fridgeId: Int) {
-                API.deleteIngredientData(accessToken, fridgeId).enqueue(object: Callback<StatusResponse>{
+                fridgeAPI.deleteIngredientData(fridgeId).enqueue(object: Callback<StatusResponse>{
                     override fun onResponse(
                         call: Call<StatusResponse>,
                         response: Response<StatusResponse>
@@ -167,7 +131,7 @@ class RefrigeratorFragment : Fragment() {
                 patchData["ingredId"] = ingredId
                 patchData["expiredAt"] = expiredAt
                 patchData["quantity"] = quantity
-                API.patchIngredientData(accessToken, fridgeId, patchData).enqueue(object: Callback<StatusResponse>{
+                fridgeAPI.patchIngredientData(fridgeId, patchData).enqueue(object: Callback<StatusResponse>{
                     override fun onResponse(
                         call: Call<StatusResponse>,
                         response: Response<StatusResponse>
@@ -192,7 +156,7 @@ class RefrigeratorFragment : Fragment() {
             override fun getIngredient() {
                 val ingredientDatas = mutableListOf<MyIngredientData>()
 
-                API.getFridgeData(accessToken).enqueue(object: Callback<MyIngredList> {
+                fridgeAPI.getFridgeData().enqueue(object: Callback<MyIngredList> {
                     override fun onResponse(call: Call<MyIngredList>, response: Response<MyIngredList>){
                         if(response.body() != null) {
                             val myIngredientData = response.body()!!.data.ingreds
@@ -207,7 +171,7 @@ class RefrigeratorFragment : Fragment() {
                             }
 
                             refrigeratorRecyclerAdapter.ingredDatas = ingredientDatas
-                            refrigeratorRecyclerAdapter.notifyDataSetChanged()
+                            refrigeratorRecyclerAdapter.notifyItemRangeChanged(0, ingredDatas.size)
                         }
                     }
 
@@ -239,6 +203,32 @@ class RefrigeratorFragment : Fragment() {
 
         val ingredientData = IngredientDataHost().showAllIngredientData()
         val searchIngredientRecyclerviewAdapter = IngredientRecyclerviewAdapter("refrigerator_search", onDialogRecyclerViewItemClickListener)
+
+        fridgeAPI.getFridgeData().enqueue(object : Callback<MyIngredList> {
+            override fun onResponse(
+                call: Call<MyIngredList>,
+                response: Response<MyIngredList>
+            ) {
+                if (response.body() != null) {
+                    val myIngredientData = response.body()!!.data.ingreds
+                    for (item in myIngredientData) {
+                        ingredDatas.apply {
+                            val ingredData =
+                                IngredientDataHost().getIngredientFromId(item.IngredId)!!.ingredientData
+                            val fridgeId = item.fridgeIngredId
+                            val value = item.value
+                            val expiredAt = item.expiredAt
+                            add(MyIngredientData(ingredData, fridgeId, value, expiredAt, null))
+                        }
+                    }
+                    refrigeratorRecyclerAdapter.ingredDatas = ingredDatas
+                }
+            }
+
+            override fun onFailure(call: Call<MyIngredList>, t: Throwable) {
+                Toast.makeText(context, R.string.err_server, Toast.LENGTH_SHORT).show()
+            }
+        })
 
         searchIngredientRecyclerviewAdapter.filteredDatas = ingredientData as MutableList<MyIngredientData>
         searchIngredientRecyclerviewAdapter.beforeSearchData = ingredientData

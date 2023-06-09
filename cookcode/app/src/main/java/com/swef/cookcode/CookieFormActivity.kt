@@ -31,6 +31,7 @@ import com.swef.cookcode.databinding.ActivityCookieFormBinding
 import com.arthenica.mobileffmpeg.FFmpeg
 import com.swef.cookcode.adapter.CookieIndividualVideoRecyclerviewAdapter
 import com.swef.cookcode.api.CookieAPI
+import com.swef.cookcode.data.GlobalVariables.cookieAPI
 import com.swef.cookcode.data.host.ItemTouchCallback
 import com.swef.cookcode.data.response.StatusResponse
 import com.swef.cookcode.`interface`.ItemTouchHelperListener
@@ -52,26 +53,16 @@ import java.util.Date
 import java.util.Locale
 
 class CookieFormActivity : AppCompatActivity(), VideoOnClickListener, ItemTouchHelperListener {
-    companion object{
-        const val ERR_USER_CODE = -1
-        const val ERR_COOKIE_CODE = -1
-    }
 
     private lateinit var binding : ActivityCookieFormBinding
 
     private lateinit var galleryLauncher: ActivityResultLauncher<Intent>
     private lateinit var galleryStartIntent: Intent
-
-    private lateinit var accessToken: String
-    private lateinit var refreshToken: String
-
     private val videoUrls = mutableListOf<String>()
 
-    private var userId = ERR_USER_CODE
     private var merged = false
-
     private var titleTyped = false
-    private var descriptionaTyped = false
+    private var descriptionTyped = false
     private var videoUploadedAtLeastOne = false
 
     private lateinit var mergedVideoFile: String
@@ -81,16 +72,10 @@ class CookieFormActivity : AppCompatActivity(), VideoOnClickListener, ItemTouchH
     private lateinit var cookieIndividualVideoRecyclerviewAdapter: CookieIndividualVideoRecyclerviewAdapter
     private val itemTouchHelper by lazy { ItemTouchHelper(ItemTouchCallback(this)) }
 
-    private val API = CookieAPI.create()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityCookieFormBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        accessToken = intent.getStringExtra("access_token")!!
-        refreshToken = intent.getStringExtra("refresh_token")!!
-        userId = intent.getIntExtra("user_id", ERR_USER_CODE)
 
         binding.beforeArrow.setOnClickListener{
             finish()
@@ -105,7 +90,7 @@ class CookieFormActivity : AppCompatActivity(), VideoOnClickListener, ItemTouchH
         binding.cookieUpload.setOnClickListener{
             if (testInfoTyped()) {
                 val multipartBody = makeCookieFormData()
-                postCookieData(accessToken, multipartBody)
+                postCookieData(multipartBody)
             }
         }
 
@@ -393,12 +378,12 @@ class CookieFormActivity : AppCompatActivity(), VideoOnClickListener, ItemTouchH
         return parts
     }
 
-    private fun postCookieData(accessToken: String, parts: List<MultipartBody.Part>){
-        API.postCookie(accessToken, parts).enqueue(object: Callback<StatusResponse>{
+    private fun postCookieData(parts: List<MultipartBody.Part>){
+        cookieAPI.postCookie(parts).enqueue(object: Callback<StatusResponse>{
             override fun onResponse(call: Call<StatusResponse>, response: Response<StatusResponse>) {
                 if (response.isSuccessful){
                     putToastMessage("쿠키가 정상적으로 업로드 되었습니다.")
-                    startHomeActivity(accessToken, refreshToken)
+                    startHomeActivity()
                 }
                 else {
                     putToastMessage("에러 발생! 관리자에게 문의해주세요.")
@@ -416,27 +401,24 @@ class CookieFormActivity : AppCompatActivity(), VideoOnClickListener, ItemTouchH
         })
     }
 
-    private fun startHomeActivity(accessToken: String, refreshToken: String) {
+    private fun startHomeActivity() {
         val intent = Intent(this, HomeActivity::class.java)
-        intent.putExtra("access_token", accessToken)
-        intent.putExtra("refresh_token", refreshToken)
-        intent.putExtra("user_id", userId)
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         startActivity(intent)
     }
 
     private fun testInfoTyped(): Boolean{
         titleTyped = !binding.editCookieName.text.isNullOrEmpty()
-        descriptionaTyped = !binding.editDescription.text.isNullOrEmpty()
+        descriptionTyped = !binding.editDescription.text.isNullOrEmpty()
 
-        if (!titleTyped || !descriptionaTyped) {
+        if (!titleTyped || !descriptionTyped) {
             putToastMessage("정보가 입력되지 않았습니다.")
         }
         else if (!videoUploadedAtLeastOne) {
             putToastMessage("먼저 합친 영상을 미리보기 해주세요.")
         }
 
-        return titleTyped && descriptionaTyped && videoUploadedAtLeastOne
+        return titleTyped && descriptionTyped && videoUploadedAtLeastOne
     }
 
     override fun onItemMove(from: Int, to: Int) {

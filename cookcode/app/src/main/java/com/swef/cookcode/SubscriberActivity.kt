@@ -3,22 +3,16 @@ package com.swef.cookcode
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.core.content.ContextCompat
+import com.swef.cookcode.data.GlobalVariables.ERR_CODE
 import com.swef.cookcode.databinding.ActivitySubscriberBinding
 import com.swef.cookcode.subscribefrags.SubscribedFragment
 import com.swef.cookcode.subscribefrags.SubscriberFragment
 
 class SubscriberActivity : AppCompatActivity() {
 
-    companion object {
-        const val ERR_USER_CODE = -1
-    }
-
     private lateinit var binding : ActivitySubscriberBinding
 
-    private lateinit var accessToken: String
-    private lateinit var refreshToken: String
-    private var userId = ERR_USER_CODE
-    private var myUserId = ERR_USER_CODE
+    private var userId = ERR_CODE
 
     private val bundle = Bundle()
 
@@ -27,13 +21,7 @@ class SubscriberActivity : AppCompatActivity() {
         binding = ActivitySubscriberBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        accessToken = intent.getStringExtra("access_token")!!
-        refreshToken = intent.getStringExtra("refresh_token")!!
-        myUserId = intent.getIntExtra("my_user_id", UserPageActivity.ERR_USER_CODE)
-        userId = intent.getIntExtra("user_id", UserPageActivity.ERR_USER_CODE)
-
-        bundle.putString("access_token", accessToken)
-        bundle.putString("refresh_token", refreshToken)
+        userId = intent.getIntExtra("user_id", ERR_CODE)
         bundle.putInt("user_id", userId)
 
         binding.beforeArrow.setOnClickListener {

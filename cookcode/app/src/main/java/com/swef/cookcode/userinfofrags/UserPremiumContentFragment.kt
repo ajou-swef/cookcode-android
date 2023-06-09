@@ -13,10 +13,6 @@ class UserPremiumContentFragment : Fragment() {
     private var _binding : FragmentUserPremiumContentBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var accessToken: String
-    private lateinit var refreshToken: String
-    private var userId = UserPageActivity.ERR_USER_CODE
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?

@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.swef.cookcode.R
 import com.swef.cookcode.adapter.SearchRecipeRecyclerviewAdapter
 import com.swef.cookcode.api.RecipeAPI
+import com.swef.cookcode.data.GlobalVariables.recipeAPI
 import com.swef.cookcode.data.RecipeData
 import com.swef.cookcode.data.response.RecipeContent
 import com.swef.cookcode.data.response.RecipeResponse
@@ -23,18 +24,11 @@ import retrofit2.Response
 
 class SearchRecipeFragment : Fragment() {
 
-    companion object {
-        const val ERR_USER_CODE = -1
-    }
-
     private var _binding: FragmentSearchRecipeBinding? = null
     private val binding get() = _binding!!
 
     private lateinit var recyclerViewAdapter: SearchRecipeRecyclerviewAdapter
 
-    private lateinit var accessToken: String
-    private lateinit var refreshToken: String
-    private var userId = ERR_USER_CODE
     private lateinit var searchKeyword: String
 
     private var cookable = 0
@@ -43,22 +37,14 @@ class SearchRecipeFragment : Fragment() {
     private val pageSize = 10
     private var page = 0
 
-    private val API = RecipeAPI.create()
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentSearchRecipeBinding.inflate(inflater, container, false)
-        accessToken = arguments?.getString("access_token")!!
-        refreshToken = arguments?.getString("refresh_token")!!
-        userId = arguments?.getInt("user_id")!!
         searchKeyword = arguments?.getString("keyword")!!
 
         recyclerViewAdapter = SearchRecipeRecyclerviewAdapter(requireContext())
-        recyclerViewAdapter.accessToken = accessToken
-        recyclerViewAdapter.refreshToken = refreshToken
-        recyclerViewAdapter.userId = userId
 
         val linearLayoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         binding.recyclerView.apply {
@@ -122,7 +108,7 @@ class SearchRecipeFragment : Fragment() {
     }
 
     private fun getSearchedRecipeDatas() {
-        API.getSearchRecipes(accessToken, searchKeyword, cookable, page, pageSize).enqueue(object : Callback<RecipeResponse>{
+        recipeAPI.getSearchRecipes(searchKeyword, cookable, page, pageSize).enqueue(object : Callback<RecipeResponse>{
             override fun onResponse(
                 call: Call<RecipeResponse>,
                 response: Response<RecipeResponse>
@@ -160,7 +146,7 @@ class SearchRecipeFragment : Fragment() {
     private fun getNewSearchedRecipeDatas() {
         page = 0
 
-        API.getSearchRecipes(accessToken, searchKeyword, cookable, page, pageSize).enqueue(object : Callback<RecipeResponse>{
+        recipeAPI.getSearchRecipes(searchKeyword, cookable, page, pageSize).enqueue(object : Callback<RecipeResponse>{
             override fun onResponse(
                 call: Call<RecipeResponse>,
                 response: Response<RecipeResponse>

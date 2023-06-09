@@ -10,7 +10,8 @@ import android.widget.Toast
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.swef.cookcode.adapter.SearchCookieRecyclerviewAdapter
-import com.swef.cookcode.api.CookieAPI
+import com.swef.cookcode.data.GlobalVariables.SPAN_COUNT
+import com.swef.cookcode.data.GlobalVariables.cookieAPI
 import com.swef.cookcode.data.SearchCookieData
 import com.swef.cookcode.data.response.CookieContent
 import com.swef.cookcode.data.response.CookieContentResponse
@@ -21,16 +22,9 @@ import retrofit2.Response
 
 class SearchCookieFragment : Fragment() {
 
-    companion object {
-        const val ERR_USER_CODE = -1
-    }
-
     private var _binding: FragmentSearchCookieBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var accessToken: String
-    private lateinit var refreshToken: String
-    private var userId = ERR_USER_CODE
     private lateinit var searchKeyword: String
 
     private val pageSize = 10
@@ -38,10 +32,6 @@ class SearchCookieFragment : Fragment() {
     private var hasNext = false
 
     private lateinit var recyclerViewAdapter : SearchCookieRecyclerviewAdapter
-
-    private val spanCount = 3
-
-    private val API = CookieAPI.create()
 
     private var isScrollingUp = false
     private var isScrollingDown = false
@@ -52,17 +42,11 @@ class SearchCookieFragment : Fragment() {
     ): View {
         _binding = FragmentSearchCookieBinding.inflate(inflater, container, false)
 
-        accessToken = arguments?.getString("access_token")!!
-        refreshToken = arguments?.getString("refresh_token")!!
-        userId = arguments?.getInt("user_id")!!
         searchKeyword = arguments?.getString("keyword")!!
 
         recyclerViewAdapter = SearchCookieRecyclerviewAdapter(requireContext())
-        recyclerViewAdapter.accessToken = accessToken
-        recyclerViewAdapter.refreshToken = refreshToken
-        recyclerViewAdapter.userId = userId
 
-        val gridLayoutManager = GridLayoutManager(requireContext(), spanCount)
+        val gridLayoutManager = GridLayoutManager(requireContext(), SPAN_COUNT)
         binding.recyclerView.apply {
             adapter = recyclerViewAdapter
             layoutManager = gridLayoutManager
@@ -83,7 +67,7 @@ class SearchCookieFragment : Fragment() {
     }
 
     private fun getCookieDataFromKeyword() {
-        API.getSearchCookies(accessToken, searchKeyword, page, pageSize).enqueue(object :
+        cookieAPI.getSearchCookies(searchKeyword, page, pageSize).enqueue(object :
             Callback<CookieContentResponse> {
             override fun onResponse(
                 call: Call<CookieContentResponse>,
@@ -95,7 +79,7 @@ class SearchCookieFragment : Fragment() {
 
                     if (recyclerViewAdapter.datas.isEmpty()) {
                         recyclerViewAdapter.datas = cookieDatas as MutableList<SearchCookieData>
-                        recyclerViewAdapter.notifyDataSetChanged()
+                        recyclerViewAdapter.notifyItemRangeChanged(0, cookieDatas.size)
                     }
                     else {
                         val beforeSize = recyclerViewAdapter.itemCount

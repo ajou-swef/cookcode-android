@@ -22,6 +22,7 @@ import com.bumptech.glide.request.transition.Transition
 import com.swef.cookcode.adapter.StepImageRecyclerviewAdapter
 import com.swef.cookcode.adapter.StepVideoRecyclerviewAdapter
 import com.swef.cookcode.api.RecipeAPI
+import com.swef.cookcode.data.GlobalVariables.recipeAPI
 import com.swef.cookcode.data.StepImageData
 import com.swef.cookcode.data.VideoData
 import com.swef.cookcode.data.response.FileResponse
@@ -55,18 +56,10 @@ class RecipeStepActivity : AppCompatActivity() {
     private var descriptionTyped = false
     private var imageUploaded = false
 
-    private val API = RecipeAPI.create()
-
-    private lateinit var accessToken: String
-    private lateinit var refreshToken: String
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityRecipeStepBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        accessToken = intent.getStringExtra("access_token")!!
-        refreshToken = intent.getStringExtra("refresh_token")!!
 
         // 스텝 단계 넘버링
         val stepNumber = intent.getIntExtra("step_number", -1)
@@ -228,7 +221,7 @@ class RecipeStepActivity : AppCompatActivity() {
                 imageDatas.removeAt(index)
 
                 val imageFile = makeImageMultipartBody(imageUri)
-                putAndGetImageUrl(accessToken, imageFile, index)
+                putAndGetImageUrl(imageFile, index)
                 return
             }
         }
@@ -238,7 +231,7 @@ class RecipeStepActivity : AppCompatActivity() {
         // 동영상을 불러오는 launcher를 구현하여 adapter에 넘겨줌
         val pickVideoLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri?
             -> val videoFile = makeVideoMultipartBody(uri!!)
-            putAndGetVideoUrl(accessToken, videoFile)
+            putAndGetVideoUrl(videoFile)
         }
 
         stepVideoRecyclerviewAdapter = StepVideoRecyclerviewAdapter(pickVideoLauncher)
@@ -285,8 +278,8 @@ class RecipeStepActivity : AppCompatActivity() {
             })
     }
 
-    private fun putAndGetImageUrl(accessToken: String, imageFile: MultipartBody.Part, index: Int) {
-        API.postImage(accessToken, imageFile).enqueue(object: Callback<FileResponse> {
+    private fun putAndGetImageUrl(imageFile: MultipartBody.Part, index: Int) {
+        recipeAPI.postImage(imageFile).enqueue(object: Callback<FileResponse> {
             override fun onResponse(call: Call<FileResponse>, response: Response<FileResponse>) {
                 if(response.isSuccessful){
                     val data = response.body()!!.fileUrls.listUrl[0]
@@ -305,8 +298,8 @@ class RecipeStepActivity : AppCompatActivity() {
         })
     }
 
-    private fun putAndGetVideoUrl(accessToken: String, videoFile: MultipartBody.Part) {
-        API.postImage(accessToken, videoFile).enqueue(object: Callback<FileResponse> {
+    private fun putAndGetVideoUrl(videoFile: MultipartBody.Part) {
+        recipeAPI.postImage(videoFile).enqueue(object: Callback<FileResponse> {
             override fun onResponse(call: Call<FileResponse>, response: Response<FileResponse>) {
                 if(response.isSuccessful){
                     val data = response.body()!!.fileUrls.listUrl[0]
