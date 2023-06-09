@@ -152,13 +152,13 @@
                 app:layout_constraintTop_toBottomOf="@+id/request_authority"/>
 
             <TextView
-                android:id="@+id/logout"
+                android:id="@+id/modify_pw"
                 android:layout_width="0dp"
                 android:layout_height="48dp"
                 android:layout_marginTop="20dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
-                android:text="@string/logout"
+                android:text="@string/modify_password"
                 android:textSize="15sp"
                 android:textColor="@color/black"
                 android:gravity="center|start"
@@ -166,6 +166,21 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/earnings_check"/>
+
+            <TextView
+                android:id="@+id/logout"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:text="@string/logout"
+                android:textSize="15sp"
+                android:textColor="@color/black"
+                android:gravity="center|start"
+                android:background="@drawable/all_shaped_component"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/modify_pw"/>
 
             <TextView
                 android:id="@+id/btn_delete_user"

@@ -15,10 +15,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.PopupMenu
 import com.bumptech.glide.Glide
-import com.swef.cookcode.api.AccountAPI
 import com.swef.cookcode.data.GlobalVariables.accountAPI
 import com.swef.cookcode.data.GlobalVariables.authority
-import com.swef.cookcode.data.GlobalVariables.userId
 import com.swef.cookcode.data.response.ProfileImageResponse
 import com.swef.cookcode.data.response.StatusResponse
 import com.swef.cookcode.databinding.ActivityMypageBinding
@@ -73,6 +71,10 @@ class MypageActivity : AppCompatActivity() {
 
         binding.profileImage.setOnClickListener {
             showPopupMenuForProfile()
+        }
+
+        binding.modifyPw.setOnClickListener {
+            startPasswordModifyActivity()
         }
 
         // 로그아웃
@@ -201,14 +203,18 @@ class MypageActivity : AppCompatActivity() {
 
     private fun startMyContentActivity() {
         val nextIntent = Intent(this, UserPageActivity::class.java)
-        nextIntent.putExtra("user_id", userId)
         nextIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         startActivity(nextIntent)
     }
 
     private fun startMySubscriberActivity() {
         val nextIntent = Intent(this, SubscriberActivity::class.java)
-        nextIntent.putExtra("user_id", userId)
+        nextIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        startActivity(nextIntent)
+    }
+
+    private fun startPasswordModifyActivity() {
+        val nextIntent = Intent(this, PasswordModifyActivity::class.java)
         nextIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         startActivity(nextIntent)
     }
