@@ -108,7 +108,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getAuthorityFromUserId() {
-        val intent = Intent(this, HomeActivity::class.java)
+        val homeIntent = Intent(this, HomeActivity::class.java)
+        val adminIntent = Intent(this, AdminActivity::class.java)
 
         accountAPI.getUserInfo(userId).enqueue(object: Callback<UserResponse>{
             override fun onResponse(call: Call<UserResponse>, response: Response<UserResponse>) {
@@ -117,10 +118,12 @@ class MainActivity : AppCompatActivity() {
                     when (authority) {
                         "ADMIN" -> {
                             // start admin page
+                            adminIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                            startActivity(adminIntent)
                         }
                         else -> {
-                            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-                            startActivity(intent)
+                            homeIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                            startActivity(homeIntent)
                             putToastMessage("정상적으로 로그인 되었습니다.")
                         }
                     }

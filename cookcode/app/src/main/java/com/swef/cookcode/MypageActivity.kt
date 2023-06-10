@@ -77,6 +77,10 @@ class MypageActivity : AppCompatActivity() {
             startPasswordModifyActivity()
         }
 
+        binding.requestAuthority.setOnClickListener {
+            showRequestAuthorityAlertDialog()
+        }
+
         // 로그아웃
         binding.logout.setOnClickListener { buildAlertDialog("logout") }
 
@@ -217,6 +221,40 @@ class MypageActivity : AppCompatActivity() {
         val nextIntent = Intent(this, PasswordModifyActivity::class.java)
         nextIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         startActivity(nextIntent)
+    }
+
+    private fun showRequestAuthorityAlertDialog() {
+        return AlertDialog.Builder(this)
+            .setMessage("인플루언서 권한을 요청하시겠습니까?\n(최소 구독자 10명 이상부터 가능합니다.)")
+            .setPositiveButton("확인"
+            ) { _, _ ->
+                accountAPI.patchAuthority().enqueue(object : Callback<StatusResponse> {
+                    override fun onResponse(
+                        call: Call<StatusResponse>,
+                        response: Response<StatusResponse>
+                    ) {
+                        if (response.isSuccessful) {
+                            if (response.body()!!.status == 200) {
+                                putToastMessage("권한 신청이 완료 되었습니다.")
+                            }
+                        } else {
+                            putToastMessage("신청 조건이 만족되지 않았습니다.")
+                            Log.d("data_size", call.request().toString())
+                            Log.d("data_size", response.errorBody()!!.string())
+                        }
+                    }
+
+                    override fun onFailure(call: Call<StatusResponse>, t: Throwable) {
+                        putToastMessage("잠시 후 다시 시도해주세요.")
+                        Log.d("data_size", call.request().toString())
+                        Log.d("data_size", t.message.toString())
+                    }
+                })
+
+            }
+            .setNegativeButton("취소") { _, _ -> }
+            .create()
+            .show()
     }
 
     private fun buildAlertDialog(type: String) {

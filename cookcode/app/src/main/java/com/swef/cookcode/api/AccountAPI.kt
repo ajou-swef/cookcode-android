@@ -20,7 +20,6 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface AccountAPI {
-
     @PATCH("account")
     fun patchAccount(): Call<StatusResponse>
 
@@ -58,6 +57,9 @@ interface AccountAPI {
     fun patchPassword(
         @Body body: HashMap<String, String>
     ): Call<StatusResponse>
+
+    @PATCH("account/authority/INFLUENCER")
+    fun patchAuthority(): Call<StatusResponse>
 
     companion object {
         private const val BASE_URL = "https://cookcode.link/api/v1/"
