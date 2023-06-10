@@ -11,7 +11,7 @@ import com.bumptech.glide.Glide
 import com.swef.cookcode.R
 import com.swef.cookcode.RecipeActivity
 import com.swef.cookcode.UserPageActivity
-import com.swef.cookcode.data.RecipeData
+import com.swef.cookcode.data.SearchedRecipeData
 import com.swef.cookcode.databinding.SearchRecipeRecyclerviewItemBinding
 
 class SearchRecipeRecyclerviewAdapter(
@@ -19,7 +19,7 @@ class SearchRecipeRecyclerviewAdapter(
 ): RecyclerView.Adapter<SearchRecipeRecyclerviewAdapter.ViewHolder>() {
     private lateinit var binding: SearchRecipeRecyclerviewItemBinding
 
-    var datas = mutableListOf<RecipeData>()
+    var datas = mutableListOf<SearchedRecipeData>()
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -43,7 +43,7 @@ class SearchRecipeRecyclerviewAdapter(
     inner class ViewHolder(
         private val binding: SearchRecipeRecyclerviewItemBinding
     ): RecyclerView.ViewHolder(binding.root) {
-        fun bind(item: RecipeData){
+        fun bind(item: SearchedRecipeData){
             binding.recipeName.text = context.getString(
                 R.string.string_shadow_convert, item.title)
             binding.likeNumber.text = item.likes.toString()

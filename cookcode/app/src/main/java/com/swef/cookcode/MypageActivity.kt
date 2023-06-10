@@ -237,9 +237,10 @@ class MypageActivity : AppCompatActivity() {
             .setPositiveButton("확인"
             ) { _, _ ->
                 val intent = Intent(this, MainActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
 
                 if (type == "logout") {
-                    finish()
+                    startActivity(intent)
                 }
                 else {
                     accountAPI.patchAccount().enqueue(object : Callback<StatusResponse> {

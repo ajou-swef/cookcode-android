@@ -43,6 +43,8 @@ class MainActivity : AppCompatActivity() {
         // 비밀번호 찾기 클릭시
         binding.btnFindIdpw.setOnClickListener {
             // 비밀번호 찾기 activity 시작
+            val nextIntent = Intent(this, FindPasswordActivity::class.java)
+            startActivity(nextIntent)
         }
 
         // 로그인 클릭시
@@ -62,6 +64,8 @@ class MainActivity : AppCompatActivity() {
                             userId = response.body()!!.tokenData.userId
                             accessToken = response.body()!!.tokenData.accessToken
                             refreshToken = response.body()!!.tokenData.refreshToken
+
+                            Log.d("data_size", accessToken)
                             getAuthorityFromUserId()
                         }
                     }

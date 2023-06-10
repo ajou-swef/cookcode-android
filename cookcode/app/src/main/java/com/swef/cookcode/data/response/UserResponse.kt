@@ -30,3 +30,9 @@ data class User(
     @SerializedName("isSubscribed") val isSubscribed: Boolean,
     @SerializedName("subscriberCount") val subscriberCount: Int
 )
+
+data class CertificationResponse(
+    @SerializedName("message") val message: String,
+    @SerializedName("status") val status: Int,
+    @SerializedName("data") val data: String,
+)

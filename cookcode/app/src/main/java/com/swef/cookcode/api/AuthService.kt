@@ -1,5 +1,6 @@
 package com.swef.cookcode.api
 
+import com.swef.cookcode.data.response.CertificationResponse
 import com.swef.cookcode.data.response.DuplicateResponse
 import com.swef.cookcode.data.response.StatusResponse
 import com.swef.cookcode.data.response.TokenResponse
@@ -33,6 +34,16 @@ interface AuthService {
     fun postSignin(
         @Body body: HashMap<String, String>
     ): Call<TokenResponse>
+
+    @GET("account/password")
+    fun getTempPassword(
+        @Query("email") email: String
+    ): Call<StatusResponse>
+
+    @POST("account/email")
+    fun postEmailValid(
+        @Query("email") email: String
+    ): Call<CertificationResponse>
 
     companion object {
         private const val BASE_URL = "https://cookcode.link/api/v1/"

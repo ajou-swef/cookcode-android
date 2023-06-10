@@ -25,7 +25,7 @@ import com.swef.cookcode.data.GlobalVariables.TRUE
 import com.swef.cookcode.data.GlobalVariables.accountAPI
 import com.swef.cookcode.data.GlobalVariables.recipeAPI
 import com.swef.cookcode.data.GlobalVariables.userId
-import com.swef.cookcode.data.RecipeData
+import com.swef.cookcode.data.SearchedRecipeData
 import com.swef.cookcode.data.response.RecipeContent
 import com.swef.cookcode.data.response.RecipeResponse
 import com.swef.cookcode.data.response.UserResponse
@@ -42,7 +42,7 @@ class HomeFragment : Fragment() {
     // nullable할 경우 ?를 계속 붙여줘야 하기 때문에 non-null 타입으로 포장
     private val binding get() = _binding!!
 
-    private var searchedRecipeDatas = mutableListOf<RecipeData>()
+    private var searchedRecipeDatas = mutableListOf<SearchedRecipeData>()
 
     private lateinit var recyclerViewAdapter: SearchRecipeRecyclerviewAdapter
 
@@ -180,11 +180,16 @@ class HomeFragment : Fragment() {
         recipeAPI.getRecipes(currentPage, pageSize, sort, cookable).enqueue(object :
             Callback<RecipeResponse> {
             override fun onResponse(call: Call<RecipeResponse>, response: Response<RecipeResponse>) {
-                val datas = response.body()
-                if (datas != null && datas.status == 200) {
+                if (response.isSuccessful) {
+                    val datas = response.body()!!
                     searchedRecipeDatas = getRecipeDatasFromResponseBody(datas.recipes.content)
                     hasNext = datas.hasNext
                     putDataForRecyclerview()
+                }
+                else {
+                    Log.d("data_size", call.request().toString())
+                    Log.d("data_size", response.errorBody()!!.string())
+                    putToastMessage("에러 발생! 관리자에게 문의해주세요.")
                 }
             }
 
@@ -199,10 +204,17 @@ class HomeFragment : Fragment() {
         recipeAPI.getRecipes(currentPage, pageSize, sort, cookable).enqueue(object :
             Callback<RecipeResponse> {
             override fun onResponse(call: Call<RecipeResponse>, response: Response<RecipeResponse>) {
-                val datas = response.body()
-                if (datas != null && datas.status == 200) {
+                if (response.isSuccessful) {
+                    Log.d("data_size", call.request().toString())
+
+                    val datas = response.body()!!
                     searchedRecipeDatas = getRecipeDatasFromResponseBody(datas.recipes.content)
                     putNewDataForRecyclerview()
+                }
+                else {
+                    Log.d("data_size", call.request().toString())
+                    Log.d("data_size", response.errorBody()!!.string())
+                    putToastMessage("에러 발생! 관리자에게 문의해주세요.")
                 }
             }
 
@@ -212,14 +224,14 @@ class HomeFragment : Fragment() {
         })
     }
 
-    private fun getRecipeDatasFromResponseBody(datas: List<RecipeContent>): MutableList<RecipeData> {
-        val recipeDatas = mutableListOf<RecipeData>()
+    private fun getRecipeDatasFromResponseBody(datas: List<RecipeContent>): MutableList<SearchedRecipeData> {
+        val recipeDatas = mutableListOf<SearchedRecipeData>()
 
         for (item in datas) {
-            val recipeData = RecipeData(
+            val recipeData = SearchedRecipeData(
                 item.recipeId, item.title, item.description,
                 item.mainImage, item.likeCount, item.isLiked, item.isCookable,
-                item.user, item.createdAt.substring(0, 10), item.ingredients, item.additionalIngredients)
+                item.user, item.createdAt.substring(0, 10))
             recipeDatas.add(recipeData)
         }
 
