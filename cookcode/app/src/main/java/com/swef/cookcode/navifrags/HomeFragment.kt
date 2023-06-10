@@ -155,13 +155,13 @@ class HomeFragment : Fragment() {
             when (menuItem.itemId) {
                 R.id.createdAt -> {
                     sort = "createdAt"
-                    getRecipeDatas()
+                    getNewRecipeDatas()
                     binding.btnSort.text = "최신순 정렬"
                     true
                 }
                 R.id.popular -> {
                     sort = "popular"
-                    getRecipeDatas()
+                    getNewRecipeDatas()
                     binding.btnSort.text = "인기순 정렬"
                     true
                 }
@@ -204,9 +204,8 @@ class HomeFragment : Fragment() {
         recipeAPI.getRecipes(currentPage, pageSize, sort, cookable).enqueue(object :
             Callback<RecipeResponse> {
             override fun onResponse(call: Call<RecipeResponse>, response: Response<RecipeResponse>) {
+                putToastMessage("데이터를 불러오고 있습니다.")
                 if (response.isSuccessful) {
-                    Log.d("data_size", call.request().toString())
-
                     val datas = response.body()!!
                     searchedRecipeDatas = getRecipeDatasFromResponseBody(datas.recipes.content)
                     putNewDataForRecyclerview()

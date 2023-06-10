@@ -15,5 +15,6 @@ data class MyIngredientData(
     var fridgeIngredId: Int?,
     var value: Int?,
     var expiredAt: String?,
-    var visibility: Int?
+    var visibility: Int?,
+    var isLack: Boolean? = null
 )

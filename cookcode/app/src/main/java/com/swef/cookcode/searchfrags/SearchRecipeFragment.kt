@@ -91,12 +91,13 @@ class SearchRecipeFragment : Fragment() {
                 R.id.createdAt -> {
                     sort = "createdAt"
                     getNewSearchedRecipeDatas()
+                    binding.btnSort.text = "최신순 정렬"
                     true
                 }
                 R.id.popular -> {
-                    // 아직 popular는 구현되지 않음
-                    // sort = "popular"
+                    sort = "popular"
                     getNewSearchedRecipeDatas()
+                    binding.btnSort.text = "인기순 정렬"
                     true
                 }
                 else -> false
@@ -107,7 +108,7 @@ class SearchRecipeFragment : Fragment() {
     }
 
     private fun getSearchedRecipeDatas() {
-        recipeAPI.getSearchRecipes(searchKeyword, cookable, page, pageSize).enqueue(object : Callback<RecipeResponse>{
+        recipeAPI.getSearchRecipes(searchKeyword, cookable, sort, page, pageSize).enqueue(object : Callback<RecipeResponse>{
             override fun onResponse(
                 call: Call<RecipeResponse>,
                 response: Response<RecipeResponse>
@@ -145,11 +146,12 @@ class SearchRecipeFragment : Fragment() {
     private fun getNewSearchedRecipeDatas() {
         page = 0
 
-        recipeAPI.getSearchRecipes(searchKeyword, cookable, page, pageSize).enqueue(object : Callback<RecipeResponse>{
+        recipeAPI.getSearchRecipes(searchKeyword, cookable, sort, page, pageSize).enqueue(object : Callback<RecipeResponse>{
             override fun onResponse(
                 call: Call<RecipeResponse>,
                 response: Response<RecipeResponse>
             ) {
+                putToastMessage("데이터를 불러오고 있습니다.")
                 if (response.isSuccessful){
                     val data = response.body()!!.recipes.content
                     val recipeDatas = getRecipeDatasFromResponseBody(data)

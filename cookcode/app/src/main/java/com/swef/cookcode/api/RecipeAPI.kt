@@ -86,6 +86,7 @@ interface RecipeAPI {
     fun getSearchRecipes(
         @Query("query") keyword: String,
         @Query("cookable") cookable: Int,
+        @Query("sort") sort: String,
         @Query("page") page: Int,
         @Query("size") size: Int,
     ): Call<RecipeResponse>

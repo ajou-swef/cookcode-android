@@ -37,7 +37,8 @@ data class RecipeContent(
 
 data class Ingredient(
     @SerializedName("ingredientId") val ingredId: Int,
-    @SerializedName("name") val name: String
+    @SerializedName("name") val name: String,
+    @SerializedName("isLack") val isLack: Boolean
 )
 
 data class MadeUser(
