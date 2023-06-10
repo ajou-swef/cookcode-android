@@ -59,7 +59,7 @@ class RecipePreviewAdapter(
                 R.string.string_shadow_convert, item.title)
             binding.madeUser.text = item.madeUser.nickname
             binding.descriptionText.text = item.description
-            binding.createdAtTime.text = item.createdAt!!.substring(0 until 10)
+            binding.createdAtTime.text = item.createdAt.substring(0 until 10)
 
             if (madeUser.profileImageUri != null) {
                 getImageFromUrl(madeUser.profileImageUri!!, binding.userProfileImage)
@@ -156,7 +156,9 @@ class RecipePreviewAdapter(
             val ingredientData = IngredientDataHost().getIngredientFromId(item.ingredId)
             if (ingredientData != null) {
                 ingredientData.value = 100
+                ingredientData.isLack = item.isLack
             }
+
             myIngredientDatas.add(ingredientData!!)
         }
 
