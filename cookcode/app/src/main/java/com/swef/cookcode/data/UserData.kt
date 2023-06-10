@@ -5,4 +5,5 @@ data class UserData(
     val nickname: String,
     val profileImage: String?,
     var subscribed: Boolean,
+    var subscriberCount: Int
 )

@@ -10,10 +10,10 @@ import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.swef.cookcode.adapter.SearchUserRecyclerviewAdapter
-import com.swef.cookcode.api.AccountAPI
+import com.swef.cookcode.data.GlobalVariables.accountAPI
 import com.swef.cookcode.data.UserData
+import com.swef.cookcode.data.response.SearchUserResponse
 import com.swef.cookcode.data.response.User
-import com.swef.cookcode.data.response.UsersResponse
 import com.swef.cookcode.databinding.FragmentSubscriberBinding
 import retrofit2.Call
 import retrofit2.Callback
@@ -21,23 +21,13 @@ import retrofit2.Response
 
 class SubscriberFragment : Fragment() {
 
-    companion object {
-        const val ERR_USER_CODE = -1
-    }
-
     private var _binding: FragmentSubscriberBinding? = null
     private val binding get() = _binding!!
-
-    private lateinit var accessToken: String
-    private lateinit var refreshToken: String
-    private var userId = ERR_USER_CODE
 
     private var hasNext = false
 
     private val pageSize = 10
     private var page = 0
-
-    private val API = AccountAPI.create()
 
     private lateinit var recyclerViewAdapter: SearchUserRecyclerviewAdapter
 
@@ -47,14 +37,7 @@ class SubscriberFragment : Fragment() {
     ): View {
         _binding = FragmentSubscriberBinding.inflate(inflater, container, false)
 
-        accessToken = arguments?.getString("access_token")!!
-        refreshToken = arguments?.getString("refresh_token")!!
-        userId = arguments?.getInt("user_id")!!
-
         recyclerViewAdapter = SearchUserRecyclerviewAdapter(requireContext())
-        recyclerViewAdapter.accessToken = accessToken
-        recyclerViewAdapter.refreshToken = refreshToken
-        recyclerViewAdapter.userId = userId
 
         val linearLayoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         binding.recyclerView.apply {
@@ -75,10 +58,10 @@ class SubscriberFragment : Fragment() {
     }
 
     private fun getMySubscribers() {
-        API.getMySubscribers(accessToken).enqueue(object : Callback<UsersResponse> {
-            override fun onResponse(call: Call<UsersResponse>, response: Response<UsersResponse>) {
+        accountAPI.getMySubscribers().enqueue(object : Callback<SearchUserResponse> {
+            override fun onResponse(call: Call<SearchUserResponse>, response: Response<SearchUserResponse>) {
                 if (response.isSuccessful){
-                    val data = response.body()!!.users
+                    val data = response.body()!!.content.users
                     val userDatas = getUserDatasFromResponseBody(data)
 
                     if (recyclerViewAdapter.datas.isEmpty()) {
@@ -98,7 +81,7 @@ class SubscriberFragment : Fragment() {
                 }
             }
 
-            override fun onFailure(call: Call<UsersResponse>, t: Throwable) {
+            override fun onFailure(call: Call<SearchUserResponse>, t: Throwable) {
                 Log.d("data_size", call.request().toString())
                 Log.d("data_size", t.message.toString())
                 putToastMessage("잠시 후 다시 시도해주세요.")
@@ -132,9 +115,10 @@ class SubscriberFragment : Fragment() {
             val nickname = item.nickname
             val userId = item.userId
             val profileImage = item.profileImage
-            val subscribed = false
+            val subscribed = item.isSubscribed
+            val subscriberCount = item.subscriberCount
 
-            userDatas.add(UserData(userId, nickname, profileImage, subscribed))
+            userDatas.add(UserData(userId, nickname, profileImage, subscribed, subscriberCount))
         }
 
         return userDatas

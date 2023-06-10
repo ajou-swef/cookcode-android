@@ -11,9 +11,21 @@ data class RecipeData(
     var isLiked: Boolean,
     val cookable: Boolean,
     val madeUser: MadeUser,
-    val createdAt: String?,
+    val createdAt: String,
     val ingredients: List<Ingredient>,
     val additionalIngredients: List<Ingredient>
+)
+
+data class SearchedRecipeData(
+    val recipeId : Int,
+    val title: String,
+    val description: String,
+    val mainImage: String,
+    var likes: Int,
+    var isLiked: Boolean,
+    val cookable: Boolean,
+    val madeUser: MadeUser,
+    val createdAt: String,
 )
 
 data class RecipeAndStepData(

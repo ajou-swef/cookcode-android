@@ -20,9 +20,9 @@ import com.swef.cookcode.CookieModifyActivity
 import com.swef.cookcode.LinearLayoutManagerWrapper
 import com.swef.cookcode.R
 import com.swef.cookcode.UserPageActivity
-import com.swef.cookcode.api.CookieAPI
 import com.swef.cookcode.data.CommentData
 import com.swef.cookcode.data.CookieData
+import com.swef.cookcode.data.GlobalVariables.cookieAPI
 import com.swef.cookcode.data.response.Comment
 import com.swef.cookcode.data.response.CommentResponse
 import com.swef.cookcode.data.response.StatusResponse
@@ -50,16 +50,8 @@ class CookieViewpagerAdapter(
     private val listener: CookieDeleteListener
 ) : RecyclerView.Adapter<CookieViewpagerAdapter.ViewHolder>() {
 
-    private val ERR_USER_CODE = -1
-
     var datas = mutableListOf<CookieData>()
     var hasNext = true
-    var userId = ERR_USER_CODE
-
-    lateinit var accessToken: String
-    lateinit var refreshToken: String
-
-    private val API = CookieAPI.create()
 
     private lateinit var commentBottomSheetCallback: BottomSheetBehavior.BottomSheetCallback
     private lateinit var infoBottomSheetBehavior: BottomSheetBehavior.BottomSheetCallback
@@ -182,16 +174,13 @@ class CookieViewpagerAdapter(
         }
 
         private fun getCookieComments(cookieId: Int){
-            API.getCookieComments(accessToken, cookieId).enqueue(object: Callback<CommentResponse>{
+            cookieAPI.getCookieComments(cookieId).enqueue(object: Callback<CommentResponse>{
                 override fun onResponse(
                     call: Call<CommentResponse>,
                     response: Response<CommentResponse>
                 ) {
                     if (response.isSuccessful) {
                         val comments = getCommentFromResponse(response.body()!!.content.comments)
-
-                        commentRecyclerviewAdapter.userId = userId
-                        commentRecyclerviewAdapter.accessToken = accessToken
                         commentRecyclerviewAdapter.cookieId = cookieId
 
                         if (comments.isEmpty()) {
@@ -238,8 +227,8 @@ class CookieViewpagerAdapter(
             return comments
         }
 
-        private fun initLikeButton(like: Int) {
-            if (like == 1){
+        private fun initLikeButton(isLiked: Boolean) {
+            if (isLiked){
                 binding.btnLike.setBackgroundResource(R.drawable.icon_liked)
             }
             else {
@@ -250,9 +239,6 @@ class CookieViewpagerAdapter(
         private fun initModifyDeleteButton(cookieId: Int, position: Int) {
             binding.btnModify.setOnClickListener {
                 val intent = Intent(context, CookieModifyActivity::class.java)
-                intent.putExtra("access_token", accessToken)
-                intent.putExtra("refresh_token", refreshToken)
-                intent.putExtra("user_id", userId)
                 intent.putExtra("cookie_id", cookieId)
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 context.startActivity(intent)
@@ -274,7 +260,7 @@ class CookieViewpagerAdapter(
         }
 
         private fun deleteCookie(cookieId: Int){
-            API.deleteCookie(accessToken, cookieId).enqueue(object : Callback<StatusResponse>{
+            cookieAPI.deleteCookie(cookieId).enqueue(object : Callback<StatusResponse>{
                 override fun onResponse(
                     call: Call<StatusResponse>,
                     response: Response<StatusResponse>
@@ -300,7 +286,7 @@ class CookieViewpagerAdapter(
         private fun putCommentCookie(cookieId: Int, comment: String) {
             val body = HashMap<String, String>()
             body["comment"] = comment
-            API.putCookieComment(accessToken, cookieId, body).enqueue(object : Callback<StatusResponse>{
+            cookieAPI.putCookieComment(cookieId, body).enqueue(object : Callback<StatusResponse>{
                 override fun onResponse(
                     call: Call<StatusResponse>,
                     response: Response<StatusResponse>
@@ -326,21 +312,21 @@ class CookieViewpagerAdapter(
         }
 
         private fun putLikeStateCookie(item: CookieData) {
-            API.putLikeCookie(accessToken, item.cookieId).enqueue(object: Callback<StatusResponse> {
+            cookieAPI.putLikeCookie(item.cookieId).enqueue(object: Callback<StatusResponse> {
                 override fun onResponse(
                     call: Call<StatusResponse>,
                     response: Response<StatusResponse>
                 ) {
                     if (response.isSuccessful){
-                        if(item.isLiked == 1) {
+                        if(item.isLiked) {
                             binding.btnLike.setBackgroundResource(R.drawable.icon_unliked)
-                            item.isLiked = 0
+                            item.isLiked = false
                             item.likeNumber--
 
                         }
                         else {
                             binding.btnLike.setBackgroundResource(R.drawable.icon_liked)
-                            item.isLiked = 1
+                            item.isLiked = true
                             item.likeNumber++
                         }
                         binding.likeNumber.text = item.likeNumber.toString()
@@ -406,9 +392,6 @@ class CookieViewpagerAdapter(
 
         private fun startUserPageActivity(madeUserId: Int) {
             val nextIntent = Intent(context, UserPageActivity::class.java)
-            nextIntent.putExtra("access_token", accessToken)
-            nextIntent.putExtra("refresh_token", refreshToken)
-            nextIntent.putExtra("my_user_id", userId)
             nextIntent.putExtra("user_id", madeUserId)
             nextIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
             context.startActivity(nextIntent)

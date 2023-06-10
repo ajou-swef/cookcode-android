@@ -26,7 +26,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.swef.cookcode.adapter.IngredientRecyclerviewAdapter
 import com.swef.cookcode.adapter.StepRecyclerviewAdapter
-import com.swef.cookcode.api.RecipeAPI
+import com.swef.cookcode.data.GlobalVariables.ERR_CODE
+import com.swef.cookcode.data.GlobalVariables.SPAN_COUNT
+import com.swef.cookcode.data.GlobalVariables.recipeAPI
 import com.swef.cookcode.data.MyIngredientData
 import com.swef.cookcode.data.RecipeAndStepData
 import com.swef.cookcode.data.RecipeData
@@ -56,11 +58,11 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
     private lateinit var binding : ActivityRecipeFormBinding
 
     private val stepDatas = mutableListOf<StepData>()
+
     private var mainImage: String? = null
     private val deleteFiles = mutableListOf<String>()
 
     private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
-
     private lateinit var stepRecyclerviewAdapter: StepRecyclerviewAdapter
 
     // 식재료 등록 어댑터
@@ -82,24 +84,14 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
     private var thumbnailUploaded = false
     private var stepExist = false
 
-    private val stepOutOfBound = -1
-    private val ERR_RECIPE_CODE = -1
-    private val ERR_USER_CODE = -1
-
-    private val API = RecipeAPI.create()
-
-    private lateinit var accessToken: String
-    private lateinit var refreshToken: String
-
-    private var userId = ERR_USER_CODE
 
     // 미리보기 단계에서 해당 스텝 수정을 위한 스텝 단계 정보 불러오기
     private val getResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == RESULT_OK) {
             val data: Intent? = result.data
-            val stepNumber = data?.getIntExtra("step_number", stepOutOfBound)
+            val stepNumber = data?.getIntExtra("step_number", ERR_CODE)
 
-            if (stepNumber != stepOutOfBound) {
+            if (stepNumber != ERR_CODE) {
                 stepOnClick(stepNumber!!)
             }
         }
@@ -110,11 +102,7 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
         binding = ActivityRecipeFormBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        accessToken = intent.getStringExtra("access_token")!!
-        refreshToken = intent.getStringExtra("refresh_token")!!
-
-        val recipeId = intent.getIntExtra("recipe_id", ERR_RECIPE_CODE)
-        userId = intent.getIntExtra("user_id", ERR_USER_CODE)
+        val recipeId = intent.getIntExtra("recipe_id", ERR_CODE)
 
         // 사진을 불러오기 위한 권한 요청
         val permission = Manifest.permission.READ_EXTERNAL_STORAGE
@@ -125,7 +113,7 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
         // 갤러리에서 image를 불러왔을 때 선택한 image로 수행하는 코드
         val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             val imageFile = makeImageMultipartBody(uri!!)
-            postMainImage(accessToken, imageFile)
+            postMainImage(imageFile)
             thumbnailUploaded = true
         }
 
@@ -150,8 +138,7 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
 
         searchIngredientRecyclerviewAdapter = IngredientRecyclerviewAdapter("recipe_search")
 
-        val spanCount = 3
-        dialogView.recyclerView.layoutManager = GridLayoutManager(this, spanCount)
+        dialogView.recyclerView.layoutManager = GridLayoutManager(this, SPAN_COUNT)
         dialogView.recyclerView.adapter = searchIngredientRecyclerviewAdapter
 
         searchIngredientRecyclerviewAdapter.datas = IngredientDataHost().showAllIngredientData() as MutableList<MyIngredientData>
@@ -202,8 +189,6 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
         binding.addStep.setOnClickListener {
             val intent = Intent(this, RecipeStepActivity::class.java)
             intent.putExtra("step_number", numberOfStep)
-            intent.putExtra("access_token", accessToken)
-            intent.putExtra("refresh_token", refreshToken)
             activityResultLauncher.launch(intent)
         }
 
@@ -231,11 +216,6 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
                 intent.putExtra("recipe_title", binding.editRecipeName.text.toString())
                 intent.putExtra("recipe_description", binding.editDescription.text.toString())
                 intent.putExtra("main_image", mainImage)
-                intent.putExtra("access_token", accessToken)
-                intent.putExtra("refresh_token", refreshToken)
-                intent.putExtra("user_id", userId)
-
-                Log.d("data_size", mainImage!!)
 
                 // 필수재료, 추가재료 정보 전달
                 val essentialIngreds = mutableListOf<String>()
@@ -288,7 +268,7 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
                     intent.putExtra("step_number$index", stepDatas[index].numberOfStep)
                 }
 
-                if (recipeId != ERR_RECIPE_CODE) {
+                if (recipeId != ERR_CODE) {
                     intent.putExtra("recipe_id", recipeId)
                 }
 
@@ -301,9 +281,9 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
             }
         }
 
-        if (recipeId != ERR_RECIPE_CODE) {
+        if (recipeId != ERR_CODE) {
             // recipeId가 존재할 경우 수정하는 경우이므로 정보를 불러옴
-            getRecipeDataFromRecipeID(recipeId, accessToken)
+            getRecipeDataFromRecipeID(recipeId)
         }
     }
 
@@ -324,7 +304,7 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
             }
             else if (result.resultCode == RESULT_OK) {
                 if (result.data != null && !result.data?.getStringExtra("type").equals("delete")) {
-                    val stepNumber = result.data?.getIntExtra("step_number", stepOutOfBound)!!
+                    val stepNumber = result.data?.getIntExtra("step_number", ERR_CODE)!!
                     val stepImages = result.data?.getStringArrayExtra("images")!!.toList()
                     val stepVideos = result.data?.getStringArrayExtra("videos")!!.toList()
                     val stepTitle = result.data?.getStringExtra("title")!!
@@ -372,8 +352,8 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
         }
     }
 
-    private fun getRecipeDataFromRecipeID(recipeId: Int, accessToken: String) {
-        API.getRecipe(accessToken, recipeId).enqueue(object : Callback<RecipeContentResponse> {
+    private fun getRecipeDataFromRecipeID(recipeId: Int) {
+        recipeAPI.getRecipe(recipeId).enqueue(object : Callback<RecipeContentResponse> {
             override fun onResponse(
                 call: Call<RecipeContentResponse>,
                 response: Response<RecipeContentResponse>
@@ -478,9 +458,6 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
         intent.putExtra("step_description", stepData.description)
         intent.putExtra("step_number", stepData.numberOfStep)
 
-        intent.putExtra("access_token", accessToken)
-        intent.putExtra("refresh_token", refreshToken)
-
         activityResultLauncher.launch(intent)
     }
 
@@ -570,8 +547,8 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
         }
     }
 
-    private fun postMainImage(accessToken: String, imageFile: MultipartBody.Part) {
-        API.postImage(accessToken, imageFile).enqueue(object: Callback<FileResponse>{
+    private fun postMainImage(imageFile: MultipartBody.Part) {
+        recipeAPI.postImage(imageFile).enqueue(object: Callback<FileResponse>{
             override fun onResponse(call: Call<FileResponse>, response: Response<FileResponse>) {
                 if(response.isSuccessful){
                     if (mainImage != null) deleteFiles.add(mainImage!!)

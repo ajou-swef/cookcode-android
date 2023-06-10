@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="gray">#FFD9D9D9</color>
+    <color name="gray_f0">#FFF0F0F0</color>
     <color name="gray_bc">#FFBCBCBC</color>
     <color name="gray_80">#FF808080</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="main_theme">#FFFF4C19</color>
+    <color name="main_theme">#FFF04C19</color>
     <color name="main_varient_theme">#FFF4E7DF</color>
     <color name="red">#FFFF0000</color>
     <color name="green">#FF00BC00</color>

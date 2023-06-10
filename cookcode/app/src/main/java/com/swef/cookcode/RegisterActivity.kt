@@ -2,156 +2,262 @@ package com.swef.cookcode
 
 import android.content.Context
 import android.graphics.Rect
+import android.icu.text.DecimalFormat
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.Toast
-import com.swef.cookcode.api.AccountAPI
+import com.swef.cookcode.data.GlobalVariables.authService
+import com.swef.cookcode.data.response.CertificationResponse
 import com.swef.cookcode.data.response.DuplicateResponse
 import com.swef.cookcode.data.response.StatusResponse
 import com.swef.cookcode.databinding.ActivityRegisterBinding
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.util.Timer
+import kotlin.concurrent.timer
 
 class RegisterActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityRegisterBinding
 
-    // 패스워드 일치 확인 검사
     private var isValidPwCheck = false
-    // 패스워드 유효성 확인 검사
     private var isCorrectPwCheck = false
-    // 닉네임 중복 검사
     private var isDuplicateNicknameCheck = false
+    private var isEmailValid = false
 
-    // AccountAPI
-    private val api = AccountAPI.create()
+    private val nicknameTextWatcher = object: TextWatcher{
+        // 변경되기 전
+        override fun beforeTextChanged(currentText: CharSequence?, start: Int, editCount: Int, after: Int) {}
+        // 변경되는 중
+        override fun onTextChanged(currentText: CharSequence?, start: Int, before: Int, editCount: Int) {
+            isDuplicateNicknameCheck = false
+            binding.testNickname.visibility = View.INVISIBLE
+            binding.dupNickText.visibility = View.INVISIBLE
+        }
+        // 변경된 후
+        override fun afterTextChanged(currentText: Editable?) {}
+    }
+
+    private lateinit var certificationNumber: String
+    private val timeLimit = 180000 // ms, = 3 min
+    private lateinit var timerTask: Timer
+    private var pastTime = 0 // ms
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityRegisterBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        // EditText 뷰들 포커스 이벤트 초기화
         setFocusChangeListeners()
+    }
 
-        // 뒤로가기 버튼 클릭시 activity 종료
+    override fun onResume() {
+        super.onResume()
         binding.beforeArrow.setOnClickListener{
             finish()
         }
 
-        // 닉네임 중복확인
         binding.dupNickTest.setOnClickListener{
-            // API를 통해 서버에 중복 확인
-            api.getDupNickTest(binding.editNickname.text.toString()).enqueue(object: Callback<DuplicateResponse> {
-                    override fun onResponse(call: Call<DuplicateResponse>, response: Response<DuplicateResponse>) {
-                        // 호출 성공
-                        // response는 nullable하므로 추가
-                        val isUnique = response.body()?.dupData?.isUnique
+            duplicateNicknameTest()
+        }
+        binding.dupNickTest.bringToFront()
 
-                        // response를 정상적으로 받아왔을 경우
-                        if (isUnique != null) {
-                            if (isUnique) {
-                                isDuplicateNicknameCheck = true
-                                binding.testNickname.visibility = View.VISIBLE
-                                binding.dupNickText.visibility = View.GONE
-                            } else {
-                                isDuplicateNicknameCheck = false
-                                binding.testNickname.visibility = View.GONE
-                                binding.dupNickText.visibility = View.VISIBLE
-                            }
-                        }
-                        // response가 null일 경우
-                        else {
-                            Toast.makeText(
-                                this@RegisterActivity,
-                                R.string.err_server,
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    }
+        binding.editNickname.addTextChangedListener(nicknameTextWatcher)
 
-                    override fun onFailure(call: Call<DuplicateResponse>, t: Throwable) {
-                        // 호출 실패
-                        Toast.makeText(this@RegisterActivity, R.string.err_server, Toast.LENGTH_SHORT).show()
-                    }
-                })
+        binding.btnDone.setOnClickListener {
+            if (testAllValidCheck()) {
+                val id = binding.editId.text.toString()
+                val nickname = binding.editNickname.text.toString()
+                val pw = binding.editPw.text.toString()
+
+                val userDataMap = HashMap<String, String>()
+                userDataMap["email"] = id
+                userDataMap["nickname"] = nickname
+                userDataMap["password"] = pw
+
+                postUserDataToServer(userDataMap)
+            }
+            else {
+                putToastMessage("제대로 된 값이 입력되지 않았습니다.")
+                changeComponentNotValidToRed()
+            }
         }
 
-        // 닉네임 중복확인 후 다른 닉네임으로 변경하고 싶을 때
-        // 문자를 입력할 경우 중복확인이 해제되도록 해야함
-        binding.editNickname.addTextChangedListener(object: TextWatcher{
-            // 변경되기 전
-            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
-            // 변경되는 중
-            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-                isDuplicateNicknameCheck = false
-                binding.testNickname.visibility = View.INVISIBLE
-                binding.dupNickText.visibility = View.INVISIBLE
+        binding.emailTest.setOnClickListener {
+            binding.time.visibility = View.VISIBLE
+            getEmailCertificationNumber(binding.editId.text.toString())
+            startTimerForEmailValidCheck()
+        }
+        binding.emailTest.bringToFront()
+
+        binding.emailTestValid.setOnClickListener {
+            checkCertificationNumber(binding.editEmailValid.text.toString())
+        }
+        binding.emailTestValid.bringToFront()
+    }
+
+    private fun checkCertificationNumber(number: String) {
+        if (pastTime == timeLimit) {
+            pastTime = 0
+            binding.time.text = "03:00"
+            getEmailCertificationNumber(binding.editId.text.toString())
+            startTimerForEmailValidCheck()
+
+            putToastMessage("인증시간이 초과되어 새로운 인증번호를 발송합니다.")
+        }
+        if (number == certificationNumber) {
+            timerTask.cancel()
+            binding.emailTest.visibility = View.GONE
+            binding.emailTestValid.visibility = View.GONE
+
+            binding.editId.focusable = View.NOT_FOCUSABLE
+            binding.editEmailValid.focusable = View.NOT_FOCUSABLE
+
+            binding.editId.setBackgroundResource(R.drawable.filled_round_component)
+
+            isEmailValid = true
+            putToastMessage("이메일 인증이 완료되었습니다.")
+        }
+        else {
+            putToastMessage("인증번호를 정확히 입력해주세요.")
+        }
+    }
+
+    private fun startTimerForEmailValidCheck() {
+        timerTask = timer(period = 1000) {
+            pastTime += 1000
+
+            val decimalFormat = DecimalFormat("00")
+
+            val min = decimalFormat.format((timeLimit - pastTime) / 60000)
+            val sec = decimalFormat.format((timeLimit - pastTime) % 60000 / 1000)
+
+            runOnUiThread {
+                binding.time.text = "${min}:${sec}"
             }
-            // 변경된 후
-            override fun afterTextChanged(p0: Editable?) {}
-        })
 
-
-        // 완료 버튼 클릭 이벤트
-        binding.btnDone.setOnClickListener {
-            // 항목 조건 검사 만족 시
-            if (isDuplicateNicknameCheck && isValidPwCheck && isCorrectPwCheck) {
-                    // API를 통해 회원정보를 서버에 보냄
-                    val id = binding.editId.text.toString()
-                    val nickname = binding.editNickname.text.toString()
-                    val pw = binding.editPw.text.toString()
-
-                    // POST body에 실어보내기 위해 HashMap 사용
-                    // 각 body에 들어갈 key, value 매칭
-                    val userDataMap = HashMap<String, String>()
-                    userDataMap["email"] = id
-                    userDataMap["nickname"] = nickname
-                    userDataMap["password"] = pw
-
-                    api.postUserData(userDataMap).enqueue(object: Callback<StatusResponse> {
-                        override fun onResponse(call: Call<StatusResponse>, response: Response<StatusResponse>) {
-                            if (response.body()?.status == 201) {
-                                // 회원가입 완료 토스트 메시지
-                                Toast.makeText(this@RegisterActivity, R.string.success_register, Toast.LENGTH_SHORT).show()
-                                // Activity 종료
-                                finish()
-                            }
-                            // 실패 시
-                            else {
-                                binding.editId.setBackgroundResource(R.drawable.round_component_fail)
-                                Toast.makeText(this@RegisterActivity, R.string.duplicated_email, Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                        override fun onFailure(call: Call<StatusResponse>, t: Throwable) {
-                            Toast.makeText(this@RegisterActivity, R.string.err_server, Toast.LENGTH_SHORT).show()
-                        }
-                    })
-            }
-            // 조건을 충족하지 않았을 경우 토스트 메시지를 띄움
-            else {
-                Toast.makeText(this@RegisterActivity, R.string.err_type, Toast.LENGTH_SHORT).show()
-
-                // 조건을 만족하지 않은 블록의 테두리를 빨간색으로 조정
-                if (!isValidPwCheck) {
-                    binding.editPwValid.setBackgroundResource(R.drawable.round_component_fail)
-                }
-                if (!isCorrectPwCheck) {
-                    binding.editPw.setBackgroundResource(R.drawable.round_component_fail)
-                }
-                if (!isDuplicateNicknameCheck) {
-                    binding.editNickname.setBackgroundResource(R.drawable.round_component_fail)
-                }
+            if (pastTime == timeLimit) {
+                timerTask.cancel()
             }
         }
     }
+
+    private fun getEmailCertificationNumber(email: String) {
+        authService.postEmailValid(email).enqueue(object : Callback<CertificationResponse> {
+            override fun onResponse(
+                call: Call<CertificationResponse>,
+                response: Response<CertificationResponse>
+            ) {
+                if (response.isSuccessful) {
+                    Log.d("data_size", response.body()!!.toString())
+                    if (response.body()?.status == 200) {
+                        certificationNumber = response.body()!!.data
+                        putToastMessage("인증번호가 발송 되었습니다.\n이메일을 확인해주세요.")
+                    } else {
+                        binding.editId.setBackgroundResource(R.drawable.round_component_fail)
+                        putToastMessage("이미 존재하는 아이디입니다.")
+                    }
+                }
+                else {
+                    Log.d("data_size", call.request().toString())
+                    Log.d("data_size", response.errorBody()!!.string())
+                    putToastMessage("에러 발생! 관리자에게 문의해주세요.")
+                }
+            }
+
+            override fun onFailure(call: Call<CertificationResponse>, t: Throwable) {
+                Log.d("data_size", call.request().toString())
+                Log.d("data_size", t.message.toString())
+                putToastMessage("잠시 후 다시 시도해주세요.")
+            }
+        })
+    }
+
+    private fun changeComponentNotValidToRed() {
+        if (!isValidPwCheck) {
+            binding.editPwValid.setBackgroundResource(R.drawable.round_component_fail)
+        }
+        if (!isCorrectPwCheck) {
+            binding.editPw.setBackgroundResource(R.drawable.round_component_fail)
+        }
+        if (!isDuplicateNicknameCheck) {
+            binding.editNickname.setBackgroundResource(R.drawable.round_component_fail)
+        }
+    }
+
+    private fun postUserDataToServer(userData: HashMap<String, String>) {
+        authService.postUserData(userData).enqueue(object: Callback<StatusResponse> {
+            override fun onResponse(call: Call<StatusResponse>, response: Response<StatusResponse>) {
+                if (response.isSuccessful) {
+                    if (response.body()?.status == 201) {
+                        putToastMessage("회원가입이 정상 처리되었습니다.")
+                        finish()
+                    } else {
+                        binding.editId.setBackgroundResource(R.drawable.round_component_fail)
+                        putToastMessage("이미 존재하는 아이디입니다.")
+                    }
+                }
+                else {
+                    Log.d("data_size", call.request().toString())
+                    Log.d("data_size", response.errorBody()!!.string())
+                    putToastMessage("에러 발생! 관리자에게 문의해주세요.")
+                }
+            }
+            override fun onFailure(call: Call<StatusResponse>, t: Throwable) {
+                Log.d("data_size", call.request().toString())
+                Log.d("data_size", t.message.toString())
+                putToastMessage("잠시 후 다시 시도해주세요.")
+            }
+        })
+    }
+
+    private fun duplicateNicknameTest() {
+        authService.getDupNickTest(binding.editNickname.text.toString()).enqueue(object: Callback<DuplicateResponse> {
+            override fun onResponse(call: Call<DuplicateResponse>, response: Response<DuplicateResponse>) {
+                if (response.isSuccessful) {
+                    val isUnique = response.body()!!.dupData.isUnique
+                    isTypedNicknameUnique(isUnique)
+                }
+                else {
+                    Log.d("data_size", call.request().toString())
+                    Log.d("data_size", response.errorBody()!!.string())
+                    putToastMessage("에러 발생! 관리자에게 문의해주세요.")
+                }
+            }
+
+            override fun onFailure(call: Call<DuplicateResponse>, t: Throwable) {
+                Log.d("data_size", call.request().toString())
+                Log.d("data_size", t.message.toString())
+                putToastMessage("잠시 후 다시 시도해주세요.")
+            }
+        })
+    }
+
+    private fun isTypedNicknameUnique(isUnique: Boolean) {
+        if (isUnique) {
+            isDuplicateNicknameCheck = true
+            binding.testNickname.visibility = View.VISIBLE
+            binding.dupNickText.visibility = View.GONE
+        } else {
+            isDuplicateNicknameCheck = false
+            binding.testNickname.visibility = View.GONE
+            binding.dupNickText.visibility = View.VISIBLE
+        }
+    }
+
+    private fun putToastMessage(message: String){
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun testAllValidCheck(): Boolean =
+        isDuplicateNicknameCheck && isValidPwCheck && isCorrectPwCheck && isEmailValid
 
     // EditText 뷰들에 Focus 변경 listener 추가해주는 함수
     private fun setFocusChangeListeners() {
@@ -163,6 +269,15 @@ class RegisterActivity : AppCompatActivity() {
                 view.setBackgroundResource(R.drawable.round_component_clicked)
             }
             // 포커스를 잃었을 때
+            else {
+                view.setBackgroundResource(R.drawable.round_component)
+            }
+        }
+
+        binding.editEmailValid.setOnFocusChangeListener { view, gainFocus ->
+            if (gainFocus) {
+                view.setBackgroundResource(R.drawable.round_component_clicked)
+            }
             else {
                 view.setBackgroundResource(R.drawable.round_component)
             }

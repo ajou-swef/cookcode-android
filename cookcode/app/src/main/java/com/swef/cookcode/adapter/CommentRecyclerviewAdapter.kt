@@ -8,9 +8,11 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.RecyclerView
-import com.swef.cookcode.api.CookieAPI
-import com.swef.cookcode.api.RecipeAPI
 import com.swef.cookcode.data.CommentData
+import com.swef.cookcode.data.GlobalVariables.ERR_CODE
+import com.swef.cookcode.data.GlobalVariables.cookieAPI
+import com.swef.cookcode.data.GlobalVariables.recipeAPI
+import com.swef.cookcode.data.GlobalVariables.userId
 import com.swef.cookcode.data.response.StatusResponse
 import com.swef.cookcode.databinding.CommentModifyDialogBinding
 import com.swef.cookcode.databinding.CommentRecyclerviewItemBinding
@@ -25,18 +27,9 @@ class CommentRecyclerviewAdapter(
     private val listener: CommentOnClickListener
 ):RecyclerView.Adapter<CommentRecyclerviewAdapter.ViewHolder>() {
 
-    private val ERR_USER_CODE = -1
-    private val ERR_COOKIE_CODE = -1
-    private val ERR_RECIPE_CODE = -1
-
     var datas = mutableListOf<CommentData>()
-    var userId = ERR_USER_CODE
-    var cookieId = ERR_COOKIE_CODE
-    var recipeId = ERR_RECIPE_CODE
-    lateinit var accessToken: String
-
-    private val cookieAPI = CookieAPI.create()
-    private val recipeAPI = RecipeAPI.create()
+    var cookieId = ERR_CODE
+    var recipeId = ERR_CODE
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = CommentRecyclerviewItemBinding.inflate(
@@ -113,7 +106,7 @@ class CommentRecyclerviewAdapter(
         }
 
         private fun deleteCookieComment(commentId: Int){
-            cookieAPI.deleteCookieComment(accessToken, commentId).enqueue(object :
+            cookieAPI.deleteCookieComment(commentId).enqueue(object :
                 Callback<StatusResponse> {
                 override fun onResponse(
                     call: Call<StatusResponse>,
@@ -139,7 +132,7 @@ class CommentRecyclerviewAdapter(
         }
 
         private fun deleteRecipeComment(commentId: Int){
-            recipeAPI.deleteRecipeComment(accessToken, commentId).enqueue(object :
+            recipeAPI.deleteRecipeComment(commentId).enqueue(object :
                 Callback<StatusResponse> {
                 override fun onResponse(
                     call: Call<StatusResponse>,

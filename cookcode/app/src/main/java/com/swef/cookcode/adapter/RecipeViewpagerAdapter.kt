@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.swef.cookcode.data.RecipeAndStepData
 import com.swef.cookcode.data.RecipeData
 import com.swef.cookcode.data.StepData
+import com.swef.cookcode.data.response.MadeUser
 import com.swef.cookcode.databinding.ShowLoadingViewBinding
 
 class RecipeViewpagerAdapter(
@@ -19,20 +20,16 @@ class RecipeViewpagerAdapter(
 
     private lateinit var recipeTitleAdapter: RecipePreviewAdapter
     private lateinit var recipeStepAdapter: StepPreviewRecyclerviewAdapter
-
     private lateinit var loadingViewHolder: LoadingViewHolder
 
-    lateinit var accessToken: String
-    lateinit var refreshToken: String
-    var madeUserId = ERR_USER_CODE
-    var userId = ERR_USER_CODE
+    lateinit var madeUser: MadeUser
 
     companion object {
         const val VIEW_TYPE_LOADING = 0
         const val VIEW_TYPE_RECIPE = 1
         const val VIEW_TYPE_STEP = 2
-        const val ERR_USER_CODE = -1
     }
+
     fun setData(data: RecipeAndStepData) {
         this.recipeData = data.recipeData
         this.stepDatas = data.stepData
@@ -43,10 +40,7 @@ class RecipeViewpagerAdapter(
         if (recipeData != null) {
             if (viewType == VIEW_TYPE_RECIPE) {
                 recipeTitleAdapter = RecipePreviewAdapter(recipeData!!, context)
-                recipeTitleAdapter.accessToken = accessToken
-                recipeTitleAdapter.refreshToken = refreshToken
-                recipeTitleAdapter.userId = userId
-                recipeTitleAdapter.madeUserId = madeUserId
+                recipeTitleAdapter.madeUser = madeUser
                 return recipeTitleAdapter.onCreateViewHolder(parent, viewType)
             } else {
                 recipeStepAdapter = StepPreviewRecyclerviewAdapter(stepDatas!!, context)

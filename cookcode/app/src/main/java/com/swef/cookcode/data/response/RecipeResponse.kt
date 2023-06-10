@@ -43,7 +43,8 @@ data class Ingredient(
 data class MadeUser(
     @SerializedName("userId") val userId: Int,
     @SerializedName("profileImage") val profileImageUri: String?,
-    @SerializedName("nickname") val nickname: String
+    @SerializedName("nickname") val nickname: String,
+    // @SerializedName("isQuit") val isQuit: Boolean
 )
 data class Step(
     @SerializedName("stepId") val stepId: Int,

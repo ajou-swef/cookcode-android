@@ -9,10 +9,10 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.swef.cookcode.UserPageActivity
 import com.swef.cookcode.adapter.SearchRecipeRecyclerviewAdapter
-import com.swef.cookcode.api.RecipeAPI
-import com.swef.cookcode.data.RecipeData
+import com.swef.cookcode.data.GlobalVariables.recipeAPI
+import com.swef.cookcode.data.GlobalVariables.userId
+import com.swef.cookcode.data.SearchedRecipeData
 import com.swef.cookcode.data.response.RecipeContent
 import com.swef.cookcode.data.response.RecipeResponse
 import com.swef.cookcode.databinding.FragmentUserRecipeBinding
@@ -27,15 +27,9 @@ class UserRecipeFragment : Fragment() {
 
     private lateinit var recyclerViewAdapter: SearchRecipeRecyclerviewAdapter
 
-    private lateinit var accessToken: String
-    private lateinit var refreshToken: String
-    private var userId = UserPageActivity.ERR_USER_CODE
-
     private var page = 0
     private val pageSize = 10
     private var hasNext = false
-
-    private val API = RecipeAPI.create()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -43,14 +37,7 @@ class UserRecipeFragment : Fragment() {
     ): View {
         _binding = FragmentUserRecipeBinding.inflate(inflater, container, false)
 
-        accessToken = arguments?.getString("access_token")!!
-        refreshToken = arguments?.getString("refresh_token")!!
-        userId = arguments?.getInt("user_id")!!
-
         recyclerViewAdapter = SearchRecipeRecyclerviewAdapter(requireContext())
-        recyclerViewAdapter.accessToken = accessToken
-        recyclerViewAdapter.refreshToken = refreshToken
-        recyclerViewAdapter.userId = userId
 
         val linearLayoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         binding.recyclerView.apply {
@@ -65,7 +52,7 @@ class UserRecipeFragment : Fragment() {
     }
 
     private fun getRecipeDataFromUserId() {
-        API.getUserRecipes(accessToken, userId, page).enqueue(object : Callback<RecipeResponse>{
+        recipeAPI.getUserRecipes(userId, page).enqueue(object : Callback<RecipeResponse>{
             override fun onResponse(
                 call: Call<RecipeResponse>,
                 response: Response<RecipeResponse>
@@ -107,14 +94,14 @@ class UserRecipeFragment : Fragment() {
         getRecipeDataFromUserId()
     }
 
-    private fun getRecipeDatasFromResponseBody(datas: List<RecipeContent>): MutableList<RecipeData> {
-        val recipeDatas = mutableListOf<RecipeData>()
+    private fun getRecipeDatasFromResponseBody(datas: List<RecipeContent>): MutableList<SearchedRecipeData> {
+        val recipeDatas = mutableListOf<SearchedRecipeData>()
 
         for (item in datas) {
-            val recipeData = RecipeData(
+            val recipeData = SearchedRecipeData(
                 item.recipeId, item.title, item.description,
                 item.mainImage, item.likeCount, item.isLiked, item.isCookable,
-                item.user, item.createdAt.substring(0 until 10), item.ingredients, item.additionalIngredients)
+                item.user, item.createdAt.substring(0 until 10))
             recipeDatas.add(recipeData)
         }
 

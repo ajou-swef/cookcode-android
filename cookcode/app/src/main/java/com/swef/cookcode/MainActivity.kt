@@ -10,7 +10,12 @@ import android.view.MotionEvent
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.Toast
-import com.swef.cookcode.api.AccountAPI
+import com.swef.cookcode.data.GlobalVariables.accessToken
+import com.swef.cookcode.data.GlobalVariables.accountAPI
+import com.swef.cookcode.data.GlobalVariables.authService
+import com.swef.cookcode.data.GlobalVariables.authority
+import com.swef.cookcode.data.GlobalVariables.refreshToken
+import com.swef.cookcode.data.GlobalVariables.userId
 import com.swef.cookcode.data.response.TokenResponse
 import com.swef.cookcode.data.response.UserResponse
 import com.swef.cookcode.databinding.ActivityMainBinding
@@ -21,14 +26,6 @@ import retrofit2.Response
 class MainActivity : AppCompatActivity() {
     // ViewBinding 사용 : xml에 있는 view를 직접 참조할 수 있게 도와주는 기능
     private lateinit var binding: ActivityMainBinding
-    // AccountAPI
-    private val API = AccountAPI.create()
-
-    private val ERR_USER_CODE = -1
-
-    private lateinit var accessToken: String
-    private lateinit var refreshToken: String
-    private var userId = ERR_USER_CODE
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,9 +40,11 @@ class MainActivity : AppCompatActivity() {
             startActivity(nextIntent)
         }
 
-        // 아이디/비밀번호 찾기 클릭시
+        // 비밀번호 찾기 클릭시
         binding.btnFindIdpw.setOnClickListener {
-            // 아이디/비밀번호 찾기 activity 시작
+            // 비밀번호 찾기 activity 시작
+            val nextIntent = Intent(this, FindPasswordActivity::class.java)
+            startActivity(nextIntent)
         }
 
         // 로그인 클릭시
@@ -53,13 +52,12 @@ class MainActivity : AppCompatActivity() {
             // API를 통해 서버에 회원정보를 보냄
             val id = binding.editId.text.toString()
             val pw = binding.editPw.text.toString()
-            val homeActivityIntent = Intent(this, HomeActivity::class.java)
 
             val userDataMap = HashMap<String, String>()
             userDataMap["email"] = id
             userDataMap["password"] = pw
 
-            API.postSignin(userDataMap).enqueue(object: Callback<TokenResponse> {
+            authService.postSignin(userDataMap).enqueue(object: Callback<TokenResponse> {
                 override fun onResponse(call: Call<TokenResponse>, response: Response<TokenResponse>) {
                     if(response.body() != null) {
                         if (response.body()!!.status == 200) {
@@ -67,7 +65,8 @@ class MainActivity : AppCompatActivity() {
                             accessToken = response.body()!!.tokenData.accessToken
                             refreshToken = response.body()!!.tokenData.refreshToken
 
-                            getAuthorityFromUserId(homeActivityIntent)
+                            Log.d("data_size", accessToken)
+                            getAuthorityFromUserId()
                         }
                     }
                     else {
@@ -108,20 +107,18 @@ class MainActivity : AppCompatActivity() {
         return super.dispatchTouchEvent(event)
     }
 
-    private fun getAuthorityFromUserId(intent: Intent) {
-        API.getUserInfo(accessToken, userId).enqueue(object: Callback<UserResponse>{
+    private fun getAuthorityFromUserId() {
+        val intent = Intent(this, HomeActivity::class.java)
+
+        accountAPI.getUserInfo(userId).enqueue(object: Callback<UserResponse>{
             override fun onResponse(call: Call<UserResponse>, response: Response<UserResponse>) {
                 if (response.isSuccessful){
-
-                    when (val authority = response.body()!!.user.authority) {
+                    authority = response.body()!!.user.authority
+                    when (authority) {
                         "ADMIN" -> {
                             // start admin page
                         }
                         else -> {
-                            intent.putExtra("access_token", accessToken)
-                            intent.putExtra("refresh_token", refreshToken)
-                            intent.putExtra("user_id", userId)
-                            intent.putExtra("authority", authority)
                             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
                             startActivity(intent)
                             putToastMessage("정상적으로 로그인 되었습니다.")

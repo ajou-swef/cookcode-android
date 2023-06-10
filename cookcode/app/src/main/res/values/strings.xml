@@ -5,12 +5,11 @@
     <string name="pw">비밀번호</string>
     <string name="pw_valid">비밀번호 확인</string>
     <string name="nickname">닉네임</string>
-    <string name="find_idpw">아이디/비밀번호 찾기</string>
+    <string name="find_pw">비밀번호 찾기</string>
     <string name="register">회원가입</string>
     <string name="done">완료</string>
     <string name="cancel">취소</string>
     <string name="err_type">제대로 된 값이 입력되지 않았습니다.</string>
-    <string name="success_register">회원가입이 정상 처리되었습니다.</string>
     <string name="hint_email">cookcode@gmail.com</string>
     <string name="hint_nickname">쿡코드짱123</string>
     <string name="hint_pw">영어 소문자, 숫자, 특수문자 모두 포함 8자 이상</string>
@@ -34,7 +33,7 @@
     <string name="type_word">입력해주세요</string>
     <string name="goto_preview">미리보기하고 업로드</string>
     <string name="step">스텝</string>
-    <string name="new_recipe">새 레시피</string>
+    <string name="new_recipe">레시피 제작</string>
     <string name="image">이미지</string>
     <string name="video">동영상</string>
     <string name="step_title">스텝 제목</string>
@@ -102,4 +101,13 @@
     <string name="my_subscribers">나를 구독한 유저</string>
     <string name="my_subscribed">내가 구독한 유저</string>
     <string name="tutorial_expire">: 유통기한이 2일 이하 남았을 때 표시됩니다.</string>
+    <string name="modify_password">비밀번호 변경</string>
+    <string name="new_cookie">쿠키 제작</string>
+    <string name="modify_cookie">쿠키 수정</string>
+    <string name="before_pw">기존 비밀번호</string>
+    <string name="new_pw">새 비밀번호</string>
+    <string name="your_email_address">가입된 이메일 주소</string>
+    <string name="temp_pw">임시 비밀번호 발급</string>
+    <string name="email_valid_test">인증번호</string>
+    <string name="btn_valid_test">인증하기</string>
 </resources>

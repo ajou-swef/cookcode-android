@@ -7,7 +7,8 @@ import android.util.Log
 import android.widget.Toast
 import androidx.viewpager2.widget.ViewPager2
 import com.swef.cookcode.adapter.StepPreviewRecyclerviewAdapter
-import com.swef.cookcode.api.RecipeAPI
+import com.swef.cookcode.data.GlobalVariables.ERR_CODE
+import com.swef.cookcode.data.GlobalVariables.recipeAPI
 import com.swef.cookcode.data.StepData
 import com.swef.cookcode.data.response.RecipeResponse
 import com.swef.cookcode.data.response.RecipeStatusResponse
@@ -21,13 +22,6 @@ class RecipePreviewActivity : AppCompatActivity() {
     private lateinit var binding: ActivityRecipePreviewBinding
 
     private lateinit var stepPreviewRecyclerviewAdapter: StepPreviewRecyclerviewAdapter
-
-    private val API = RecipeAPI.create()
-
-    private val ERR_RECIPE_CODE = -1
-    private val ERR_USER_CODE = -1
-
-    private var userId = ERR_USER_CODE
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,11 +41,7 @@ class RecipePreviewActivity : AppCompatActivity() {
             intent.getStringArrayExtra("delete_images")!!.toList()
         else emptyList<String>()
 
-        val accessToken = intent.getStringExtra("access_token")!!
-        val refreshToken = intent.getStringExtra("refresh_token")!!
-
-        val recipeId = intent.getIntExtra("recipe_id", ERR_RECIPE_CODE)
-        userId = intent.getIntExtra("user_id", ERR_USER_CODE)
+        val recipeId = intent.getIntExtra("recipe_id", ERR_CODE)
 
         // 현재 보고있는 step
         var currentPosition = 0
@@ -123,11 +113,11 @@ class RecipePreviewActivity : AppCompatActivity() {
 
             postBody["steps"] = stepDatas
 
-            if (recipeId != ERR_RECIPE_CODE) {
-                patchRecipeData(accessToken, refreshToken, postBody, recipeId)
+            if (recipeId != ERR_CODE) {
+                patchRecipeData(postBody, recipeId)
             }
             else {
-                postRecipeData(accessToken, refreshToken, postBody)
+                postRecipeData(postBody)
             }
         }
 
@@ -141,15 +131,15 @@ class RecipePreviewActivity : AppCompatActivity() {
 
     }
 
-    private fun postRecipeData(accessToken: String, refreshToken: String, postBody: HashMap<String, Any>) {
-        API.postRecipe(accessToken, postBody).enqueue(object: Callback<RecipeStatusResponse>{
+    private fun postRecipeData(postBody: HashMap<String, Any>) {
+        recipeAPI.postRecipe(postBody).enqueue(object: Callback<RecipeStatusResponse>{
             override fun onResponse(
                 call: Call<RecipeStatusResponse>,
                 response: Response<RecipeStatusResponse>
             ) {
                 if (response.isSuccessful) {
                     putToastMessage("레시피가 업로드되었습니다.")
-                    startHomeActivity(accessToken, refreshToken)
+                    startHomeActivity()
                 }
                 else {
                     Log.d("data_size", call.request().toString())
@@ -167,12 +157,12 @@ class RecipePreviewActivity : AppCompatActivity() {
         })
     }
 
-    private fun patchRecipeData(accessToken: String, refreshToken: String, postBody: HashMap<String, Any>, recipeId: Int) {
-        API.patchRecipe(accessToken, recipeId, postBody).enqueue(object: Callback<RecipeResponse>{
+    private fun patchRecipeData(postBody: HashMap<String, Any>, recipeId: Int) {
+        recipeAPI.patchRecipe(recipeId, postBody).enqueue(object: Callback<RecipeResponse>{
             override fun onResponse(call: Call<RecipeResponse>, response: Response<RecipeResponse>) {
                 if (response.isSuccessful){
                     putToastMessage("레시피가 수정되었습니다.")
-                    startHomeActivity(accessToken, refreshToken)
+                    startHomeActivity()
                 }
                 else {
                     Log.d("data_size", response.errorBody()!!.string())
@@ -187,11 +177,8 @@ class RecipePreviewActivity : AppCompatActivity() {
         })
     }
 
-    private fun startHomeActivity(accessToken: String, refreshToken: String) {
+    private fun startHomeActivity() {
         val intent = Intent(this, HomeActivity::class.java)
-        intent.putExtra("access_token", accessToken)
-        intent.putExtra("refresh_token", refreshToken)
-        intent.putExtra("user_id", userId)
         startActivity(intent)
     }
 

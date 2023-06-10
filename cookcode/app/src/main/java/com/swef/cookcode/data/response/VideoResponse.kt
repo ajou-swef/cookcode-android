@@ -5,9 +5,3 @@ import com.google.gson.annotations.SerializedName
 data class VideoUrl(
     @SerializedName("videoUrl") val videoUris: List<String>
 )
-
-data class VideoResponse(
-    @SerializedName("message") val message: String,
-    @SerializedName("status") val status: Int,
-    @SerializedName("data") val videoUris: VideoUrl
-)

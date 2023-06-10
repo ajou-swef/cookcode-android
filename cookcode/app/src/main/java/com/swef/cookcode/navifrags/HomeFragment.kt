@@ -20,9 +20,12 @@ import com.swef.cookcode.R
 import com.swef.cookcode.RecipeFormActivity
 import com.swef.cookcode.SearchActivity
 import com.swef.cookcode.adapter.SearchRecipeRecyclerviewAdapter
-import com.swef.cookcode.api.AccountAPI
-import com.swef.cookcode.api.RecipeAPI
-import com.swef.cookcode.data.RecipeData
+import com.swef.cookcode.data.GlobalVariables.FALSE
+import com.swef.cookcode.data.GlobalVariables.TRUE
+import com.swef.cookcode.data.GlobalVariables.accountAPI
+import com.swef.cookcode.data.GlobalVariables.recipeAPI
+import com.swef.cookcode.data.GlobalVariables.userId
+import com.swef.cookcode.data.SearchedRecipeData
 import com.swef.cookcode.data.response.RecipeContent
 import com.swef.cookcode.data.response.RecipeResponse
 import com.swef.cookcode.data.response.UserResponse
@@ -39,14 +42,7 @@ class HomeFragment : Fragment() {
     // nullable할 경우 ?를 계속 붙여줘야 하기 때문에 non-null 타입으로 포장
     private val binding get() = _binding!!
 
-    private val USER_ERR_CODE = -1
-
-    private lateinit var accessToken: String
-    private lateinit var refreshToken: String
-    private var userId = USER_ERR_CODE
-    private lateinit var authority: String
-
-    private var searchedRecipeDatas = mutableListOf<RecipeData>()
+    private var searchedRecipeDatas = mutableListOf<SearchedRecipeData>()
 
     private lateinit var recyclerViewAdapter: SearchRecipeRecyclerviewAdapter
 
@@ -55,13 +51,7 @@ class HomeFragment : Fragment() {
     private val pageSize = 10
     private var currentPage = 0
 
-    private val TRUE = 1
-    private val FALSE = 0
-
     private var cookable = 0
-
-    private val recipeAPI = RecipeAPI.create()
-    private val accountAPI = AccountAPI.create()
 
     private var hasNext = false
 
@@ -70,12 +60,6 @@ class HomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
-
-        accessToken = arguments?.getString("access_token")!!
-        refreshToken = arguments?.getString("refresh_token")!!
-        userId = arguments?.getInt("user_id")!!
-
-        getAuthorityFromUserId()
 
         // 컨텐츠 추가 버튼 click listener
         binding.btnAddContents.setOnClickListener{
@@ -100,20 +84,14 @@ class HomeFragment : Fragment() {
 
         binding.btnSearch.setOnClickListener {
             val nextIntent = Intent(activity, SearchActivity::class.java)
-            nextIntent.putExtra("access_token", accessToken)
-            nextIntent.putExtra("refresh_token", refreshToken)
-            nextIntent.putExtra("user_id", userId)
             startActivity(nextIntent)
         }
 
         binding.userMark.setOnClickListener {
-            getUserData(accessToken, userId)
+            getUserData(userId)
         }
 
         recyclerViewAdapter = SearchRecipeRecyclerviewAdapter(requireContext())
-        recyclerViewAdapter.accessToken = accessToken
-        recyclerViewAdapter.refreshToken = refreshToken
-        recyclerViewAdapter.userId = userId
 
         val linearLayoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         binding.recyclerView.layoutManager = linearLayoutManager
@@ -123,27 +101,6 @@ class HomeFragment : Fragment() {
         initOnScrollListener()
 
         return binding.root
-    }
-
-    private fun getAuthorityFromUserId() {
-        accountAPI.getUserInfo(accessToken, userId).enqueue(object : Callback<UserResponse> {
-            override fun onResponse(call: Call<UserResponse>, response: Response<UserResponse>) {
-                if (response.isSuccessful) {
-                    authority = response.body()!!.user.authority
-                }
-                else {
-                    Log.d("data_size", call.request().toString())
-                    Log.d("data_size", response.errorBody()!!.string())
-                    putToastMessage("에러 발생!")
-                }
-            }
-
-            override fun onFailure(call: Call<UserResponse>, t: Throwable) {
-                Log.d("data_size", call.request().toString())
-                Log.d("data_size", t.message.toString())
-                putToastMessage("잠시 후 다시 시도해주세요.")
-            }
-        })
     }
 
     // Fragment는 생명 주기가 매우 길기 때문에 view가 destroy되어도 fragment는 살아있음
@@ -172,18 +129,12 @@ class HomeFragment : Fragment() {
             when (menuItem.itemId) {
                 R.id.cookie -> {
                     val nextIntent = Intent(activity, CookieFormActivity::class.java)
-                    nextIntent.putExtra("access_token", accessToken)
-                    nextIntent.putExtra("refresh_token", refreshToken)
-                    nextIntent.putExtra("user_id", userId)
                     nextIntent.addFlags(FLAG_ACTIVITY_CLEAR_TOP)
                     startActivity(nextIntent)
                     true
                 }
                 R.id.recipe -> {
                     val nextIntent = Intent(activity, RecipeFormActivity::class.java)
-                    nextIntent.putExtra("access_token", accessToken)
-                    nextIntent.putExtra("refresh_token", refreshToken)
-                    nextIntent.putExtra("user_id", userId)
                     nextIntent.addFlags(FLAG_ACTIVITY_CLEAR_TOP)
                     startActivity(nextIntent)
                     true
@@ -205,12 +156,13 @@ class HomeFragment : Fragment() {
                 R.id.createdAt -> {
                     sort = "createdAt"
                     getRecipeDatas()
+                    binding.btnSort.text = "최신순 정렬"
                     true
                 }
                 R.id.popular -> {
-                    // 아직 popular는 구현되지 않음
-                    // sort = "popular"
+                    sort = "popular"
                     getRecipeDatas()
+                    binding.btnSort.text = "인기순 정렬"
                     true
                 }
                 else -> false
@@ -225,14 +177,19 @@ class HomeFragment : Fragment() {
     }
 
     private fun getRecipeDatas() {
-        recipeAPI.getRecipes(accessToken, currentPage, pageSize, cookable).enqueue(object :
+        recipeAPI.getRecipes(currentPage, pageSize, sort, cookable).enqueue(object :
             Callback<RecipeResponse> {
             override fun onResponse(call: Call<RecipeResponse>, response: Response<RecipeResponse>) {
-                val datas = response.body()
-                if (datas != null && datas.status == 200) {
+                if (response.isSuccessful) {
+                    val datas = response.body()!!
                     searchedRecipeDatas = getRecipeDatasFromResponseBody(datas.recipes.content)
                     hasNext = datas.hasNext
                     putDataForRecyclerview()
+                }
+                else {
+                    Log.d("data_size", call.request().toString())
+                    Log.d("data_size", response.errorBody()!!.string())
+                    putToastMessage("에러 발생! 관리자에게 문의해주세요.")
                 }
             }
 
@@ -244,13 +201,20 @@ class HomeFragment : Fragment() {
 
     private fun getNewRecipeDatas() {
         currentPage = 0
-        recipeAPI.getRecipes(accessToken, currentPage, pageSize, cookable).enqueue(object :
+        recipeAPI.getRecipes(currentPage, pageSize, sort, cookable).enqueue(object :
             Callback<RecipeResponse> {
             override fun onResponse(call: Call<RecipeResponse>, response: Response<RecipeResponse>) {
-                val datas = response.body()
-                if (datas != null && datas.status == 200) {
+                if (response.isSuccessful) {
+                    Log.d("data_size", call.request().toString())
+
+                    val datas = response.body()!!
                     searchedRecipeDatas = getRecipeDatasFromResponseBody(datas.recipes.content)
                     putNewDataForRecyclerview()
+                }
+                else {
+                    Log.d("data_size", call.request().toString())
+                    Log.d("data_size", response.errorBody()!!.string())
+                    putToastMessage("에러 발생! 관리자에게 문의해주세요.")
                 }
             }
 
@@ -260,14 +224,14 @@ class HomeFragment : Fragment() {
         })
     }
 
-    private fun getRecipeDatasFromResponseBody(datas: List<RecipeContent>): MutableList<RecipeData> {
-        val recipeDatas = mutableListOf<RecipeData>()
+    private fun getRecipeDatasFromResponseBody(datas: List<RecipeContent>): MutableList<SearchedRecipeData> {
+        val recipeDatas = mutableListOf<SearchedRecipeData>()
 
         for (item in datas) {
-            val recipeData = RecipeData(
+            val recipeData = SearchedRecipeData(
                 item.recipeId, item.title, item.description,
                 item.mainImage, item.likeCount, item.isLiked, item.isCookable,
-                item.user, item.createdAt.substring(0, 10), item.ingredients, item.additionalIngredients)
+                item.user, item.createdAt.substring(0, 10))
             recipeDatas.add(recipeData)
         }
 
@@ -293,8 +257,8 @@ class HomeFragment : Fragment() {
         recyclerViewAdapter.notifyDataSetChanged()
     }
 
-    private fun getUserData(accessToken: String, userId: Int) {
-        accountAPI.getUserInfo(accessToken, userId).enqueue(object: Callback<UserResponse>{
+    private fun getUserData(userId: Int) {
+        accountAPI.getUserInfo(userId).enqueue(object: Callback<UserResponse>{
             override fun onResponse(call: Call<UserResponse>, response: Response<UserResponse>) {
                 if (response.isSuccessful) {
                     val nickname = response.body()!!.user.nickname
@@ -317,10 +281,6 @@ class HomeFragment : Fragment() {
     private fun startMyPageActivity(nickname: String, profileImage: String?) {
         val nextIntent = Intent(activity, MypageActivity::class.java)
         nextIntent.putExtra("user_name", nickname)
-        nextIntent.putExtra("access_token", accessToken)
-        nextIntent.putExtra("refresh_token", refreshToken)
-        nextIntent.putExtra("user_id", userId)
-        nextIntent.putExtra("authority", authority)
         nextIntent.putExtra("profile_image", profileImage)
         nextIntent.flags = FLAG_ACTIVITY_CLEAR_TOP
         startActivity(nextIntent)

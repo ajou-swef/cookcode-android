@@ -8,24 +8,12 @@ import com.swef.cookcode.databinding.ActivitySearchBinding
 
 class SearchActivity : AppCompatActivity() {
 
-    companion object {
-        const val ERR_USER_CODE = -1
-    }
-
-    private lateinit var accessToken : String
-    private lateinit var refreshToken : String
-    private var userId = ERR_USER_CODE
-
     private lateinit var binding: ActivitySearchBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySearchBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        accessToken = intent.getStringExtra("access_token")!!
-        refreshToken = intent.getStringExtra("refresh_token")!!
-        userId = intent.getIntExtra("user_id", ERR_USER_CODE)
 
         binding.beforeArrow.setOnClickListener {
             finish()
@@ -43,9 +31,6 @@ class SearchActivity : AppCompatActivity() {
             else {
                 val intent = Intent(this, SearchResultActivity::class.java)
                 intent.putExtra("keyword", binding.editSearchKeyword.text.toString())
-                intent.putExtra("access_token", accessToken)
-                intent.putExtra("refresh_token", refreshToken)
-                intent.putExtra("user_id", userId)
                 startActivity(intent)
             }
         }

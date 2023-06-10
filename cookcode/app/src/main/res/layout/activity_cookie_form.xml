@@ -16,6 +16,19 @@
         app:layout_constraintTop_toTopOf="parent"/>
 
     <TextView
+        android:id="@+id/title_text"
+        android:text="@string/new_cookie"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="@color/black"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/before_arrow"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <TextView
         android:id="@+id/cookie_upload"
         android:text="@string/upload"
         android:textStyle="bold"
@@ -55,7 +68,6 @@
                 android:id="@+id/cookie_preview"
                 android:text="@string/preview"
                 android:textColor="@color/black"
-                android:textStyle="bold"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
@@ -84,11 +96,20 @@
                 app:layout_constraintTop_toTopOf="@+id/combined_video"
                 app:layout_constraintBottom_toBottomOf="@+id/combined_video"/>
 
+            <ProgressBar
+                android:id="@+id/progress_bar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                app:layout_constraintStart_toStartOf="@+id/combined_video"
+                app:layout_constraintEnd_toEndOf="@+id/combined_video"
+                app:layout_constraintTop_toTopOf="@+id/combined_video"
+                app:layout_constraintBottom_toBottomOf="@+id/combined_video"/>
+
             <TextView
                 android:id="@+id/cookie_name"
                 android:text="@string/cookie_name"
                 android:textColor="@color/black"
-                android:textStyle="bold"
                 android:layout_margin="20dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -111,7 +132,6 @@
                 android:id="@+id/description"
                 android:text="@string/description"
                 android:textColor="@color/black"
-                android:textStyle="bold"
                 android:layout_margin="20dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

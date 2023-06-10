@@ -59,6 +59,8 @@ class StepPreviewRecyclerviewAdapter(
                 adapter = stepMediaRecyclerviewAdapter
                 orientation = ViewPager2.ORIENTATION_HORIZONTAL
             }
+
+            binding.dotsIndicator.setViewPager2(binding.mediaViewpager)
         }
     }
 

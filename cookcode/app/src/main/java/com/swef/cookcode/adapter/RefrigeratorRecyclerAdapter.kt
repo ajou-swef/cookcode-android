@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.swef.cookcode.data.GlobalVariables.SPAN_COUNT
 import com.swef.cookcode.data.MyIngredientData
 import com.swef.cookcode.data.RefrigeratorData
 import com.swef.cookcode.data.host.ToggleAnimationHost
@@ -45,9 +46,9 @@ class RefrigeratorRecyclerAdapter(
 
             binding.recyclerView.adapter = ingredientRecyclerviewAdapters[position]
 
-            val spanCount = 3
             binding.recyclerView.layoutManager = GridLayoutManager(
-                binding.recyclerView.context, spanCount)
+                binding.recyclerView.context, SPAN_COUNT
+            )
 
             ingredientRecyclerviewAdapters[position].filteredDatas =
                 ingredDatas.filter { it.ingredientData.type == item.typeEn } as MutableList<MyIngredientData>

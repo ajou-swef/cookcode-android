@@ -39,7 +39,6 @@
         android:text="@string/email"
         android:textAlignment="center"
         android:textSize="15sp"
-        android:textStyle="bold"
         android:textColor="@color/black"
         android:focusable="true"
         android:focusableInTouchMode="true"
@@ -53,13 +52,80 @@
         android:ems="18"
         android:hint="@string/hint_email"
         android:textSize="14sp"
-        android:textStyle="bold"
         android:inputType="textEmailAddress"
         android:background="@drawable/round_component"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.502"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/email_text"/>
+
+    <TextView
+        android:id="@+id/email_test"
+        android:layout_width="70dp"
+        android:layout_height="48dp"
+        android:text="@string/btn_valid_test"
+        android:textAlignment="center"
+        android:gravity="center"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:textColor="@color/gray_80"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        app:layout_constraintEnd_toEndOf="@+id/edit_id"
+        app:layout_constraintTop_toBottomOf="@+id/email_text"/>
+
+    <TextView
+        android:id="@+id/time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="03:00"
+        android:textColor="@color/main_theme"
+        android:visibility="gone"
+        android:layout_marginStart="10dp"
+        app:layout_constraintBottom_toTopOf="@+id/edit_email_valid"
+        app:layout_constraintStart_toEndOf="@id/email_valid_text"/>
+
+    <TextView
+        android:id="@+id/email_valid_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="@string/email_valid_test"
+        android:textAlignment="center"
+        android:textSize="15sp"
+        android:textColor="@color/black"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        app:layout_constraintStart_toStartOf="@+id/edit_id"
+        app:layout_constraintTop_toBottomOf="@+id/edit_id" />
+
+    <EditText
+        android:id="@+id/edit_email_valid"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:ems="18"
+        android:textSize="14sp"
+        android:inputType="number"
+        android:background="@drawable/round_component"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.502"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/email_valid_text"/>
+
+    <TextView
+        android:id="@+id/email_test_valid"
+        android:layout_width="70dp"
+        android:layout_height="48dp"
+        android:text="@string/confirm"
+        android:textAlignment="center"
+        android:gravity="center"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:textColor="@color/gray_80"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        app:layout_constraintEnd_toEndOf="@+id/edit_email_valid"
+        app:layout_constraintTop_toBottomOf="@+id/email_valid_text"/>
 
     <TextView
         android:id="@+id/nickname_text"
@@ -69,12 +135,11 @@
         android:text="@string/nickname"
         android:textAlignment="center"
         android:textSize="15sp"
-        android:textStyle="bold"
         android:textColor="@color/black"
         android:focusable="true"
         android:focusableInTouchMode="true"
-        app:layout_constraintStart_toStartOf="@+id/edit_nickname"
-        app:layout_constraintTop_toBottomOf="@+id/edit_id" />
+        app:layout_constraintStart_toStartOf="@+id/edit_email_valid"
+        app:layout_constraintTop_toBottomOf="@+id/edit_email_valid" />
 
     <TextView
         android:id="@+id/dup_nick_text"
@@ -89,7 +154,7 @@
         android:focusableInTouchMode="true"
         android:visibility="invisible"
         app:layout_constraintEnd_toEndOf="@+id/edit_id"
-        app:layout_constraintTop_toBottomOf="@+id/edit_id" />
+        app:layout_constraintTop_toBottomOf="@+id/edit_email_valid" />
 
     <EditText
         android:id="@+id/edit_nickname"
@@ -98,7 +163,6 @@
         android:ems="18"
         android:hint="@string/hint_nickname"
         android:textSize="14sp"
-        android:textStyle="bold"
         android:inputType="textPersonName"
         android:maxLines="1"
         android:ellipsize="none"
@@ -142,14 +206,11 @@
         android:text="@string/pw"
         android:textAlignment="center"
         android:textSize="15sp"
-        android:textStyle="bold"
         android:textColor="@color/black"
         android:focusable="true"
         android:focusableInTouchMode="true"
         app:layout_constraintStart_toStartOf="@+id/edit_pw"
         app:layout_constraintTop_toBottomOf="@+id/edit_nickname" />
-
-
 
     <EditText
         android:id="@+id/edit_pw"
@@ -158,7 +219,6 @@
         android:ems="18"
         android:hint="@string/hint_pw"
         android:textSize="14sp"
-        android:textStyle="bold"
         android:inputType="textPassword"
         android:background="@drawable/round_component"
         app:layout_constraintEnd_toEndOf="parent"
@@ -185,7 +245,6 @@
         android:text="@string/pw_valid"
         android:textAlignment="center"
         android:textSize="15sp"
-        android:textStyle="bold"
         android:textColor="@color/black"
         android:focusable="true"
         android:focusableInTouchMode="true"
@@ -199,7 +258,6 @@
         android:ems="18"
         android:hint="@string/pw_valid"
         android:textSize="14sp"
-        android:textStyle="bold"
         android:inputType="textPassword"
         android:background="@drawable/round_component"
         android:focusable="true"

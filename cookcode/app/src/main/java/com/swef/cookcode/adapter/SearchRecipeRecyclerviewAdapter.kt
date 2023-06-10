@@ -10,7 +10,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.swef.cookcode.R
 import com.swef.cookcode.RecipeActivity
-import com.swef.cookcode.data.RecipeData
+import com.swef.cookcode.UserPageActivity
+import com.swef.cookcode.data.SearchedRecipeData
 import com.swef.cookcode.databinding.SearchRecipeRecyclerviewItemBinding
 
 class SearchRecipeRecyclerviewAdapter(
@@ -18,13 +19,8 @@ class SearchRecipeRecyclerviewAdapter(
 ): RecyclerView.Adapter<SearchRecipeRecyclerviewAdapter.ViewHolder>() {
     private lateinit var binding: SearchRecipeRecyclerviewItemBinding
 
-    private val ERR_USER_CODE = -1
+    var datas = mutableListOf<SearchedRecipeData>()
 
-    var datas = mutableListOf<RecipeData>()
-    var userId = ERR_USER_CODE
-
-    lateinit var accessToken: String
-    lateinit var refreshToken: String
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
@@ -47,7 +43,7 @@ class SearchRecipeRecyclerviewAdapter(
     inner class ViewHolder(
         private val binding: SearchRecipeRecyclerviewItemBinding
     ): RecyclerView.ViewHolder(binding.root) {
-        fun bind(item: RecipeData){
+        fun bind(item: SearchedRecipeData){
             binding.recipeName.text = context.getString(
                 R.string.string_shadow_convert, item.title)
             binding.likeNumber.text = item.likes.toString()
@@ -69,9 +65,6 @@ class SearchRecipeRecyclerviewAdapter(
             binding.layout.setOnClickListener {
                 val intent = Intent(binding.layout.context, RecipeActivity::class.java)
                 intent.putExtra("recipe_id", item.recipeId)
-                intent.putExtra("user_id", userId)
-                intent.putExtra("access_token", accessToken)
-                intent.putExtra("refresh_token", refreshToken)
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 binding.layout.context.startActivity(intent)
             }
@@ -82,7 +75,21 @@ class SearchRecipeRecyclerviewAdapter(
             else {
                 binding.likeMark.setBackgroundResource(R.drawable.icon_unliked)
             }
+
+            binding.madeUser.setOnClickListener {
+                startUserPageActivity(item.madeUser.userId)
+            }
+            binding.userProfileImage.setOnClickListener {
+                startUserPageActivity(item.madeUser.userId)
+            }
         }
+    }
+
+    private fun startUserPageActivity(madeUserId: Int) {
+        val nextIntent = Intent(context, UserPageActivity::class.java)
+        nextIntent.putExtra("user_id", madeUserId)
+        nextIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        context.startActivity(nextIntent)
     }
 
     private fun getImageFromUrl(imageUrl: String, view: ImageView) {

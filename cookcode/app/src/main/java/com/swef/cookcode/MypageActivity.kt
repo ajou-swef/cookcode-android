@@ -15,7 +15,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.PopupMenu
 import com.bumptech.glide.Glide
-import com.swef.cookcode.api.AccountAPI
+import com.swef.cookcode.data.GlobalVariables.accountAPI
+import com.swef.cookcode.data.GlobalVariables.authority
 import com.swef.cookcode.data.response.ProfileImageResponse
 import com.swef.cookcode.data.response.StatusResponse
 import com.swef.cookcode.databinding.ActivityMypageBinding
@@ -31,16 +32,9 @@ import java.io.InputStream
 import java.io.OutputStream
 
 class MypageActivity : AppCompatActivity() {
-    private val ERR_USER_CODE = -1
 
     private lateinit var binding: ActivityMypageBinding
 
-    private val API = AccountAPI.create()
-
-    private lateinit var accessToken: String
-    private lateinit var refreshToken: String
-    private var userId = ERR_USER_CODE
-    private lateinit var authority: String
     private var profileImage : String? = null
 
     private lateinit var galleryLauncher: ActivityResultLauncher<Intent>
@@ -51,17 +45,12 @@ class MypageActivity : AppCompatActivity() {
         binding = ActivityMypageBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        accessToken = intent.getStringExtra("access_token")!!
-        refreshToken = intent.getStringExtra("refresh_token")!!
-        userId = intent.getIntExtra("user_id", ERR_USER_CODE)
-        authority = intent.getStringExtra("authority")!!
         profileImage = intent.getStringExtra("profile_image")
-
-        initGalleryLauncher()
-
         if (profileImage != null) {
             getImageFromUrl(profileImage!!, binding.profileImage)
         }
+
+        initGalleryLauncher()
 
         val userName = intent.getStringExtra("user_name")
         binding.userName.text = userName
@@ -82,6 +71,10 @@ class MypageActivity : AppCompatActivity() {
 
         binding.profileImage.setOnClickListener {
             showPopupMenuForProfile()
+        }
+
+        binding.modifyPw.setOnClickListener {
+            startPasswordModifyActivity()
         }
 
         // 로그아웃
@@ -105,7 +98,6 @@ class MypageActivity : AppCompatActivity() {
             when (menuItem.itemId) {
                 R.id.update_image -> {
                     galleryLauncher.launch(galleryIntent)
-                    putToastMessage("변경이 완료되었습니다.")
                     true
                 }
                 R.id.delete_image -> {
@@ -135,6 +127,7 @@ class MypageActivity : AppCompatActivity() {
                     }
 
                     patchProfileImage(imageFile, oldImageFile)
+                    putToastMessage("변경이 완료되었습니다.")
                 }
             }
         }
@@ -146,7 +139,7 @@ class MypageActivity : AppCompatActivity() {
         formData.add(profileImage ?: makeNullMultipartBody("profileImage"))
         formData.add(oldProfileImage ?: makeNullMultipartBody("oldProfileImage"))
 
-        API.patchProfileImage(accessToken, formData).enqueue(object : Callback<ProfileImageResponse> {
+        accountAPI.patchProfileImage(formData).enqueue(object : Callback<ProfileImageResponse> {
             override fun onResponse(
                 call: Call<ProfileImageResponse>,
                 response: Response<ProfileImageResponse>
@@ -210,20 +203,18 @@ class MypageActivity : AppCompatActivity() {
 
     private fun startMyContentActivity() {
         val nextIntent = Intent(this, UserPageActivity::class.java)
-        nextIntent.putExtra("access_token", accessToken)
-        nextIntent.putExtra("refresh_token", refreshToken)
-        nextIntent.putExtra("my_user_id", userId)
-        nextIntent.putExtra("user_id", userId)
         nextIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         startActivity(nextIntent)
     }
 
     private fun startMySubscriberActivity() {
         val nextIntent = Intent(this, SubscriberActivity::class.java)
-        nextIntent.putExtra("access_token", accessToken)
-        nextIntent.putExtra("refresh_token", refreshToken)
-        nextIntent.putExtra("my_user_id", userId)
-        nextIntent.putExtra("user_id", userId)
+        nextIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        startActivity(nextIntent)
+    }
+
+    private fun startPasswordModifyActivity() {
+        val nextIntent = Intent(this, PasswordModifyActivity::class.java)
         nextIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         startActivity(nextIntent)
     }
@@ -246,30 +237,33 @@ class MypageActivity : AppCompatActivity() {
             .setPositiveButton("확인"
             ) { _, _ ->
                 val intent = Intent(this, MainActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
 
-                API.patchAccount(accessToken).enqueue(object: Callback<StatusResponse>{
-                    override fun onResponse(
-                        call: Call<StatusResponse>,
-                        response: Response<StatusResponse>
-                    ) {
-                        if (response.isSuccessful){
-                            putToastMessage(toastMessage)
-                            startActivity(intent)
+                if (type == "logout") {
+                    startActivity(intent)
+                }
+                else {
+                    accountAPI.patchAccount().enqueue(object : Callback<StatusResponse> {
+                        override fun onResponse(
+                            call: Call<StatusResponse>,
+                            response: Response<StatusResponse>
+                        ) {
+                            if (response.isSuccessful) {
+                                putToastMessage(toastMessage)
+                                startActivity(intent)
+                            } else {
+                                putToastMessage("에러 발생! 관리자에게 문의해주세요.")
+                                Log.d("data_size", response.errorBody()!!.string())
+                            }
                         }
-                        else {
-                            putToastMessage("에러 발생! 관리자에게 문의해주세요.")
-                            Log.d("data_size", response.errorBody()!!.string())
+
+                        override fun onFailure(call: Call<StatusResponse>, t: Throwable) {
+                            putToastMessage("잠시 후 다시 시도해주세요.")
+                            Log.d("data_size", call.request().toString())
+                            Log.d("data_size", t.message.toString())
                         }
-                    }
-
-                    override fun onFailure(call: Call<StatusResponse>, t: Throwable) {
-                        putToastMessage("잠시 후 다시 시도해주세요.")
-                        Log.d("data_size", call.request().toString())
-                        Log.d("data_size", t.message.toString())
-                    }
-
-                })
-
+                    })
+                }
             }
             .setNegativeButton("취소") { _, _ -> }
             .create()

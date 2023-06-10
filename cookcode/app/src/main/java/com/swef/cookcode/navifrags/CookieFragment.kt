@@ -10,8 +10,8 @@ import android.widget.Toast
 import androidx.viewpager2.widget.ViewPager2
 import com.swef.cookcode.R
 import com.swef.cookcode.adapter.CookieViewpagerAdapter
-import com.swef.cookcode.api.CookieAPI
 import com.swef.cookcode.data.CookieData
+import com.swef.cookcode.data.GlobalVariables.cookieAPI
 import com.swef.cookcode.data.response.CookieContent
 import com.swef.cookcode.data.response.CookieResponse
 import com.swef.cookcode.databinding.FragmentCookieBinding
@@ -27,16 +27,7 @@ class CookieFragment : Fragment(), CookieDeleteListener {
 
     private lateinit var cookieViewpagerAdapter: CookieViewpagerAdapter
 
-    private val USER_ERR_CODE = -1
-
-    private lateinit var accessToken: String
-    private lateinit var refreshToken: String
-    private var userId = USER_ERR_CODE
-
-    private val API = CookieAPI.create()
     private var page = 0
-
-    private val bundle = Bundle()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -44,23 +35,11 @@ class CookieFragment : Fragment(), CookieDeleteListener {
     ): View {
         _binding = FragmentCookieBinding.inflate(inflater, container, false)
 
-        accessToken = arguments?.getString("access_token")!!
-        refreshToken = arguments?.getString("refresh_token")!!
-        userId = arguments?.getInt("user_id")!!
-
         cookieViewpagerAdapter = CookieViewpagerAdapter(requireContext(), this)
         binding.viewPager.apply {
             adapter = cookieViewpagerAdapter
             orientation = ViewPager2.ORIENTATION_VERTICAL
         }
-
-        cookieViewpagerAdapter.userId = userId
-        cookieViewpagerAdapter.accessToken = accessToken
-        cookieViewpagerAdapter.refreshToken = refreshToken
-
-        bundle.putString("access_token", accessToken)
-        bundle.putString("refresh_token", refreshToken)
-        bundle.putInt("user_id", userId)
 
         getRandomCookies()
         initOnScrollListener()
@@ -69,13 +48,12 @@ class CookieFragment : Fragment(), CookieDeleteListener {
     }
 
     private fun getRandomCookies() {
-        API.getCookies(accessToken, page).enqueue(object: Callback<CookieResponse>{
+        cookieAPI.getCookies(page).enqueue(object: Callback<CookieResponse>{
             override fun onResponse(
                 call: Call<CookieResponse>,
                 response: Response<CookieResponse>
             ) {
                 if(response.isSuccessful){
-                    Log.d("data_size", response.body().toString())
                     if(cookieViewpagerAdapter.datas.isEmpty()) {
                         cookieViewpagerAdapter.datas = getCookieDatasFromResponseData(response.body()!!.data) as MutableList<CookieData>
                         cookieViewpagerAdapter.notifyDataSetChanged()
@@ -144,10 +122,8 @@ class CookieFragment : Fragment(), CookieDeleteListener {
     }
 
     override fun itemDeleted() {
-        val cookieFragment = CookieFragment()
-        cookieFragment.arguments = bundle
         parentFragmentManager.beginTransaction()
-            .replace(R.id.fl_container, cookieFragment)
+            .replace(R.id.fl_container, CookieFragment())
             .commit()
     }
 

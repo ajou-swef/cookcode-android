@@ -33,7 +33,7 @@ data class CookieContent(
     @SerializedName("cookieId") val cookieId: Int,
     @SerializedName("createdAt") val createdAt: String,
     @SerializedName("user") val madeUser: MadeUser,
-    @SerializedName("isLiked") val isLiked: Int,
+    @SerializedName("isLiked") val isLiked: Boolean,
     @SerializedName("likeCount") val likeCount: Int,
     @SerializedName("commentCount") val commentCount: Int
 )
