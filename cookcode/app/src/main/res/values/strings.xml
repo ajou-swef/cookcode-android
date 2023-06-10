@@ -110,4 +110,6 @@
     <string name="temp_pw">임시 비밀번호 발급</string>
     <string name="email_valid_test">인증번호</string>
     <string name="btn_valid_test">인증하기</string>
+    <string name="admin_page">관리자 전용 페이지</string>
+    <string name="manage_influencer_request">인플루언서 요청 관리</string>
 </resources>
