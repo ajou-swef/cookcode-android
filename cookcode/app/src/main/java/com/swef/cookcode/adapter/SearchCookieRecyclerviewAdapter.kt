@@ -5,6 +5,7 @@ import android.content.Intent
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageView
+import androidx.activity.result.ActivityResultLauncher
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.swef.cookcode.CookieActivity
@@ -13,7 +14,8 @@ import com.swef.cookcode.data.SearchCookieData
 import com.swef.cookcode.databinding.CookieThumbnailItemBinding
 
 class SearchCookieRecyclerviewAdapter(
-    private val context: Context
+    private val context: Context,
+    private val activityResultLauncher: ActivityResultLauncher<Intent>
 ): RecyclerView.Adapter<SearchCookieRecyclerviewAdapter.ViewHolder>() {
 
     private lateinit var binding: CookieThumbnailItemBinding
@@ -58,9 +60,9 @@ class SearchCookieRecyclerviewAdapter(
         private fun startCookieActivity(cookieId: Int, madeUserId: Int) {
             val intent = Intent(context, CookieActivity::class.java)
             intent.putExtra("cookie_id", cookieId)
-            intent.putExtra("made_user_id", madeUserId)
+            intent.putExtra("user_id", madeUserId)
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            context.startActivity(intent)
+            activityResultLauncher.launch(intent)
         }
     }
 

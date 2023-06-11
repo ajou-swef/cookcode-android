@@ -12,7 +12,6 @@ import com.bumptech.glide.Glide
 import com.swef.cookcode.R
 import com.swef.cookcode.UserPageActivity
 import com.swef.cookcode.data.GlobalVariables.accountAPI
-import com.swef.cookcode.data.GlobalVariables.userId
 import com.swef.cookcode.data.UserData
 import com.swef.cookcode.data.response.StatusResponse
 import com.swef.cookcode.databinding.SearchUserRecyclerviewItemBinding
@@ -58,20 +57,20 @@ class SearchUserRecyclerviewAdapter(
 
             binding.btnSubscribe.setOnClickListener {
                 if (item.subscribed) {
-                    postSubscribe()
+                    postSubscribe(item.userId)
                     item.subscribed = false
                     changeButtonSubscribed(false)
                 }
                 else {
-                    postSubscribe()
+                    postSubscribe(item.userId)
                     item.subscribed = true
                     changeButtonSubscribed(true)
                 }
             }
         }
 
-        private fun postSubscribe() {
-            accountAPI.postUserSubscribe(userId).enqueue(object :
+        private fun postSubscribe(madeUserId: Int) {
+            accountAPI.postUserSubscribe(madeUserId).enqueue(object :
                 Callback<StatusResponse> {
                 override fun onResponse(
                     call: Call<StatusResponse>,

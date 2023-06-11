@@ -33,8 +33,12 @@ class SearchRecipeFragment : Fragment() {
     private var cookable = 0
     private var sort = "createdAt"
     private var createdMonth = 5
-    private val pageSize = 10
+    private val pageSize = 5
     private var page = 0
+
+    private var hasNext = false
+    private var isScrollingUp = false
+    private var isScrollingDown = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -65,8 +69,7 @@ class SearchRecipeFragment : Fragment() {
             }
         }
 
-
-        initOnScrollListener(linearLayoutManager)
+        initOnScrollListener()
         getSearchedRecipeDatas()
 
         return binding.root
@@ -116,6 +119,7 @@ class SearchRecipeFragment : Fragment() {
                 if (response.isSuccessful){
                     val data = response.body()!!.recipes.content
                     val recipeDatas = getRecipeDatasFromResponseBody(data)
+                    hasNext = response.body()!!.recipes.hasNext
 
                     if (recyclerViewAdapter.datas.isEmpty()) {
                         recyclerViewAdapter.datas = recipeDatas
@@ -155,6 +159,7 @@ class SearchRecipeFragment : Fragment() {
                 if (response.isSuccessful){
                     val data = response.body()!!.recipes.content
                     val recipeDatas = getRecipeDatasFromResponseBody(data)
+                    hasNext = response.body()!!.recipes.hasNext
 
                     recyclerViewAdapter.datas = recipeDatas
                     recyclerViewAdapter.notifyDataSetChanged()
@@ -188,25 +193,34 @@ class SearchRecipeFragment : Fragment() {
         return recipeDatas
     }
 
-    private fun initOnScrollListener(linearLayoutManager: LinearLayoutManager) {
+    private fun initOnScrollListener() {
         binding.recyclerView.addOnScrollListener(object: RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    // 스크롤 상태가 변경되지 않은 경우 (정지 상태)
+                    isScrollingUp = false
+                    isScrollingDown = false
+                }
+            }
+
             override fun onScrolled(recyclerView: RecyclerView, differentX: Int, differentY: Int) {
                 super.onScrolled(recyclerView, differentX, differentY)
+                isScrollingUp = differentY > 0
+                isScrollingDown = differentY < 0
 
-                if(differentY > 0) {
-                    val visibleItemCount = linearLayoutManager.childCount
-                    val totalItemCount = linearLayoutManager.itemCount
-                    val pastVisibleItems = linearLayoutManager.findFirstVisibleItemPosition()
-
-                    if (visibleItemCount + pastVisibleItems >= totalItemCount) {
+                if (isScrollingUp) {
+                    if (!recyclerView.canScrollVertically(1) && hasNext) {
                         page++
                         getSearchedRecipeDatas()
+                        Log.d("data_size", recyclerViewAdapter.datas.toString())
                     }
                 }
-
-                if(!recyclerView.canScrollVertically(-1)){
-                    putToastMessage("데이터를 불러오는 중입니다.")
-                    getNewSearchedRecipeDatas()
+                else if (isScrollingDown) {
+                    if (!recyclerView.canScrollVertically(-1)) {
+                        putToastMessage("데이터를 불러오는 중입니다.")
+                        getNewSearchedRecipeDatas()
+                    }
                 }
             }
         })

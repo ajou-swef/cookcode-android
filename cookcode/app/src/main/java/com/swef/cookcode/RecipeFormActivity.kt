@@ -28,6 +28,7 @@ import com.swef.cookcode.adapter.IngredientRecyclerviewAdapter
 import com.swef.cookcode.adapter.StepRecyclerviewAdapter
 import com.swef.cookcode.data.GlobalVariables.ERR_CODE
 import com.swef.cookcode.data.GlobalVariables.SPAN_COUNT
+import com.swef.cookcode.data.GlobalVariables.authority
 import com.swef.cookcode.data.GlobalVariables.recipeAPI
 import com.swef.cookcode.data.MyIngredientData
 import com.swef.cookcode.data.RecipeAndStepData
@@ -84,6 +85,7 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
     private var thumbnailUploaded = false
     private var stepExist = false
 
+    private var visibility = "normal"
 
     // 미리보기 단계에서 해당 스텝 수정을 위한 스텝 단계 정보 불러오기
     private val getResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -103,6 +105,21 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
         setContentView(binding.root)
 
         val recipeId = intent.getIntExtra("recipe_id", ERR_CODE)
+
+        if (authority == "USER") {
+            binding.menuInfluencer.visibility = View.GONE
+        }
+
+        binding.btnNormal.setOnClickListener {
+            visibility = "normal"
+            binding.btnNormal.setBackgroundResource(R.drawable.filled_fullround_component_clicked)
+            binding.btnPremium.setBackgroundResource(R.drawable.filled_fullround_component_gray)
+        }
+        binding.btnPremium.setOnClickListener {
+            visibility = "premium"
+            binding.btnNormal.setBackgroundResource(R.drawable.filled_fullround_component_gray)
+            binding.btnPremium.setBackgroundResource(R.drawable.filled_fullround_component_clicked)
+        }
 
         // 사진을 불러오기 위한 권한 요청
         val permission = Manifest.permission.READ_EXTERNAL_STORAGE
@@ -271,6 +288,8 @@ class RecipeFormActivity : AppCompatActivity(), StepOnClickListener {
                 if (recipeId != ERR_CODE) {
                     intent.putExtra("recipe_id", recipeId)
                 }
+
+                intent.putExtra("visibility", visibility)
 
                 // 미리보기 종료 시 home activity를 제외한 액티비티는 모두 종료
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)

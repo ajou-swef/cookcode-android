@@ -62,6 +62,8 @@ class CookieFragment : Fragment(), CookieDeleteListener {
                         val beforeSize = cookieViewpagerAdapter.itemCount
                         cookieViewpagerAdapter.datas.addAll(getCookieDatasFromResponseData(response.body()!!.data))
                         cookieViewpagerAdapter.notifyItemRangeInserted(beforeSize, cookieViewpagerAdapter.itemCount)
+
+                        Log.d("data_size", "itemCount : ${cookieViewpagerAdapter.itemCount}")
                     }
                 }
                 else {
@@ -108,7 +110,8 @@ class CookieFragment : Fragment(), CookieDeleteListener {
     private fun initOnScrollListener() {
         binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
-                if (position == cookieViewpagerAdapter.datas.size - 1) {
+                if (position == cookieViewpagerAdapter.datas.size - 2) {
+                    Log.d("data_size", "position : $position")
                     page++
                     getRandomCookies()
                 }

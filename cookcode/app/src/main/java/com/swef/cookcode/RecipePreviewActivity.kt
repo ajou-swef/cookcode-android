@@ -28,6 +28,8 @@ class RecipePreviewActivity : AppCompatActivity() {
         binding = ActivityRecipePreviewBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        val visibility = intent.getStringExtra("visibility")!!
+
         // 레시피 정보 불러오기
         val title = intent.getStringExtra("recipe_title")!!
         val description = intent.getStringExtra("recipe_description")!!

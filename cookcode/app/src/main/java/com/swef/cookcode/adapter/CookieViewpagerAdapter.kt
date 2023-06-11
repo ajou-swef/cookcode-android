@@ -8,6 +8,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.MediaController
 import android.widget.Toast
@@ -15,6 +16,7 @@ import android.widget.VideoView
 import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.swef.cookcode.CookieModifyActivity
 import com.swef.cookcode.LinearLayoutManagerWrapper
@@ -23,6 +25,7 @@ import com.swef.cookcode.UserPageActivity
 import com.swef.cookcode.data.CommentData
 import com.swef.cookcode.data.CookieData
 import com.swef.cookcode.data.GlobalVariables.cookieAPI
+import com.swef.cookcode.data.GlobalVariables.userId
 import com.swef.cookcode.data.response.Comment
 import com.swef.cookcode.data.response.CommentResponse
 import com.swef.cookcode.data.response.StatusResponse
@@ -107,8 +110,20 @@ class CookieViewpagerAdapter(
             }
 
             binding.createdAt.text = item.createdAt.substring(0 until 10)
-            binding.madeUser.text = item.madeUser.nickname
+            binding.madeUser.text = context.getString(
+                R.string.string_shadow_convert, item.madeUser.nickname)
             binding.madeUserInBottomSheet.text = item.madeUser.nickname
+
+            if (item.madeUser.profileImageUri != null) {
+                getImageFromUrl(item.madeUser.profileImageUri, binding.userProfile)
+            }
+            else {
+                Glide.with(context).clear(binding.userProfile)
+            }
+
+            binding.userProfile.setOnClickListener {
+                startUserPageActivity(item.madeUser.userId)
+            }
 
             binding.cookieTitle.text = context.getString(
                 R.string.string_shadow_convert, item.title)
@@ -145,6 +160,11 @@ class CookieViewpagerAdapter(
             }
             binding.cookieTitle.setOnClickListener {
                 infoBottomSheet.state = BottomSheetBehavior.STATE_EXPANDED
+            }
+
+            if (item.madeUser.userId != userId) {
+                binding.btnModify.visibility = View.GONE
+                binding.btnDelete.visibility = View.GONE
             }
 
             commentRecyclerviewAdapter = CommentRecyclerviewAdapter(context, "cookie", this)
@@ -412,7 +432,7 @@ class CookieViewpagerAdapter(
             if (response.isSuccessful && responseBody != null) {
                 val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
                 val cacheDir = context.getExternalFilesDir(Environment.DIRECTORY_MOVIES)
-                val tempFile = File.createTempFile("VIDEO_$timeStamp", ".mp4", cacheDir)
+                val tempFile = File.createTempFile("VIDEO_$timeStamp", ".mov", cacheDir)
 
                 val inputStream = responseBody.byteStream()
                 val outputStream = FileOutputStream(tempFile)
@@ -450,6 +470,12 @@ class CookieViewpagerAdapter(
             layoutParams.width = finalWidth
             layoutParams.height = finalHeight
             videoView.layoutParams = layoutParams
+        }
+
+        private fun getImageFromUrl(imageUrl: String, view: ImageView) {
+            Glide.with(context)
+                .load(imageUrl)
+                .into(view)
         }
     }
 

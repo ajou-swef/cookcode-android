@@ -9,11 +9,14 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.widget.PopupMenu
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.swef.cookcode.CookieFormActivity
 import com.swef.cookcode.MypageActivity
 import com.swef.cookcode.R
@@ -48,18 +51,25 @@ class HomeFragment : Fragment() {
 
     private var sort = "createdAt"
     private var createdMonth = 5
-    private val pageSize = 10
+    private val pageSize = 5
     private var currentPage = 0
 
     private var cookable = 0
 
     private var hasNext = false
+    private var isScrollingUp = false
+    private var isScrollingDown = false
+
+    private lateinit var nickname: String
+    private var profileImage: String? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
+
+        getUserData(userId)
 
         // 컨텐츠 추가 버튼 click listener
         binding.btnAddContents.setOnClickListener{
@@ -68,8 +78,28 @@ class HomeFragment : Fragment() {
         // recyclerview에 가려지므로 최상단으로 버튼을 올려줌
         binding.btnAddContents.bringToFront()
 
-        binding.btnSort.setOnClickListener {
-            showPopupMenuToSetSort()
+        binding.btnCreatedAt.setOnClickListener {
+            sort = "createdAt"
+            getNewRecipeDatas()
+            changeButtonBackground("createdAt")
+        }
+
+        binding.btnPopular.setOnClickListener {
+            sort = "popular"
+            getNewRecipeDatas()
+            changeButtonBackground("popular")
+        }
+
+        binding.btnSubscribed.setOnClickListener {
+            // sort = "subscribed"
+            getNewRecipeDatas()
+            changeButtonBackground("subscribed")
+        }
+
+        binding.btnMembership.setOnClickListener {
+            // sort = "membership"
+            getNewRecipeDatas()
+            changeButtonBackground("membership")
         }
 
         binding.btnCookable.setOnCheckedChangeListener { _, isChecked ->
@@ -88,7 +118,7 @@ class HomeFragment : Fragment() {
         }
 
         binding.userMark.setOnClickListener {
-            getUserData(userId)
+            startMyPageActivity(nickname, profileImage)
         }
 
         recyclerViewAdapter = SearchRecipeRecyclerviewAdapter(requireContext())
@@ -146,30 +176,49 @@ class HomeFragment : Fragment() {
         popupMenu.show()
     }
 
-    private fun showPopupMenuToSetSort() {
-        val popupMenu = PopupMenu(requireContext(), binding.btnSort)
-        popupMenu.menuInflater.inflate(R.menu.sort_popup_menu, popupMenu.menu)
-
-        // 팝업 메뉴 아이템 클릭 리스너
-        popupMenu.setOnMenuItemClickListener { menuItem ->
-            when (menuItem.itemId) {
-                R.id.createdAt -> {
-                    sort = "createdAt"
-                    getNewRecipeDatas()
-                    binding.btnSort.text = "최신순 정렬"
-                    true
-                }
-                R.id.popular -> {
-                    sort = "popular"
-                    getNewRecipeDatas()
-                    binding.btnSort.text = "인기순 정렬"
-                    true
-                }
-                else -> false
+    private fun changeButtonBackground(type: String) {
+        when (type) {
+            "createdAt" -> {
+                binding.btnCreatedAt.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
+                binding.btnCreatedAt.setBackgroundResource(R.drawable.fullround_component_no_padding)
+                binding.btnPopular.setTextColor(ContextCompat.getColor(requireContext(), R.color.gray_80))
+                binding.btnPopular.setBackgroundResource(R.drawable.fullround_component_no_padding_gray)
+                binding.btnSubscribed.setTextColor(ContextCompat.getColor(requireContext(), R.color.gray_80))
+                binding.btnSubscribed.setBackgroundResource(R.drawable.fullround_component_no_padding_gray)
+                binding.btnMembership.setTextColor(ContextCompat.getColor(requireContext(), R.color.gray_80))
+                binding.btnMembership.setBackgroundResource(R.drawable.fullround_component_no_padding_gray)
+            }
+            "popular" -> {
+                binding.btnCreatedAt.setTextColor(ContextCompat.getColor(requireContext(), R.color.gray_80))
+                binding.btnCreatedAt.setBackgroundResource(R.drawable.fullround_component_no_padding_gray)
+                binding.btnPopular.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
+                binding.btnPopular.setBackgroundResource(R.drawable.fullround_component_no_padding)
+                binding.btnSubscribed.setTextColor(ContextCompat.getColor(requireContext(), R.color.gray_80))
+                binding.btnSubscribed.setBackgroundResource(R.drawable.fullround_component_no_padding_gray)
+                binding.btnMembership.setTextColor(ContextCompat.getColor(requireContext(), R.color.gray_80))
+                binding.btnMembership.setBackgroundResource(R.drawable.fullround_component_no_padding_gray)
+            }
+            "subscribed" -> {
+                binding.btnCreatedAt.setTextColor(ContextCompat.getColor(requireContext(), R.color.gray_80))
+                binding.btnCreatedAt.setBackgroundResource(R.drawable.fullround_component_no_padding_gray)
+                binding.btnPopular.setTextColor(ContextCompat.getColor(requireContext(), R.color.gray_80))
+                binding.btnPopular.setBackgroundResource(R.drawable.fullround_component_no_padding_gray)
+                binding.btnSubscribed.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
+                binding.btnSubscribed.setBackgroundResource(R.drawable.fullround_component_no_padding)
+                binding.btnMembership.setTextColor(ContextCompat.getColor(requireContext(), R.color.gray_80))
+                binding.btnMembership.setBackgroundResource(R.drawable.fullround_component_no_padding_gray)
+            }
+            "membership" -> {
+                binding.btnCreatedAt.setTextColor(ContextCompat.getColor(requireContext(), R.color.gray_80))
+                binding.btnCreatedAt.setBackgroundResource(R.drawable.fullround_component_no_padding_gray)
+                binding.btnPopular.setTextColor(ContextCompat.getColor(requireContext(), R.color.gray_80))
+                binding.btnPopular.setBackgroundResource(R.drawable.fullround_component_no_padding_gray)
+                binding.btnSubscribed.setTextColor(ContextCompat.getColor(requireContext(), R.color.gray_80))
+                binding.btnSubscribed.setBackgroundResource(R.drawable.fullround_component_no_padding_gray)
+                binding.btnMembership.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
+                binding.btnMembership.setBackgroundResource(R.drawable.fullround_component_no_padding)
             }
         }
-
-        popupMenu.show()
     }
 
     private fun putToastMessage(message: String){
@@ -183,7 +232,7 @@ class HomeFragment : Fragment() {
                 if (response.isSuccessful) {
                     val datas = response.body()!!
                     searchedRecipeDatas = getRecipeDatasFromResponseBody(datas.recipes.content)
-                    hasNext = datas.hasNext
+                    hasNext = datas.recipes.hasNext
                     putDataForRecyclerview()
                 }
                 else {
@@ -208,6 +257,7 @@ class HomeFragment : Fragment() {
                 if (response.isSuccessful) {
                     val datas = response.body()!!
                     searchedRecipeDatas = getRecipeDatasFromResponseBody(datas.recipes.content)
+                    hasNext = datas.recipes.hasNext
                     putNewDataForRecyclerview()
                 }
                 else {
@@ -260,9 +310,11 @@ class HomeFragment : Fragment() {
         accountAPI.getUserInfo(userId).enqueue(object: Callback<UserResponse>{
             override fun onResponse(call: Call<UserResponse>, response: Response<UserResponse>) {
                 if (response.isSuccessful) {
-                    val nickname = response.body()!!.user.nickname
-                    val profileImage = response.body()!!.user.profileImage
-                    startMyPageActivity(nickname, profileImage)
+                    nickname = response.body()!!.user.nickname
+                    profileImage = response.body()!!.user.profileImage
+                    if (profileImage != null) {
+                        getImageFromUrl(profileImage!!, binding.userMark)
+                    }
                 }
                 else {
                     Log.d("data_size", response.errorBody()!!.string())
@@ -287,18 +339,37 @@ class HomeFragment : Fragment() {
 
     private fun initOnScrollListener() {
         binding.recyclerView.addOnScrollListener(object: RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    isScrollingUp = false
+                    isScrollingDown = false
+                }
+            }
+
             override fun onScrolled(recyclerView: RecyclerView, differentX: Int, differentY: Int) {
                 super.onScrolled(recyclerView, differentX, differentY)
+                isScrollingUp = differentY > 0
+                isScrollingDown = differentY < 0
 
-                if(!recyclerView.canScrollVertically(1)) {
-                    currentPage++
-                    getRecipeDatas()
+                if (isScrollingUp) {
+                    if (!recyclerView.canScrollVertically(1) && hasNext) {
+                        currentPage++
+                        getRecipeDatas()
+                    }
                 }
-                else if(!recyclerView.canScrollVertically(-1)){
-                    putToastMessage("데이터를 불러오는 중입니다.")
-                    getNewRecipeDatas()
+                else if (isScrollingDown) {
+                    if (!recyclerView.canScrollVertically(-1)) {
+                        getNewRecipeDatas()
+                    }
                 }
             }
         })
+    }
+
+    private fun getImageFromUrl(imageUrl: String, view: ImageView) {
+        Glide.with(this)
+            .load(imageUrl)
+            .into(view)
     }
 }

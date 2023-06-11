@@ -6,9 +6,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Rect
 import android.graphics.drawable.Drawable
-import android.media.MediaMetadataRetriever
 import android.net.Uri
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
 import android.util.Log
@@ -20,19 +18,20 @@ import android.widget.MediaController
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.arthenica.mobileffmpeg.Config
+import com.arthenica.mobileffmpeg.FFmpeg
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
-import com.swef.cookcode.data.VideoData
-import com.swef.cookcode.databinding.ActivityCookieFormBinding
-import com.arthenica.mobileffmpeg.FFmpeg
 import com.swef.cookcode.adapter.CookieIndividualVideoRecyclerviewAdapter
 import com.swef.cookcode.data.GlobalVariables.cookieAPI
+import com.swef.cookcode.data.VideoData
 import com.swef.cookcode.data.host.ItemTouchCallback
 import com.swef.cookcode.data.response.StatusResponse
+import com.swef.cookcode.databinding.ActivityCookieFormBinding
 import com.swef.cookcode.`interface`.ItemTouchHelperListener
 import com.swef.cookcode.`interface`.VideoOnClickListener
 import kotlinx.coroutines.CoroutineScope
@@ -47,6 +46,7 @@ import retrofit2.Callback
 import retrofit2.Response
 import java.io.File
 import java.io.FileOutputStream
+import java.io.OutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -66,7 +66,7 @@ class CookieFormActivity : AppCompatActivity(), VideoOnClickListener, ItemTouchH
 
     private lateinit var mergedVideoFile: String
     private lateinit var videoListTextFile: File
-    private lateinit var thumbnailImageFile: String
+    private lateinit var mergedThumbnail: File
 
     private lateinit var cookieIndividualVideoRecyclerviewAdapter: CookieIndividualVideoRecyclerviewAdapter
     private val itemTouchHelper by lazy { ItemTouchHelper(ItemTouchCallback(this)) }
@@ -83,8 +83,6 @@ class CookieFormActivity : AppCompatActivity(), VideoOnClickListener, ItemTouchH
         initGalleryLauncher()
         initGalleryStartIntent()
         initEditTextViewToKeyboardHide()
-
-        thumbnailImageFile = this.filesDir.absolutePath + "thumbnail.png"
 
         binding.cookieUpload.setOnClickListener{
             if (testInfoTyped()) {
@@ -163,6 +161,8 @@ class CookieFormActivity : AppCompatActivity(), VideoOnClickListener, ItemTouchH
             binding.combinedVideo.setOnPreparedListener{ mediaPlayer ->
                 mediaPlayer.start()
             }
+
+            getVideoThumbnail(mergedVideoFile)
         } else if(videoUrls.count() > 1) {
             binding.waitingUploadVideos.visibility = View.GONE
             binding.progressBar.visibility = View.VISIBLE
@@ -188,7 +188,7 @@ class CookieFormActivity : AppCompatActivity(), VideoOnClickListener, ItemTouchH
                         mediaPlayer.start()
                     }
 
-                    getVideoThumbnail(thumbnailImageFile)
+                    getVideoThumbnail(mergedVideoFile)
                 }
             }
         }
@@ -219,7 +219,7 @@ class CookieFormActivity : AppCompatActivity(), VideoOnClickListener, ItemTouchH
         }
         command.append(" -filter_complex ").append("\"")
         for (i in videoPaths.indices) {
-            command.append("[$i:v]setpts=PTS-STARTPTS,scale=720x1080,fps=24,format=yuv420p[v$i];")
+            command.append("[$i:v]setpts=PTS-STARTPTS,setdar=9/16,scale=720x1080,fps=24,format=yuv420p[v$i];")
             command.append("[$i:a]aformat=sample_fmts=fltp:sample_rates=48000:channel_layouts=stereo[a$i];")
         }
         for (i in videoPaths.indices) {
@@ -231,26 +231,40 @@ class CookieFormActivity : AppCompatActivity(), VideoOnClickListener, ItemTouchH
         return FFmpeg.execute(command.toString())
     }
 
-    private fun getVideoThumbnail(thumbnailPath: String): Boolean {
-        val file = File(mergedVideoFile)
-        if (!file.exists()) {
-            return false
+    private fun getVideoThumbnail(videoUrl: String) {
+        Glide.with(this)
+            .asBitmap()
+            .load(videoUrl)
+            .into(object: CustomTarget<Bitmap>() {
+                override fun onLoadCleared(placeholder: Drawable?) {}
+
+                override fun onResourceReady(thumbnail: Bitmap, transition: Transition<in Bitmap>?) {
+                    val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+                    val storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+
+                    if (storageDir != null) {
+                        mergedThumbnail = bitmapConvertFile(thumbnail, storageDir.absolutePath + timeStamp)
+                    }
+
+                    Log.d("data_size", mergedThumbnail.absolutePath)
+                }
+            })
+    }
+
+    private fun bitmapConvertFile(bitmap: Bitmap, filePath: String): File
+    {
+        val file = File(filePath)
+        var outputStream: OutputStream? = null
+
+        try {
+            file.createNewFile()
+            outputStream = FileOutputStream(file)
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+        } finally {
+            outputStream?.close()
         }
 
-        val retriever = MediaMetadataRetriever()
-        retriever.setDataSource(file.absolutePath)
-
-        val timeMs = 0L // 썸네일을 추출할 시간 (밀리초 단위)
-        val bitmap: Bitmap? = retriever.getFrameAtTime(timeMs, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
-        if (bitmap != null) {
-            val thumbnailFile = File(thumbnailPath)
-            val outputStream = FileOutputStream(thumbnailFile)
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
-            outputStream.close()
-            return true
-        }
-
-        return false
+        return file
     }
 
     private fun putToastMessage(message: String) {
@@ -362,9 +376,8 @@ class CookieFormActivity : AppCompatActivity(), VideoOnClickListener, ItemTouchH
         val descriptionPart =
             MultipartBody.Part.createFormData("desc", cookieDescription.toString())
 
-        val thumbnail = File(thumbnailImageFile)
         val thumbnailPart = MultipartBody.Part.createFormData(
-            "thumbnail", thumbnail.name, thumbnail.asRequestBody("image/jpg".toMediaType())
+            "thumbnail", mergedThumbnail.name, mergedThumbnail.asRequestBody("image/jpg".toMediaType())
         )
 
         parts.apply {

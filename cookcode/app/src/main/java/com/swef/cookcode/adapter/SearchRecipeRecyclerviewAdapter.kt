@@ -46,6 +46,7 @@ class SearchRecipeRecyclerviewAdapter(
         fun bind(item: SearchedRecipeData){
             binding.recipeName.text = context.getString(
                 R.string.string_shadow_convert, item.title)
+            binding.bottomTitle.text = item.title
             binding.likeNumber.text = item.likes.toString()
             binding.madeUser.text = item.madeUser.nickname
             binding.createdAtTime.text = item.createdAt
@@ -53,6 +54,9 @@ class SearchRecipeRecyclerviewAdapter(
 
             if (item.madeUser.profileImageUri != null){
                 getImageFromUrl(item.madeUser.profileImageUri, binding.userProfileImage)
+            }
+            else {
+                Glide.with(context).clear(binding.userProfileImage)
             }
 
             if (item.cookable) {

@@ -10,8 +10,8 @@ import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.swef.cookcode.adapter.SearchRecipeRecyclerviewAdapter
+import com.swef.cookcode.data.GlobalVariables.ERR_CODE
 import com.swef.cookcode.data.GlobalVariables.recipeAPI
-import com.swef.cookcode.data.GlobalVariables.userId
 import com.swef.cookcode.data.SearchedRecipeData
 import com.swef.cookcode.data.response.RecipeContent
 import com.swef.cookcode.data.response.RecipeResponse
@@ -31,11 +31,15 @@ class UserRecipeFragment : Fragment() {
     private val pageSize = 10
     private var hasNext = false
 
+    private var madeUserId = ERR_CODE
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentUserRecipeBinding.inflate(inflater, container, false)
+
+        madeUserId = arguments?.getInt("user_id")!!
 
         recyclerViewAdapter = SearchRecipeRecyclerviewAdapter(requireContext())
 
@@ -52,7 +56,7 @@ class UserRecipeFragment : Fragment() {
     }
 
     private fun getRecipeDataFromUserId() {
-        recipeAPI.getUserRecipes(userId, page).enqueue(object : Callback<RecipeResponse>{
+        recipeAPI.getUserRecipes(madeUserId, page).enqueue(object : Callback<RecipeResponse>{
             override fun onResponse(
                 call: Call<RecipeResponse>,
                 response: Response<RecipeResponse>
@@ -60,7 +64,7 @@ class UserRecipeFragment : Fragment() {
                 if (response.isSuccessful) {
                     val data = response.body()!!.recipes.content
                     val recipeDatas = getRecipeDatasFromResponseBody(data)
-                    hasNext = response.body()!!.hasNext
+                    hasNext = response.body()!!.recipes.hasNext
 
                     if (recyclerViewAdapter.datas.isEmpty()) {
                         recyclerViewAdapter.datas = recipeDatas

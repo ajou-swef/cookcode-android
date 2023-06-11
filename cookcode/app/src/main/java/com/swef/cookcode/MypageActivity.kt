@@ -17,6 +17,7 @@ import androidx.appcompat.widget.PopupMenu
 import com.bumptech.glide.Glide
 import com.swef.cookcode.data.GlobalVariables.accountAPI
 import com.swef.cookcode.data.GlobalVariables.authority
+import com.swef.cookcode.data.GlobalVariables.userId
 import com.swef.cookcode.data.response.ProfileImageResponse
 import com.swef.cookcode.data.response.StatusResponse
 import com.swef.cookcode.databinding.ActivityMypageBinding
@@ -79,6 +80,14 @@ class MypageActivity : AppCompatActivity() {
 
         binding.requestAuthority.setOnClickListener {
             showRequestAuthorityAlertDialog()
+        }
+
+        binding.myPremiumMembershipModify.setOnClickListener {
+            startMembershipCreateActivity()
+        }
+
+        binding.premiumMembershipManage.setOnClickListener {
+            startMembershipManageActivity()
         }
 
         // 로그아웃
@@ -198,15 +207,18 @@ class MypageActivity : AppCompatActivity() {
         when (authority) {
             "USER" -> {
                 binding.earningsCheck.visibility = View.GONE
+                binding.myPremiumMembershipModify.visibility = View.GONE
             }
             "INFLUENCER" -> {
                 binding.requestAuthority.visibility = View.GONE
+                binding.premiumMembershipManage.setBackgroundResource(R.drawable.half_rounded_lower_component)
             }
         }
     }
 
     private fun startMyContentActivity() {
         val nextIntent = Intent(this, UserPageActivity::class.java)
+        nextIntent.putExtra("user_id", userId)
         nextIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         startActivity(nextIntent)
     }
@@ -219,6 +231,18 @@ class MypageActivity : AppCompatActivity() {
 
     private fun startPasswordModifyActivity() {
         val nextIntent = Intent(this, PasswordModifyActivity::class.java)
+        nextIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        startActivity(nextIntent)
+    }
+
+    private fun startMembershipCreateActivity() {
+        val nextIntent = Intent(this, MyMembershipCreateActivity::class.java)
+        nextIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        startActivity(nextIntent)
+    }
+
+    private fun startMembershipManageActivity() {
+        val nextIntent = Intent(this, SignedMembershipActivity::class.java)
         nextIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         startActivity(nextIntent)
     }
