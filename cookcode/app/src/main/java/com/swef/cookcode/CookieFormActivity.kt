@@ -378,11 +378,14 @@ class CookieFormActivity : AppCompatActivity(), VideoOnClickListener, ItemTouchH
     }
 
     private fun postCookieData(parts: List<MultipartBody.Part>){
+        putToastMessage("업로드를 시작합니다.")
+        startHomeActivity()
+
         cookieAPI.postCookie(parts).enqueue(object: Callback<StatusResponse>{
             override fun onResponse(call: Call<StatusResponse>, response: Response<StatusResponse>) {
                 if (response.isSuccessful){
                     putToastMessage("쿠키가 정상적으로 업로드 되었습니다.")
-                    startHomeActivity()
+
                 }
                 else {
                     putToastMessage("에러 발생! 관리자에게 문의해주세요.")
