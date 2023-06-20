@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.swef.cookcode.R
@@ -52,6 +53,10 @@ class SearchRecipeRecyclerviewAdapter(
             binding.createdAtTime.text = item.createdAt
             getImageFromUrl(item.mainImage, binding.mainImage)
 
+            if (item.isPremium == true) {
+                binding.isPremium.visibility = View.VISIBLE
+            }
+
             if (item.madeUser.profileImageUri != null){
                 getImageFromUrl(item.madeUser.profileImageUri, binding.userProfileImage)
             }
@@ -70,7 +75,13 @@ class SearchRecipeRecyclerviewAdapter(
                 val intent = Intent(binding.layout.context, RecipeActivity::class.java)
                 intent.putExtra("recipe_id", item.recipeId)
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                binding.layout.context.startActivity(intent)
+
+                if (item.isAccessible) {
+                    binding.layout.context.startActivity(intent)
+                }
+                else {
+                    putToastMessage("프리미엄 컨텐츠는 프리미엄 멤버십을 구독해야만 볼 수 있습니다.")
+                }
             }
 
             if (item.isLiked) {
@@ -102,5 +113,9 @@ class SearchRecipeRecyclerviewAdapter(
             .into(view)
 
         binding.mainImage.clipToOutline = true
+    }
+
+    fun putToastMessage(message: String) {
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
     }
 }

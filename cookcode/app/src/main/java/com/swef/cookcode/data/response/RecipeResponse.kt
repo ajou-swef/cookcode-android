@@ -32,7 +32,9 @@ data class RecipeContent(
     @SerializedName("likeCount") val likeCount: Int,
     @SerializedName("commentCount") val commentCount: Int,
     @SerializedName("isCookable") val isCookable: Boolean,
-    @SerializedName("thumbnail") val mainImage: String
+    @SerializedName("thumbnail") val mainImage: String,
+    @SerializedName("isPremium") val isPremium: Boolean?,
+    @SerializedName("isAccessible") val isAccessible: Boolean
 )
 
 data class Ingredient(

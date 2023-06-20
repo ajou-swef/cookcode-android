@@ -48,6 +48,8 @@ class UserPageActivity : AppCompatActivity(), MembershipSigninListener {
         binding = ActivityUserPageBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        binding.premiumContent.visibility = View.GONE
+
         madeUserId = intent.getIntExtra("user_id", ERR_CODE)
         bundle.putInt("user_id", madeUserId)
 
@@ -257,7 +259,6 @@ class UserPageActivity : AppCompatActivity(), MembershipSigninListener {
 
     private fun authorityCheck(authority: String) {
         if (authority == "USER") {
-            binding.premiumContent.visibility = View.GONE
             binding.btnMembership.visibility = View.GONE
         }
     }

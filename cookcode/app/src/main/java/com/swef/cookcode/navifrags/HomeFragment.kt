@@ -91,14 +91,14 @@ class HomeFragment : Fragment() {
         }
 
         binding.btnSubscribed.setOnClickListener {
-            // sort = "subscribed"
-            getNewRecipeDatas()
+            sort = "subscribed"
+            getNewPublishersRecipes()
             changeButtonBackground("subscribed")
         }
 
         binding.btnMembership.setOnClickListener {
-            // sort = "membership"
-            getNewRecipeDatas()
+            sort = "membership"
+            getNewMembershipsRecipes()
             changeButtonBackground("membership")
         }
 
@@ -225,6 +225,64 @@ class HomeFragment : Fragment() {
         Toast.makeText(this.context, message, Toast.LENGTH_SHORT).show()
     }
 
+    private fun getNewMembershipsRecipes() {
+        currentPage = 0
+        recyclerViewAdapter.datas.clear()
+        getMembershipsRecipes()
+    }
+
+    private fun getMembershipsRecipes() {
+        recipeAPI.getMembershipsRecipe().enqueue(object :
+            Callback<RecipeResponse> {
+            override fun onResponse(call: Call<RecipeResponse>, response: Response<RecipeResponse>) {
+                if (response.isSuccessful) {
+                    val datas = response.body()!!
+                    searchedRecipeDatas = getRecipeDatasFromResponseBody(datas.recipes.content)
+                    hasNext = datas.recipes.hasNext
+                    putDataForRecyclerview()
+                }
+                else {
+                    Log.d("data_size", call.request().toString())
+                    Log.d("data_size", response.errorBody()!!.string())
+                    putToastMessage("에러 발생! 관리자에게 문의해주세요.")
+                }
+            }
+
+            override fun onFailure(call: Call<RecipeResponse>, t: Throwable) {
+                putToastMessage("잠시 후 다시 시도해주세요.")
+            }
+        })
+    }
+
+    private fun getNewPublishersRecipes() {
+        currentPage = 0
+        recyclerViewAdapter.datas.clear()
+        getPublishersRecipes()
+    }
+
+    private fun getPublishersRecipes() {
+        recipeAPI.getPublishersRecipe().enqueue(object :
+            Callback<RecipeResponse> {
+            override fun onResponse(call: Call<RecipeResponse>, response: Response<RecipeResponse>) {
+                if (response.isSuccessful) {
+                    val datas = response.body()!!
+                    searchedRecipeDatas = getRecipeDatasFromResponseBody(datas.recipes.content)
+                    hasNext = datas.recipes.hasNext
+                    putDataForRecyclerview()
+                }
+                else {
+                    Log.d("data_size", call.request().toString())
+                    Log.d("data_size", response.errorBody()!!.string())
+                    putToastMessage("에러 발생! 관리자에게 문의해주세요.")
+                }
+            }
+
+            override fun onFailure(call: Call<RecipeResponse>, t: Throwable) {
+                putToastMessage("잠시 후 다시 시도해주세요.")
+            }
+        })
+    }
+
     private fun getRecipeDatas() {
         recipeAPI.getRecipes(currentPage, pageSize, sort, cookable).enqueue(object :
             Callback<RecipeResponse> {
@@ -280,7 +338,7 @@ class HomeFragment : Fragment() {
             val recipeData = SearchedRecipeData(
                 item.recipeId, item.title, item.description,
                 item.mainImage, item.likeCount, item.isLiked, item.isCookable,
-                item.user, item.createdAt.substring(0, 10))
+                item.user, item.createdAt.substring(0, 10), item.isPremium, item.isAccessible)
             recipeDatas.add(recipeData)
         }
 
@@ -292,7 +350,7 @@ class HomeFragment : Fragment() {
 
         if (isEmpty) {
             recyclerViewAdapter.datas = searchedRecipeDatas
-            recyclerViewAdapter.notifyItemRangeInserted(0, recyclerViewAdapter.datas.size)
+            recyclerViewAdapter.notifyDataSetChanged()
         }
         else {
             val beforeSize = recyclerViewAdapter.datas.size
@@ -355,12 +413,32 @@ class HomeFragment : Fragment() {
                 if (isScrollingUp) {
                     if (!recyclerView.canScrollVertically(1) && hasNext) {
                         currentPage++
-                        getRecipeDatas()
+                        when (sort) {
+                            "subscribed" -> {
+                                getPublishersRecipes()
+                            }
+                            "membership" -> {
+                                getMembershipsRecipes()
+                            }
+                            else -> {
+                                getRecipeDatas()
+                            }
+                        }
                     }
                 }
                 else if (isScrollingDown) {
                     if (!recyclerView.canScrollVertically(-1)) {
-                        getNewRecipeDatas()
+                        when (sort) {
+                            "subscribed" -> {
+                                getNewPublishersRecipes()
+                            }
+                            "membership" -> {
+                                getNewMembershipsRecipes()
+                            }
+                            else -> {
+                                getNewRecipeDatas()
+                            }
+                        }
                     }
                 }
             }

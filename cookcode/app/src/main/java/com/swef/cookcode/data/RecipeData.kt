@@ -26,6 +26,8 @@ data class SearchedRecipeData(
     val cookable: Boolean,
     val madeUser: MadeUser,
     val createdAt: String,
+    val isPremium: Boolean?,
+    val isAccessible: Boolean
 )
 
 data class RecipeAndStepData(

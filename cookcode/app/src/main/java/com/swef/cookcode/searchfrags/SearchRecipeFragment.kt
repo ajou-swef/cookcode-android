@@ -186,7 +186,7 @@ class SearchRecipeFragment : Fragment() {
             val recipeData = SearchedRecipeData(
                 item.recipeId, item.title, item.description,
                 item.mainImage, item.likeCount, item.isLiked, item.isCookable,
-                item.user, item.createdAt.substring(0, 10))
+                item.user, item.createdAt.substring(0, 10), item.isPremium, item.isAccessible)
             recipeDatas.add(recipeData)
         }
 

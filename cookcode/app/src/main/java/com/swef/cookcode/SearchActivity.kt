@@ -19,9 +19,6 @@ class SearchActivity : AppCompatActivity() {
             finish()
         }
 
-        // 최근 검색어 보여주기
-        binding.recentSearchedWordRecyclerview.adapter
-
         // 돋보기 버튼 클릭 시 검색
         binding.btnSearch.setOnClickListener {
             // 검색어가 입력되지 않았을 경우

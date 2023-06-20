@@ -23,12 +23,19 @@ class RecipePreviewActivity : AppCompatActivity() {
 
     private lateinit var stepPreviewRecyclerviewAdapter: StepPreviewRecyclerviewAdapter
 
+    private var isPremium: Boolean? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityRecipePreviewBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val visibility = intent.getStringExtra("visibility")!!
+        val visibility = intent.getStringExtra("visibility")
+
+        if (visibility == "premium")
+            isPremium = true
+        else if (visibility == "normal")
+            isPremium = false
 
         // 레시피 정보 불러오기
         val title = intent.getStringExtra("recipe_title")!!
@@ -114,6 +121,10 @@ class RecipePreviewActivity : AppCompatActivity() {
             }
 
             postBody["steps"] = stepDatas
+
+            if (isPremium != null) {
+                postBody["isPremium"] = isPremium!!
+            }
 
             if (recipeId != ERR_CODE) {
                 patchRecipeData(postBody, recipeId)
