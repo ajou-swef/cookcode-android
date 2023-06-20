@@ -5,12 +5,12 @@ data class RecipeResponse(
     @SerializedName("message") val message: String,
     @SerializedName("status") val status: Int,
     @SerializedName("data") val recipes: Content,
-    @SerializedName("numberOfElements") val numberOfElements: Int, // 무한스크롤 시 현재 페이지에 있는 레시피 개수
-    @SerializedName("hasNext") val hasNext: Boolean
 )
 
 data class Content(
-    @SerializedName("content") val content: List<RecipeContent>
+    @SerializedName("content") val content: List<RecipeContent>,
+    @SerializedName("numberOfElements") val numberOfElements: Int, // 무한스크롤 시 현재 페이지에 있는 레시피 개수
+    @SerializedName("hasNext") val hasNext: Boolean
 )
 
 data class RecipeContentResponse(
@@ -32,7 +32,9 @@ data class RecipeContent(
     @SerializedName("likeCount") val likeCount: Int,
     @SerializedName("commentCount") val commentCount: Int,
     @SerializedName("isCookable") val isCookable: Boolean,
-    @SerializedName("thumbnail") val mainImage: String
+    @SerializedName("thumbnail") val mainImage: String,
+    @SerializedName("isPremium") val isPremium: Boolean?,
+    @SerializedName("isAccessible") val isAccessible: Boolean
 )
 
 data class Ingredient(

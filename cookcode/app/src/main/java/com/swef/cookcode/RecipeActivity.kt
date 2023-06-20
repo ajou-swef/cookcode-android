@@ -136,7 +136,6 @@ class RecipeActivity : AppCompatActivity(), CommentOnClickListener {
                 response: Response<RecipeContentResponse>
             ) {
                 if (response.body() != null) {
-                    Log.d("data_size", response.body()!!.recipeData.user.toString())
                     val recipeAndStepData = getRecipeDataFromResponseBody(response.body()!!.recipeData)
                     madeUser = response.body()!!.recipeData.user
                     recipeViewpagerAdapter.madeUser =  madeUser
@@ -151,6 +150,7 @@ class RecipeActivity : AppCompatActivity(), CommentOnClickListener {
                 }
                 else {
                     putToastMessage("데이터를 불러오는데 실패했습니다.")
+                    Log.d("data_size", call.request().toString())
                     Log.d("data_size", response.errorBody()!!.string())
                 }
             }

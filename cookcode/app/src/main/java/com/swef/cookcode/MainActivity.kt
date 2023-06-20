@@ -66,6 +66,7 @@ class MainActivity : AppCompatActivity() {
                             refreshToken = response.body()!!.tokenData.refreshToken
 
                             Log.d("data_size", accessToken)
+                            Log.d("data_size", userId.toString())
                             getAuthorityFromUserId()
                         }
                     }

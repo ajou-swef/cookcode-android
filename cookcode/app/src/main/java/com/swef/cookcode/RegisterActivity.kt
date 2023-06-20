@@ -156,7 +156,6 @@ class RegisterActivity : AppCompatActivity() {
                 response: Response<CertificationResponse>
             ) {
                 if (response.isSuccessful) {
-                    Log.d("data_size", response.body()!!.toString())
                     if (response.body()?.status == 200) {
                         certificationNumber = response.body()!!.data
                         putToastMessage("인증번호가 발송 되었습니다.\n이메일을 확인해주세요.")

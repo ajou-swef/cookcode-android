@@ -1,5 +1,7 @@
 package com.swef.cookcode
 
+import android.app.Activity
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -27,6 +29,7 @@ class CookieActivity : AppCompatActivity(), CookieDeleteListener {
 
     private var hasNext = false
     private var page = 0
+    private var pageSize = 9
 
     private lateinit var viewpagerAdapter: CookieViewpagerAdapter
     private val datas = mutableListOf<CookieData>()
@@ -37,6 +40,8 @@ class CookieActivity : AppCompatActivity(), CookieDeleteListener {
         setContentView(binding.root)
 
         binding.beforeArrow.setOnClickListener{
+            val resultIntent = Intent()
+            setResult(Activity.RESULT_OK, resultIntent)
             finish()
         }
 
@@ -87,11 +92,13 @@ class CookieActivity : AppCompatActivity(), CookieDeleteListener {
     }
 
     private fun getUsersCookies() {
-        cookieAPI.getUserCookies(madeUserId, page).enqueue(object : Callback<CookieContentResponse>{
+        cookieAPI.getUserCookies(madeUserId, page, pageSize).enqueue(object : Callback<CookieContentResponse>{
             override fun onResponse(
                 call: Call<CookieContentResponse>,
                 response: Response<CookieContentResponse>
             ) {
+                Log.d("data_size", call.request().toString())
+                Log.d("data_size", response.body().toString())
                 if (response.isSuccessful) {
                     val cookieDatas = getCookieDatasFromResponseData(response.body()!!.data.content)
                     hasNext = response.body()!!.data.hasNext

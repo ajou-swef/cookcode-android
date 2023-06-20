@@ -6,16 +6,23 @@ import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
+import com.swef.cookcode.adapter.CreatedMembershipAdapter
 import com.swef.cookcode.data.GlobalVariables.ERR_CODE
 import com.swef.cookcode.data.GlobalVariables.accountAPI
-import com.swef.cookcode.data.GlobalVariables.authority
+import com.swef.cookcode.data.GlobalVariables.membershipAPI
 import com.swef.cookcode.data.GlobalVariables.userId
+import com.swef.cookcode.data.response.Membership
+import com.swef.cookcode.data.response.MembershipResponse
 import com.swef.cookcode.data.response.StatusResponse
 import com.swef.cookcode.data.response.User
 import com.swef.cookcode.data.response.UserResponse
 import com.swef.cookcode.databinding.ActivityUserPageBinding
+import com.swef.cookcode.databinding.MembershipSigninDialogBinding
+import com.swef.cookcode.`interface`.MembershipSigninListener
 import com.swef.cookcode.userinfofrags.UserCookieFragment
 import com.swef.cookcode.userinfofrags.UserPremiumContentFragment
 import com.swef.cookcode.userinfofrags.UserRecipeFragment
@@ -23,21 +30,32 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class UserPageActivity : AppCompatActivity() {
+class UserPageActivity : AppCompatActivity(), MembershipSigninListener {
 
     private lateinit var binding : ActivityUserPageBinding
 
     private var madeUserId = ERR_CODE
     private val bundle = Bundle()
     private var subscribed = false
+    private var isAdmin = false
+
+    private lateinit var createdMembershipAdapter: CreatedMembershipAdapter
+    private lateinit var membershipSigninDialogView: MembershipSigninDialogBinding
+    private lateinit var membershipSigninDialog: AlertDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityUserPageBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        binding.premiumContent.visibility = View.GONE
+
         madeUserId = intent.getIntExtra("user_id", ERR_CODE)
         bundle.putInt("user_id", madeUserId)
+
+        if (intent.getStringExtra("is_admin") != null) {
+            isAdmin = true
+        }
 
         getInfoFromUserId()
         initContentView()
@@ -60,6 +78,63 @@ class UserPageActivity : AppCompatActivity() {
                 changeButtonSubscribed()
             }
         }
+
+        createdMembershipAdapter = CreatedMembershipAdapter(this, this)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        membershipSigninDialogView = MembershipSigninDialogBinding.inflate(layoutInflater)
+        membershipSigninDialog = AlertDialog.Builder(this)
+            .setView(membershipSigninDialogView.root)
+            .create()
+
+        createdMembershipAdapter = CreatedMembershipAdapter(this, this)
+        membershipSigninDialogView.memberships.apply {
+            adapter = createdMembershipAdapter
+            layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+        }
+
+        membershipSigninDialogView.btnCancel.setOnClickListener {
+            membershipSigninDialog.dismiss()
+        }
+
+        binding.btnMembership.setOnClickListener {
+            getCreatersMembership()
+            membershipSigninDialog.show()
+        }
+    }
+
+    private fun getCreatersMembership() {
+        membershipAPI.getCreatersMemberships(madeUserId).enqueue(object : Callback<MembershipResponse> {
+            override fun onResponse(
+                call: Call<MembershipResponse>,
+                response: Response<MembershipResponse>
+            ) {
+                if (response.isSuccessful) {
+                    if (response.body()!!.membership.isNotEmpty()) {
+                        val datas = response.body()!!.membership
+                        createdMembershipAdapter.datas = datas as MutableList<Membership>
+                        createdMembershipAdapter.notifyDataSetChanged()
+                    }
+                    else {
+                        putToastMessage("아직 인플루언서의 멤버십이 존재하지 않습니다.")
+                        membershipSigninDialog.dismiss()
+                    }
+                }
+                else {
+                    Log.d("data_size", call.request().toString())
+                    Log.d("data_size", response.errorBody()!!.string())
+                    putToastMessage("에러 발생!")
+                }
+            }
+
+            override fun onFailure(call: Call<MembershipResponse>, t: Throwable) {
+                putToastMessage("잠시 후 다시 시도해주세요.")
+                Log.d("data_size", call.request().toString())
+                Log.d("data_size", t.message.toString())
+            }
+        })
     }
 
     private fun changeButtonSubscribed() {
@@ -93,7 +168,7 @@ class UserPageActivity : AppCompatActivity() {
     }
 
     private fun initContentView() {
-        if (userId == madeUserId) {
+        if (userId == madeUserId || isAdmin) {
             binding.btnSubscribe.visibility = View.GONE
         }
 
@@ -165,7 +240,8 @@ class UserPageActivity : AppCompatActivity() {
         accountAPI.getUserInfo(madeUserId).enqueue(object : Callback<UserResponse>{
             override fun onResponse(call: Call<UserResponse>, response: Response<UserResponse>) {
                 if (response.isSuccessful) {
-                    authorityCheck()
+                    val authority = response.body()!!.user.authority
+                    authorityCheck(authority)
                     initUserInfo(response.body()!!.user)
                 }
                 else {
@@ -181,9 +257,10 @@ class UserPageActivity : AppCompatActivity() {
         })
     }
 
-    private fun authorityCheck() {
-        if (authority == "USER")
-            binding.premiumContent.visibility = View.GONE
+    private fun authorityCheck(authority: String) {
+        if (authority == "USER") {
+            binding.btnMembership.visibility = View.GONE
+        }
     }
 
     private fun initUserInfo(user: User) {
@@ -210,7 +287,11 @@ class UserPageActivity : AppCompatActivity() {
             .into(view)
     }
 
-    private fun putToastMessage(message: String){
+    private fun putToastMessage(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+    override fun signinSuccess() {
+        membershipSigninDialog.dismiss()
     }
 }

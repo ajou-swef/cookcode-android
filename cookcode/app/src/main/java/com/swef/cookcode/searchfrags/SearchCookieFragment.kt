@@ -1,5 +1,6 @@
 package com.swef.cookcode.searchfrags
 
+import android.app.Activity
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -7,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.swef.cookcode.adapter.SearchCookieRecyclerviewAdapter
@@ -36,6 +38,11 @@ class SearchCookieFragment : Fragment() {
     private var isScrollingUp = false
     private var isScrollingDown = false
 
+    private val activityResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            getNewCookieDataFromKeyword()
+        }
+    }
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -44,7 +51,7 @@ class SearchCookieFragment : Fragment() {
 
         searchKeyword = arguments?.getString("keyword")!!
 
-        recyclerViewAdapter = SearchCookieRecyclerviewAdapter(requireContext())
+        recyclerViewAdapter = SearchCookieRecyclerviewAdapter(requireContext(), activityResultLauncher)
 
         val gridLayoutManager = GridLayoutManager(requireContext(), SPAN_COUNT)
         binding.recyclerView.apply {
@@ -61,7 +68,7 @@ class SearchCookieFragment : Fragment() {
         recyclerViewAdapter.viewHeight = itemHeight
 
         getCookieDataFromKeyword()
-        initOnScrollListener(gridLayoutManager)
+        initOnScrollListener()
 
         return binding.root
     }
@@ -123,10 +130,11 @@ class SearchCookieFragment : Fragment() {
     private fun getNewCookieDataFromKeyword() {
         page = 0
         recyclerViewAdapter.datas.clear()
+        recyclerViewAdapter.notifyDataSetChanged()
         getCookieDataFromKeyword()
     }
 
-    private fun initOnScrollListener(layoutManager: GridLayoutManager) {
+    private fun initOnScrollListener() {
         binding.recyclerView.addOnScrollListener(object: RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
@@ -142,19 +150,12 @@ class SearchCookieFragment : Fragment() {
                 isScrollingDown = differentY < 0
 
                 if (isScrollingUp) {
-                    val visibleItemCount = layoutManager.childCount
-                    val totalItemCount = layoutManager.itemCount
-                    val pastVisibleItems = layoutManager.findFirstVisibleItemPosition()
-
-                    if (visibleItemCount + pastVisibleItems >= totalItemCount) {
+                    if (!recyclerView.canScrollVertically(1) && hasNext) {
                         page++
                         getCookieDataFromKeyword()
                     }
                 } else if (isScrollingDown) {
-                    // 맨 아래에서 위로 당겨질 때
-                    val pastVisibleItems = layoutManager.findFirstVisibleItemPosition()
-
-                    if (pastVisibleItems == 0) {
+                    if (!recyclerView.canScrollVertically(-1)) {
                         putToastMessage("데이터를 불러오는 중입니다.")
                         getNewCookieDataFromKeyword()
                     }

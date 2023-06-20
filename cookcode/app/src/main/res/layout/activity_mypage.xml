@@ -136,20 +136,35 @@
                 app:layout_constraintTop_toBottomOf="@+id/premium_membership_manage"/>
 
             <TextView
-                android:id="@+id/earnings_check"
+                android:id="@+id/my_premium_membership_modify"
                 android:layout_width="0dp"
                 android:layout_height="48dp"
                 android:layout_marginTop="20dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:text="@string/my_membership_manage"
+                android:textSize="15sp"
+                android:textColor="@color/black"
+                android:gravity="center|start"
+                android:background="@drawable/half_rounded_upper_component"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/request_authority"/>
+
+            <TextView
+                android:id="@+id/earnings_check"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
                 android:text="@string/earnings_check"
                 android:textSize="15sp"
                 android:textColor="@color/black"
                 android:gravity="center|start"
-                android:background="@drawable/all_rounded_component"
+                android:background="@drawable/half_rounded_lower_component"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/request_authority"/>
+                app:layout_constraintTop_toBottomOf="@+id/my_premium_membership_modify"/>
 
             <TextView
                 android:id="@+id/modify_pw"

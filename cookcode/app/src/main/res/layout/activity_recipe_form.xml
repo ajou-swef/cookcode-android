@@ -31,6 +31,62 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/before_arrow" />
 
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/menu_influencer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/before_arrow">
+
+        <TextView
+            android:id="@+id/visible_authority"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+            android:text="@string/visibillity"
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            android:layout_marginStart="30dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="@id/btn_premium"/>
+
+        <TextView
+            android:id="@+id/btn_normal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="2dp"
+            android:background="@drawable/filled_fullround_component_clicked"
+            android:text="@string/normal"
+            android:textSize="14sp"
+            android:textColor="@color/white"
+            android:gravity="center"
+            android:ems="5"
+            app:layout_constraintEnd_toStartOf="@+id/btn_premium"
+            app:layout_constraintTop_toTopOf="@+id/btn_premium"/>
+
+        <TextView
+            android:id="@+id/btn_premium"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/filled_fullround_component_gray"
+            android:layout_marginEnd="20dp"
+            android:text="@string/premium"
+            android:textSize="14sp"
+            android:textColor="@color/white"
+            android:gravity="center"
+            android:ems="5"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <View
+            android:layout_marginTop="10dp"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/gray_bc"
+            app:layout_constraintTop_toBottomOf="@id/btn_premium"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
     <Button
         android:id="@+id/preview"
         android:layout_width="300dp"
@@ -48,7 +104,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:fillViewport="true"
-        app:layout_constraintTop_toBottomOf="@+id/before_arrow"
+        app:layout_constraintTop_toBottomOf="@+id/menu_influencer"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@+id/preview">
@@ -61,7 +117,6 @@
                 android:id="@+id/recipe_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
                 android:text="@string/recipe_name"
                 android:textColor="@color/black"
                 android:textSize="16sp"

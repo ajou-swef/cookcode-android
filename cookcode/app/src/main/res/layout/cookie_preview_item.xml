@@ -24,29 +24,44 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/user_profile"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="@drawable/user_profile"
+        android:layout_marginStart="20dp"
+        android:layout_marginBottom="10dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/cookie_title"/>
+
     <TextView
         android:id="@+id/made_user"
-        android:text="haeiny"
+        android:text="haeiny "
         android:textColor="@color/white"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:layout_marginBottom="10dp"
-        android:background="@drawable/filled_round_component_black"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/cookie_title"/>
+        android:layout_marginStart="5dp"
+        android:shadowRadius="5.0"
+        android:shadowDx="1.0"
+        android:shadowDy="1.0"
+        android:shadowColor="#000000"
+        android:elevation="2dp"
+        app:layout_constraintStart_toEndOf="@id/user_profile"
+        app:layout_constraintTop_toTopOf="@id/user_profile"
+        app:layout_constraintBottom_toBottomOf="@id/user_profile"/>
 
     <TextView
         android:id="@+id/cookie_title"
         android:text="제육볶음 직접 만들어보았다! "
         android:textColor="@color/white"
         android:shadowRadius="5.0"
-        android:shadowDx="5.0"
-        android:shadowDy="5.0"
+        android:shadowDx="1.0"
+        android:shadowDy="1.0"
         android:shadowColor="#000000"
         android:layout_margin="20dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:elevation="2dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"/>
 
@@ -57,6 +72,7 @@
         android:layout_height="40dp"
         android:layout_marginEnd="30dp"
         android:layout_marginBottom="40dp"
+        android:elevation="3dp"
         android:shadowRadius="1.0"
         android:shadowDx="1.0"
         android:shadowDy="1.0"
@@ -71,6 +87,7 @@
         android:textStyle="bold"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:elevation="3dp"
         android:shadowRadius="1.0"
         android:shadowDx="1.0"
         android:shadowDy="1.0"
@@ -85,6 +102,7 @@
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_marginBottom="40dp"
+        android:elevation="3dp"
         android:shadowRadius="1.0"
         android:shadowDx="1.0"
         android:shadowDy="1.0"
@@ -100,6 +118,7 @@
         android:textStyle="bold"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:elevation="3dp"
         android:shadowRadius="1.0"
         android:shadowDx="1.0"
         android:shadowDy="1.0"
@@ -114,7 +133,7 @@
         android:layout_width="35dp"
         android:layout_height="35dp"
         android:layout_margin="20dp"
-        android:elevation="10dp"
+        android:elevation="3dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
@@ -124,9 +143,12 @@
         android:layout_height="30dp"
         android:layout_marginEnd="15dp"
         android:layout_marginBottom="3dp"
+        android:elevation="3dp"
         app:layout_constraintEnd_toStartOf="@+id/btn_more"
         app:layout_constraintTop_toTopOf="@+id/btn_more"
         app:layout_constraintBottom_toBottomOf="@+id/btn_more"/>
+
+
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:id="@+id/comment_bottom_layout"

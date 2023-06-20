@@ -1,5 +1,6 @@
 package com.swef.cookcode.userinfofrags
 
+import android.app.Activity
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -7,12 +8,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.swef.cookcode.adapter.SearchCookieRecyclerviewAdapter
+import com.swef.cookcode.data.GlobalVariables.ERR_CODE
 import com.swef.cookcode.data.GlobalVariables.SPAN_COUNT
 import com.swef.cookcode.data.GlobalVariables.cookieAPI
-import com.swef.cookcode.data.GlobalVariables.userId
 import com.swef.cookcode.data.SearchCookieData
 import com.swef.cookcode.data.response.CookieContent
 import com.swef.cookcode.data.response.CookieContentResponse
@@ -27,12 +29,21 @@ class UserCookieFragment : Fragment() {
     private val binding get() = _binding!!
 
     private var page = 0
+    private var pageSize = 9
     private var hasNext = false
+
+    private var madeUserId = ERR_CODE
 
     private lateinit var recyclerViewAdapter : SearchCookieRecyclerviewAdapter
 
     private var isScrollingUp = false
     private var isScrollingDown = false
+
+    private val activityResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            getNewCookieDataFromUserId()
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -40,7 +51,9 @@ class UserCookieFragment : Fragment() {
     ): View {
         _binding = FragmentUserCookieBinding.inflate(inflater, container, false)
 
-        recyclerViewAdapter = SearchCookieRecyclerviewAdapter(requireContext())
+        madeUserId = arguments?.getInt("user_id")!!
+
+        recyclerViewAdapter = SearchCookieRecyclerviewAdapter(requireContext(), activityResultLauncher)
 
         val gridLayoutManager = GridLayoutManager(requireContext(), SPAN_COUNT)
         binding.recyclerView.apply {
@@ -63,7 +76,7 @@ class UserCookieFragment : Fragment() {
     }
 
     private fun getCookieDataFromUserId() {
-        cookieAPI.getUserCookies(userId, page).enqueue(object : Callback<CookieContentResponse>{
+        cookieAPI.getUserCookies(madeUserId, page, pageSize).enqueue(object : Callback<CookieContentResponse>{
             override fun onResponse(
                 call: Call<CookieContentResponse>,
                 response: Response<CookieContentResponse>
@@ -74,7 +87,7 @@ class UserCookieFragment : Fragment() {
 
                     if (recyclerViewAdapter.datas.isEmpty()) {
                         recyclerViewAdapter.datas = cookieDatas as MutableList<SearchCookieData>
-                        recyclerViewAdapter.notifyDataSetChanged()
+                        recyclerViewAdapter.notifyItemRangeChanged(0, cookieDatas.size)
                     }
                     else {
                         val beforeSize = recyclerViewAdapter.itemCount
@@ -118,6 +131,7 @@ class UserCookieFragment : Fragment() {
     private fun getNewCookieDataFromUserId() {
         page = 0
         recyclerViewAdapter.datas.clear()
+        recyclerViewAdapter.notifyDataSetChanged()
         getCookieDataFromUserId()
     }
 
@@ -138,19 +152,12 @@ class UserCookieFragment : Fragment() {
                 isScrollingDown = differentY < 0
 
                 if (isScrollingUp) {
-                    val visibleItemCount = layoutManager.childCount
-                    val totalItemCount = layoutManager.itemCount
-                    val pastVisibleItems = layoutManager.findFirstVisibleItemPosition()
-
-                    if (visibleItemCount + pastVisibleItems >= totalItemCount) {
+                    if (!recyclerView.canScrollVertically(1) && hasNext) {
                         page++
                         getCookieDataFromUserId()
                     }
                 } else if (isScrollingDown) {
-                    // 맨 아래에서 위로 당겨질 때
-                    val pastVisibleItems = layoutManager.findFirstVisibleItemPosition()
-
-                    if (pastVisibleItems == 0) {
+                    if (!recyclerView.canScrollVertically(-1)) {
                         putToastMessage("데이터를 불러오는 중입니다.")
                         getNewCookieDataFromUserId()
                     }

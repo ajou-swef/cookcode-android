@@ -112,4 +112,25 @@
     <string name="btn_valid_test">인증하기</string>
     <string name="admin_page">관리자 전용 페이지</string>
     <string name="manage_influencer_request">인플루언서 요청 관리</string>
+    <string name="accept">승인</string>
+    <string name="deny">거부</string>
+    <string name="no_exist_ingred">: 현재 부족한 식재료</string>
+    <string name="isCookable">요리하자</string>
+    <string name="request_user_id">User Id : %d</string>
+    <string name="request_created_at">Created At : %s</string>
+    <string name="my_membership_manage">내 멤버십 등급 관리</string>
+    <string name="membership_register">멤버십 가입</string>
+    <string name="signin">가입</string>
+    <string name="membership_price">₩%s/월</string>
+    <string name="visibillity">공개권한 설정</string>
+    <string name="normal">일반</string>
+    <string name="premium">프리미엄</string>
+    <string name="grade_name">등급명</string>
+    <string name="price">멤버십 가격(원/month)</string>
+    <string name="premium_membership_make">프리미엄 멤버십 제작</string>
+    <string name="no_exist_request">요청이 없습니다.</string>
+    <string name="signout">탈퇴</string>
+    <string name="no_exist_membership">가입한 멤버십이 없습니다.</string>
+    <string name="sort_subscribed">구독</string>
+    <string name="sort_membership">프리미엄 멤버십</string>
 </resources>

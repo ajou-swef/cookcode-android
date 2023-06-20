@@ -36,26 +36,4 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/edit_search_keyword"/>
 
-    <TextView
-        android:id="@+id/recent_searched_word"
-        android:text="@string/Recent_searched"
-        android:textSize="20sp"
-        android:textColor="@color/black"
-        android:textStyle="bold"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        app:layout_constraintTop_toBottomOf="@+id/before_arrow"
-        app:layout_constraintStart_toStartOf="@+id/recent_searched_word_recyclerview"/>
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recent_searched_word_recyclerview"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_margin="20dp"
-        app:layout_constraintTop_toBottomOf="@+id/recent_searched_word"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
-
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -76,13 +76,14 @@ interface CookieAPI {
     fun getUserCookies(
         @Path("userId") userId: Int,
         @Query("page") page: Int,
+        @Query("size") size: Int,
     ): Call<CookieContentResponse>
 
     @GET("cookie/search")
     fun getSearchCookies(
         @Query("query") keyword: String,
         @Query("page") page: Int,
-        @Query("size") size: Int?
+        @Query("size") size: Int,
     ): Call<CookieContentResponse>
 
     companion object {

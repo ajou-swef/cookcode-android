@@ -97,6 +97,12 @@ interface RecipeAPI {
         @Query("page") page: Int,
     ): Call<RecipeResponse>
 
+    @GET("recipe/publisher")
+    fun getPublishersRecipe(): Call<RecipeResponse>
+
+    @GET("recipe/membership")
+    fun getMembershipsRecipe(): Call<RecipeResponse>
+
     companion object {
         private const val BASE_URL = "https://cookcode.link/api/v1/"
 

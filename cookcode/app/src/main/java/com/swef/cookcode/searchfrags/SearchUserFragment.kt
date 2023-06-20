@@ -117,7 +117,6 @@ class SearchUserFragment : Fragment() {
                         page++
                         getUserDataFromKeyword()
                     } else if (!recyclerView.canScrollVertically(-1)) {
-                        putToastMessage("데이터를 불러오는 중입니다.")
                         getNewUserDataFromKeyword()
                     }
                 }

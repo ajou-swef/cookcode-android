@@ -2,6 +2,8 @@ package com.swef.cookcode.adapter
 
 import android.app.AlertDialog
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
@@ -95,9 +97,15 @@ class IngredientRecyclerviewAdapter(
                     }
                 }
                 "recipe_preview" -> {
+                    val coopangUrl = "https://www.coupang.com/np/search?q="
+
                     binding.value.visibility = View.GONE
                     if (item.isLack!!) {
                         binding.lack.visibility = View.VISIBLE
+                        binding.layout.setOnClickListener {
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("${coopangUrl}${item.ingredientData.name}"))
+                            parent.context.startActivity(intent)
+                        }
                     }
                     else {
                         binding.lack.visibility = View.GONE
