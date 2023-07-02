@@ -179,6 +179,7 @@ fun mergeVideos(videoPaths: List<String>): Int {
 </code>
 </pre>
 ### 실제 어플리케이션 시연 영상
+[전체 시연 영상 보기](https://youtu.be/DgyzOiOkzns)
 
 ### 무한 스크롤
 
