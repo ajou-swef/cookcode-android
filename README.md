@@ -9,7 +9,7 @@
 
 유튜브 쇼츠처럼 짧은 영상을 만들어 제공하는 `쿠키` 기능을 제공합니다. 
 
-[이곳](https://www.youtube.com/playlist?list=PLow6eB4W8f0fgjKj2_k8eavCbxeajqtBL)에서 모든 프로젝트 영상을 확인할 수 있습니다. 아래에는 일부 영상을 게시했습니다. 
+[이곳](https://youtu.be/DgyzOiOkzns)에서 모든 프로젝트 영상을 확인할 수 있습니다. 아래에는 일부 영상을 게시했습니다. 
    
 ## 2023-1학기 SW 캡스톤디자인
 
